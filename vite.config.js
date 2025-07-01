@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 
 export default defineConfig({
-  base: '/tgapp/', // Замените на название вашего репозитория
+  base: '/tgapp/',
   build: {
     rollupOptions: {
       input: {
