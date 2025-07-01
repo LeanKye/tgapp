@@ -10,4 +10,4 @@
 [Открыть приложение](https://leankye.github.io/tgapp/)
 
 ---
-Создано с ❤️ для Telegram 
+Создано с ❤️ by LeanKye
