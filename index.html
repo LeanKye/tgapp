@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>App</title>
+</head>
+
+<body>
+  <div class="catalog">
+    <div class="search">
+      <div class="search-container">
+        <div class="input-container">
+          <div class="search-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <input id="search-input" placeholder="Найти товар">
+        </div>
+        <div class="search-dropdown" id="search-dropdown">
+          <!-- Здесь будут появляться предложения -->
+        </div>
+      </div>
+      <button id="menu-button" class="input-container menu-button reset-Button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <!-- Слайдер баннеров -->
+    <div class="banner-slider-container">
+      <div class="banner-slider" id="bannerSlider">
+        <div class="banner-item active">
+          <div class="banner-content">
+            <h3>Скидка 50%</h3>
+            <p>На все игры PlayStation</p>
+          </div>
+        </div>
+        <div class="banner-item">
+          <div class="banner-content">
+            <h3>Новинки</h3>
+            <p>Лучшие игры месяца</p>
+          </div>
+        </div>
+        <div class="banner-item">
+          <div class="banner-content">
+            <h3>Подписки</h3>
+            <p>Выгодные предложения</p>
+          </div>
+        </div>
+        <div class="banner-item">
+          <div class="banner-content">
+            <h3>Акция</h3>
+            <p>Ограниченное время</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="category-title">
+        Категории
+      </div>
+      <div class="categories-grid" id="categories-grid">
+        <!-- Категории будут добавлены динамически через JavaScript -->
+      </div>
+    </div>
+    <div class="container">
+      <div class="category-title">
+        Новинки
+      </div>
+      <div class="category-products-slider">
+        <!-- Карточки товаров будут добавлены динамически через JavaScript -->
+      </div>
+    </div>
+    <div>
+      <div class="category-title">Подписка PS Plus</div>
+      <div class="button-group full-width-group">
+        <input type="radio" name="period" id="period-1" value="period-1">
+        <label for="period-1">
+          <span>
+            1 месяц
+          </span>
+        </label>
+        <input type="radio" name="period" id="period-2" value="period-2">
+        <label for="period-2">
+          <span>
+            2 месяца
+          </span>
+        </label>
+        <input type="radio" name="period" id="period-3" value="period-3">
+        <label for="period-3">
+          <span>
+            12 месяцев
+          </span>
+        </label>
+      </div>
+      <div class="container product-sub">
+        <img src="">
+        <div>
+          <div>
+            Essential
+          </div>
+          <div>960</div>
+        </div>
+      </div>
+      <div class="container product-sub">
+        <img src="">
+        <div>
+          <div>
+            Essential
+          </div>
+          <div>960</div>
+        </div>
+      </div>
+      <div class="container product-sub">
+        <img src="">
+        <div>
+          <div>
+            Essential
+          </div>
+          <div>960</div>
+        </div>
+      </div>
+      <div class="category-title">Подписка EA Play</div>
+      <div class="container product-sub">
+        <img src="">
+        <div>
+          <div>
+            Essential
+          </div>
+          <div>960</div>
+        </div>
+      </div>
+      <div class="container product-sub">
+        <img src="">
+        <div>
+          <div>
+            Essential
+          </div>
+          <div>960</div>
+        </div>
+      </div>
+      <div class="container product-sub">
+        <img src="">
+        <div>
+          <div>
+            Essential
+          </div>
+          <div>960</div>
+        </div>
+      </div>
+    </div>
+    <!-- Темный фон за меню -->
+    <div class="menu-overlay menu-closed" id="menu-overlay"></div>
+    
+    <!-- Меню -->
+    <div class="menu menu-closed" id="menu">
+      <div class="menu-top">
+        <div class="menu-title">
+          Категории
+        </div>
+        <button class="reset-Button" id="close-menu-button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="menu-item">Adobe</div>
+      <div class="menu-item">Нейросети</div>
+      <div class="menu-item">Игры</div>
+      <div class="menu-item">Подписки</div>
+      <div class="menu-item">Антивирусы</div>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
