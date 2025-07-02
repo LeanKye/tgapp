@@ -95,6 +95,7 @@ function updateVariants(product) {
 function updatePeriods(product) {
   const container = document.querySelector('#period-group');
   container.innerHTML = '';
+  container.classList.add('period-buttons');
   
   product.periods.forEach((period, index) => {
     const input = document.createElement('input');
@@ -223,16 +224,16 @@ function initCheckoutPanel() {
     variantGroup.classList.add('collapsing');
     variantGroup.classList.remove('expanding');
     
-    // Сразу возвращаем другие группы в активное состояние
-    periodGroup.classList.remove('inactive');
-    editionGroup.classList.remove('inactive');
-    
-    // После анимации убираем все классы
+    // После анимации убираем все классы и возвращаем другие группы в активное состояние
     setTimeout(() => {
       checkoutContainer.classList.remove('expanded');
       checkoutArrow.classList.remove('expanded');
       variantGroup.classList.remove('expanded', 'collapsing');
-    }, 400);
+      
+      // Возвращаем другие группы в активное состояние только после завершения анимации
+      periodGroup.classList.remove('inactive');
+      editionGroup.classList.remove('inactive');
+    }, 150);
     
     // Обновляем выбранный вариант и текст заголовка
     selectedVariant = getSelectedVariantText();

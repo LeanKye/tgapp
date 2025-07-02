@@ -52,15 +52,14 @@ body {
 }
 
 .product-cover {
-  width: calc(100% - 32px);
+  width: 100%;
   height: 219px;
   margin-bottom: -24px;
-  margin-inline: 16px;
   background-color: #2f2f2f;
   overflow: hidden;
   position: relative;
   z-index: 1;
-  border-radius: 16px;
+  border-radius: 0;
   /* Принудительное обрезание всего содержимого */
   contain: layout style paint;
   /* Убираем все возможные пробелы */
@@ -72,7 +71,7 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 0;
   position: relative;
   /* Убеждаемся что ничего не выходит за границы */
   contain: layout style paint;
@@ -83,7 +82,7 @@ body {
   max-height: 219px;
   width: 100%;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 0;
   position: relative;
   margin: 0;
   padding: 0;
@@ -95,11 +94,18 @@ body {
   padding: 16px;
   position: relative;
   z-index: 2;
+  margin-inline: 16px;
 }
 
-/* Отступы для контейнеров на странице товара */
+/* Убираем отступы только у контейнеров внутри catalog (Категории и Новинки) */
+.catalog > .container {
+  margin-inline: 0;
+}
+
+/* Отступы для контейнеров на странице товара убраны, но закругления оставлены */
 .product .container {
-  margin-inline: 16px;
+  margin-inline: 0;
+  border-radius: 16px;
 }
 
 /* Обеспечиваем, что блок с табами перекрывает блок инструкций */
@@ -114,12 +120,13 @@ body {
   position: relative;
   z-index: 1;
   /* Убираем нижние закругленные углы, так как они все равно будут скрыты */
-  border-radius: 16px 16px 0 0;
+  border-radius: 0;
   /* Добавляем flex для лучшего выравнивания контента */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   padding-top: 16px;
+  padding-inline: 16px;
 }
 
 .instruction-title {
@@ -256,7 +263,7 @@ body {
 }
 
 .catalog {
-  padding-inline: 16px;
+  padding-inline: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -504,17 +511,31 @@ body {
 }
 
 .button-group {
-  height: 44px;
+  height: auto;
   margin-top: 16px;
   display: flex;
   align-items: center;
   gap: 8px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+/* Добавляем отступ сверху только для групп с плашками скидки */
+.period-group,
+.edition-group {
+  padding-top: 12px;
 }
 
 .button-group input {
   appearance: none;
   position: absolute;
   width: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .button-group span {
@@ -522,10 +543,19 @@ body {
   border: 1px solid #666666;
   padding: 8px;
   padding-inline: 16px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .button-group label {
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
 }
 
 .button-group input:checked + label > span {
@@ -543,11 +573,16 @@ body {
   display: flex;
   flex-basis: 100%;
   justify-content: center;
-  padding: 8px;
+  align-items: center;
+  padding: clamp(8px, 2vw, 12px);
   border-radius: 8px;
   background-color: #2D2D2D;
   border: 1px solid transparent;
   transition: border-color 0.2s ease;
+  min-height: clamp(48px, 12vw, 72px);
+  max-width: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .button-group input[name="edition"] + label > div {
@@ -555,11 +590,23 @@ body {
   justify-content: center;
   align-items: center;
   flex-direction: column;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .button-group input[name="edition"] + label > div > div {
   color: #CACACA;
-  font-size: 18px;
+  font-size: clamp(12px, 3vw, 18px);
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  text-align: center;
+  line-height: 1.2;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .button-group input:checked[name="edition"] + label > div > div:nth-child(1) {
@@ -579,15 +626,17 @@ body {
   background-color: #FE5F4A;
   color: rgb(255, 255, 255);
   border-radius: 3px;
-  padding: 4px;
+  padding: 3px 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   position: absolute;
-  right: 0;
-  top: -16px;
+  right: -2px;
+  top: -6px;
   text-transform: uppercase;
+  white-space: nowrap;
+  z-index: 10;
 }
 
 #checkout {
@@ -655,11 +704,12 @@ body {
 .category-title {
   font-size: 20px;
   margin-bottom: 16px;
+  padding-inline: 16px;
 }
 
-/* Добавляем отступы для заголовков категорий вне контейнеров */
+/* Убираем двойные отступы для заголовков внутри catalog, так как контейнеры уже имеют отступы */
 .catalog > .category-title {
-  padding-inline: 16px;
+  padding-inline: 0;
 }
 
 .categories-grid {
@@ -726,20 +776,29 @@ body {
 /* Адаптивная сетка для страниц категорий */
 .category-products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, clamp(140px, 25vw, 180px));
-  gap: clamp(6px, 0.8vw, 10px);
-  justify-content: center;
-  padding: 0 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 0 12px;
   margin-bottom: 16px;
 }
 
+/* Переход на 3 колонки для средних экранов */
+@media (min-width: 650px) {
+  .category-products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 16px;
+  }
+}
+
 .category-products-grid .category-product-card {
-  width: clamp(140px, 25vw, 180px);
+  width: 100%;
 }
 
 .category-products-grid .category-product-card img {
-  width: clamp(140px, 25vw, 180px);
-  height: clamp(140px, 25vw, 180px);
+  width: 100%;
+  aspect-ratio: 1;
+  height: auto;
 }
 
 /* Адаптивные размеры текста для сетки категорий */
@@ -856,9 +915,8 @@ body {
 
 /* Стили для баннер-слайдера */
 .banner-slider-container {
-  width: calc(100% - 32px);
+  width: 100%;
   margin: 0 auto;
-  margin-inline: 16px;
   margin-bottom: 16px;
   overflow: hidden;
   position: relative;
@@ -952,8 +1010,8 @@ body {
 /* Адаптивные стили */
 @media (max-width: 375px) {
   .banner-slider-container {
-    width: calc(100% - 24px);
-    margin-inline: 12px;
+    width: 100%;
+    margin-inline: 0;
   }
   
   .banner-item {
@@ -975,11 +1033,12 @@ body {
     font-size: 13px;
   }
   
-  /* Адаптивные стили для слайдера товаров */
+    /* Адаптивные стили для слайдера товаров */
   .product-cover {
     height: 180px;
+    border-radius: 0;
   }
-  
+
   .swiper-slide {
     height: 180px;
     max-height: 180px;
@@ -1034,10 +1093,11 @@ body {
     height: 140px;
   }
   
-  .product-cover {
+    .product-cover {
     height: 200px;
+    border-radius: 0;
   }
-  
+
   .swiper-slide {
     height: 200px;
     max-height: 200px;
@@ -1057,9 +1117,25 @@ body {
     height: 150px;
     width: 150px;
   }
+  
+  /* Сетка товаров для планшетов - 3 колонки */
+  .category-products-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 0 16px;
+  }
 }
 
 /* Стили для больших экранов */
+@media (min-width: 900px) {
+  /* Сетка товаров для больших экранов - 4 колонки */
+  .category-products-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 0 24px;
+  }
+}
+
 @media (min-width: 1024px) {
   .banner-item {
     flex: 0 0 400px;
@@ -1067,10 +1143,11 @@ body {
     height: 160px;
   }
   
-  .product-cover {
+    .product-cover {
     height: 250px;
+    border-radius: 0;
   }
-  
+
   .swiper-slide {
     height: 250px;
     max-height: 250px;
@@ -1085,6 +1162,16 @@ body {
   .category-products-slider .category-product-card img {
     height: 180px;
     width: 180px;
+  }
+}
+
+/* Дополнительные стили для очень больших экранов */
+@media (min-width: 1200px) {
+  /* Сетка товаров для очень больших экранов - 5 колонок */
+  .category-products-grid {
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    padding: 0 32px;
   }
 }
 
@@ -1114,16 +1201,39 @@ body {
 
 /* Стили для групп кнопок */
 .variant-group {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.3s ease, opacity 0.3s ease;
   opacity: 0;
+  overflow: visible;
 }
 
 .variant-group.expanded {
-  max-height: 200px;
+  transform: scaleY(1); /* Плавное раскрытие без ограничений высоты */
   opacity: 1;
   display: flex;
+  overflow: visible; /* Кнопки никогда не обрезаются */
+}
+
+/* Убираем лишний отступ сверху у button-group внутри variant-group */
+.variant-group .button-group {
+  margin-top: 0;
+  height: auto;
+  min-height: 44px; /* Обеспечиваем минимальную высоту для кнопок */
+  padding: 10px 0; /* Добавляем внутренние отступы для предотвращения обрезания */
+}
+
+/* Добавляем одинаковый отступ для variant-group */
+#checkout .variant-group {
+  margin-top: 8px;
+}
+
+/* Обеспечиваем правильную высоту для кнопок внутри variant-group */
+.variant-group .button-group span {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Неактивное состояние для других групп */
@@ -1164,11 +1274,30 @@ body {
 #checkout:not(.expanded) .edition-group {
   pointer-events: auto;
   opacity: 1;
-  margin-top: 0;
+  margin-top: 8px; /* Еще более компактные отступы как на изображении */
+  transition: all 0.3s ease; /* Добавляем плавную анимацию */
 }
 
+/* Увеличиваем отступ между variant-group и period-group */
+#checkout:not(.expanded) .period-group {
+  margin-top: 16px; /* Больший отступ после группы вариантов оформления */
+}
+
+/* Убираем дополнительный отступ у edition-group */
 #checkout:not(.expanded) .edition-group {
-  margin-top: 20px;
+  margin-top: 8px; /* Делаем такой же отступ как у period-group */
+}
+
+/* Анимация сдвига групп при раскрытии variant-group */
+#checkout.expanded .period-group,
+#checkout.expanded .edition-group {
+  margin-top: 8px;
+  transition: all 0.3s ease;
+}
+
+/* Увеличиваем отступ между variant-group и period-group в раскрытом состоянии */
+#checkout.expanded .period-group {
+  margin-top: 16px;
 }
 
 #checkout:not(.expanded) .variant-group {
@@ -1245,6 +1374,45 @@ body {
   width: 100%;
 }
 
+/* Специальные стили для кнопок периода подписки */
+.period-buttons {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: clamp(6px, 1.5vw, 12px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  margin-top: 12px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+}
+
+.period-buttons::-webkit-scrollbar {
+  display: none;
+}
+
+.period-buttons label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  position: relative;
+}
+
+.period-buttons span {
+  font-size: clamp(13px, 2.5vw, 16px);
+  padding: clamp(10px, 2.5vw, 14px) clamp(8px, 2vw, 16px);
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: clamp(40px, 8vw, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Адаптивный горизонтальный слайдер товаров */
 .category-products-slider {
   display: flex;
@@ -1254,7 +1422,7 @@ body {
   padding-bottom: 12px;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
+  touch-action: pan-x pan-y;
   scroll-snap-type: x mandatory;
 }
 
@@ -1314,11 +1482,109 @@ body {
   .product {
     padding-bottom: calc(44px + 28px + env(safe-area-inset-bottom));
   }
+  
+  /* Адаптивные стили для кнопок периода на маленьких экранах */
+  .period-buttons {
+    gap: 4px;
+    padding-top: 6px;
+  }
+  
+  /* Уменьшаем отступ для групп с плашками на маленьких экранах */
+  .period-group,
+  .edition-group {
+    padding-top: 8px;
+  }
+  
+  .period-buttons span {
+    font-size: 12px;
+    padding: 8px 4px;
+    min-height: 36px;
+  }
+  
+  /* Адаптивные стили для кнопок планов на маленьких экранах */
+  .button-group input[name="edition"] + label > div > div {
+    font-size: 11px;
+    line-height: 1.1;
+  }
+  
+  .button-group input[name="edition"] + label {
+    min-height: 44px;
+    padding: 6px;
+  }
+  
+  .discount-badge {
+    font-size: 8px;
+    padding: 2px 4px;
+    top: -4px;
+    right: -1px;
+  }
+  
+  /* Компактные отступы между группами на маленьких экранах */
+  #checkout:not(.expanded) .period-group,
+  #checkout:not(.expanded) .edition-group {
+    margin-top: 6px;
+  }
+  
+  /* Увеличиваем отступ между variant-group и period-group на мобильных */
+  #checkout:not(.expanded) .period-group {
+    margin-top: 14px;
+  }
+  
+  /* Сетка товаров для очень маленьких экранов - 2 колонки с минимальными отступами */
+  .category-products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+    padding: 0 8px;
+  }
+  
+  /* Адаптивные стили больше не нужны - используем transform */
 }
 
 @media (max-width: 768px) {
   .add-to-cart {
     font-size: 17px;
+  }
+  
+  /* Адаптивные стили для кнопок периода на планшетах */
+  .period-buttons {
+    padding-top: 8px;
+  }
+  
+  /* Стили для групп с плашками на планшетах */
+  .period-group,
+  .edition-group {
+    padding-top: 10px;
+  }
+  
+  .period-buttons span {
+    font-size: 14px;
+    padding: 10px 8px;
+    min-height: 42px;
+  }
+  
+  /* Адаптивные стили для кнопок планов на планшетах */
+  .button-group input[name="edition"] + label > div > div {
+    font-size: 14px;
+    line-height: 1.15;
+  }
+  
+  .discount-badge {
+    font-size: 9px;
+    padding: 3px 5px;
+    top: -5px;
+  }
+  
+  /* Адаптивные стили больше не нужны - используем transform */
+  
+  /* Отступы между группами на планшетах */
+  #checkout:not(.expanded) .period-group,
+  #checkout:not(.expanded) .edition-group {
+    margin-top: 7px;
+  }
+  
+  /* Увеличиваем отступ между variant-group и period-group на планшетах */
+  #checkout:not(.expanded) .period-group {
+    margin-top: 15px;
   }
 }
 
@@ -1338,27 +1604,56 @@ body {
   .add-to-cart:active {
     transform: translateX(-50%) translateY(0px);
   }
+  
+  /* Улучшаем отображение плашки скидки на десктопе */
+  .discount-badge {
+    font-size: 11px;
+    padding: 4px 7px;
+    top: -6px;
+    right: -3px;
+  }
+  
+  .period-buttons {
+    padding-top: 10px;
+  }
+  
+  /* Стили для групп с плашками на десктопе */
+  .period-group,
+  .edition-group {
+    padding-top: 14px;
+  }
+  
+  /* Отступы между группами на десктопе */
+  #checkout:not(.expanded) .period-group,
+  #checkout:not(.expanded) .edition-group {
+    margin-top: 8px;
+  }
+  
+  /* Увеличиваем отступ между variant-group и period-group на десктопе */
+  #checkout:not(.expanded) .period-group {
+    margin-top: 16px;
+  }
 }
 
-@keyframes fadeInFromLeft {
+@keyframes fadeInFromTop {
   from {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateY(-20px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
 }
 
-@keyframes fadeOutToLeft {
+@keyframes fadeOutToTop {
   from {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0);
   }
   to {
     opacity: 0;
-    transform: translateX(-20px);
+    transform: translateY(-20px);
   }
 }
 
@@ -1373,12 +1668,12 @@ body {
 
 /* Анимация только для variant-group при раскрытии панели */
 .variant-group.expanding {
-  animation: fadeInFromLeft 0.4s ease forwards;
+  animation: fadeInFromTop 0.4s ease forwards;
 }
 
 /* Анимация только для variant-group при закрытии панели */
 .variant-group.collapsing {
-  animation: fadeOutToLeft 0.3s ease forwards;
+  animation: fadeOutToTop 0.3s ease forwards;
 }
 
 
