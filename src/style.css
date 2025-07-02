@@ -773,12 +773,12 @@ body {
   margin-bottom: 0;
 }
 
-/* Адаптивная сетка для страниц категорий */
+/* Адаптивная сетка для страниц категорий - мобильные устройства */
 .category-products-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  padding: 0 12px;
+  gap: 6px;
+  padding: 0 8px;
   margin-bottom: 16px;
 }
 
@@ -1118,12 +1118,7 @@ body {
     width: 150px;
   }
   
-  /* Сетка товаров для планшетов - 3 колонки */
-  .category-products-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 0 16px;
-  }
+  /* Убираем конфликтующий медиа-запрос */
 }
 
 /* Стили для больших экранов */
@@ -1530,12 +1525,7 @@ body {
     margin-top: 14px;
   }
   
-  /* Сетка товаров для очень маленьких экранов - 2 колонки с минимальными отступами */
-  .category-products-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
-    padding: 0 8px;
-  }
+  /* Базовые стили сетки уже установлены выше */
   
   /* Адаптивные стили больше не нужны - используем transform */
 }
