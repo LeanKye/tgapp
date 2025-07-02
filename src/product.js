@@ -57,7 +57,15 @@ function renderProduct(product) {
     document.querySelector('.price-discount').style.display = 'none';
   }
   
-  document.querySelector('.price-usdt').textContent = product.priceUSDT;
+  // Форматируем цену в USDT с разными размерами шрифтов
+  const priceUsdtElement = document.querySelector('.price-usdt');
+  const usdtText = product.priceUSDT;
+  if (usdtText.includes('USDT')) {
+    const parts = usdtText.split(' USDT');
+    priceUsdtElement.innerHTML = `${parts[0]} <span class="usdt-currency">USDT</span>`;
+  } else {
+    priceUsdtElement.textContent = usdtText;
+  }
 
   // Обновляем варианты оформления
   updateVariants(product);
