@@ -34,7 +34,12 @@ function renderProduct(product) {
   product.labels.forEach((label, index) => {
     const labelDiv = document.createElement('div');
     labelDiv.className = `label label-${product.labelColors[index]}`;
-    labelDiv.textContent = label + ' >';
+    labelDiv.innerHTML = `
+      <span>${label}</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    `;
     labelsContainer.appendChild(labelDiv);
   });
 

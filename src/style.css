@@ -207,11 +207,14 @@ body {
   height: 18px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 6px;
   padding: 0 8px;
   border-radius: 4px;
   background-color: #2f2f2f;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
   line-height: 1;
   min-width: fit-content;
   white-space: nowrap;
@@ -753,7 +756,8 @@ body {
 }
 
 .category-title {
-  font-size: 20px;
+  font-size: 17px;
+  font-weight: 600;
   margin-bottom: 16px;
   padding-inline: 16px;
 }
@@ -906,6 +910,19 @@ body {
 .category-products-slider .category-product-card img {
   height: clamp(140px, 25vw, 180px);
   width: clamp(140px, 25vw, 180px);
+}
+
+/* Адаптивные размеры текста для слайдера товаров на главной странице */
+.category-products-slider .category-product-title {
+  font-size: clamp(14px, 2.5vw, 16px);
+}
+
+.category-products-slider .category-product-category {
+  font-size: clamp(14px, 2.5vw, 16px);
+}
+
+.category-products-slider .category-product-price-current {
+  font-size: clamp(14px, 2.8vw, 18px);
 }
 
 .category-product-title {
