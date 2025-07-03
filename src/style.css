@@ -975,7 +975,7 @@ body {
 .banner-slider {
   display: flex;
   align-items: center;
-  gap: 0px;
+  gap: 8px;
   transition: transform 0.3s ease;
   will-change: transform;
 }
