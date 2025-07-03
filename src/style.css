@@ -53,7 +53,7 @@ body {
 
 .product-cover {
   width: 100%;
-  height: 219px;
+  height: 280px;
   margin-bottom: -24px;
   background-color: #2f2f2f;
   overflow: hidden;
@@ -78,8 +78,8 @@ body {
 }
 
 .product-cover .swiper-wrapper {
-  height: 219px;
-  max-height: 219px;
+  height: 280px;
+  max-height: 280px;
   width: 100%;
   overflow: hidden;
   border-radius: 0;
@@ -193,23 +193,26 @@ body {
 .labels {
   display: flex;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 6px;
 }
 
 .label {
-  height: 15px;
+  height: 18px;
   display: flex;
   align-items: center;
-  padding: 0 6px;
+  padding: 0 8px;
   border-radius: 4px;
   background-color: #2f2f2f;
   text-transform: uppercase;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1;
+  min-width: fit-content;
+  white-space: nowrap;
+  margin-bottom: 12px;
 }
 
 .label-orange {
-  background-color: #fe954a;
+  background-color: #FF6E06;
 }
 
 .label-violet {
@@ -221,33 +224,35 @@ body {
 }
 
 .title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
+  margin-top: 8px;
   margin-bottom: 0;
 }
 
 .category {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 400;
   color: #FFFFFF;
   margin-bottom: 8px;
 }
 
 .price-discount {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: #15EA61;
   margin-right: 8px;
 }
 
 .price-value {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   margin-right: 8px;
+  margin-top: 12px;
 }
 
 .price-old {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: #737270;
   text-decoration: line-through;
@@ -255,13 +260,13 @@ body {
 }
 
 .price-usdt {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 400;
   color: #CAC9C7;
 }
 
 .price-usdt .usdt-currency {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
   color: #CAC9C7;
 }
@@ -547,6 +552,15 @@ body {
   -webkit-touch-callout: none;
 }
 
+/* Специальные стили для кнопок плана */
+.edition-group .button-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
 /* Добавляем отступ сверху только для групп с плашками скидки */
 .period-group,
 .edition-group {
@@ -596,16 +610,15 @@ body {
 
 .button-group input[name="edition"] + label {
   display: flex;
-  flex-basis: 100%;
+  width: 100%;
+  height: 64px;
   justify-content: center;
   align-items: center;
-  padding: clamp(8px, 2vw, 12px);
+  padding: 8px;
   border-radius: 8px;
   background-color: #2D2D2D;
   border: 1px solid transparent;
   transition: border-color 0.2s ease;
-  min-height: clamp(48px, 12vw, 72px);
-  max-width: 100%;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -619,19 +632,24 @@ body {
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+  width: 100%;
+  gap: 2px;
 }
 
 .button-group input[name="edition"] + label > div > div {
   color: #CACACA;
-  font-size: clamp(12px, 3vw, 18px);
+  font-size: 13px;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   text-align: center;
   line-height: 1.2;
-  word-break: break-word;
-  hyphens: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 0 4px;
 }
 
 .button-group input:checked[name="edition"] + label > div > div:nth-child(1) {
@@ -640,6 +658,7 @@ body {
 
 .button-group input[name="edition"] + label > div > div:nth-child(2) {
   font-size: 16px;
+  font-weight: 600;
 }
 
 .button-group input[name="edition"]:checked + label {
@@ -693,15 +712,15 @@ body {
 }
 
 .swiper-slide {
-  height: 219px;
-  max-height: 219px;
+  height: 280px;
+  max-height: 280px;
   width: 100%;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #2f2f2f;
-  border-radius: 16px;
+  border-radius: 0;
   position: relative;
   /* Убеждаемся что ничего не торчит */
   clip-path: inset(0 0 0 0);
@@ -722,7 +741,7 @@ body {
   max-width: 100%;
   max-height: 100%;
   /* Дополнительная защита от переполнения */
-  border-radius: 16px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -1059,14 +1078,19 @@ body {
   
     /* Адаптивные стили для слайдера товаров */
   .product-cover {
-    height: 180px;
+    height: 220px;
     border-radius: 0;
   }
 
   .swiper-slide {
-    height: 180px;
-    max-height: 180px;
+    height: 220px;
+    max-height: 220px;
     overflow: hidden;
+  }
+
+  .product-cover .swiper-wrapper {
+    height: 220px;
+    max-height: 220px;
   }
   
     .category-products-slider .category-product-card {
@@ -1117,14 +1141,19 @@ body {
   }
   
     .product-cover {
-    height: 200px;
+    height: 250px;
     border-radius: 0;
   }
 
   .swiper-slide {
-    height: 200px;
-    max-height: 200px;
+    height: 250px;
+    max-height: 250px;
     overflow: hidden;
+  }
+
+  .product-cover .swiper-wrapper {
+    height: 250px;
+    max-height: 250px;
   }
   
   .category-products-slider {
@@ -1161,14 +1190,19 @@ body {
   }
   
     .product-cover {
-    height: 250px;
+    height: 320px;
     border-radius: 0;
   }
 
   .swiper-slide {
-    height: 250px;
-    max-height: 250px;
+    height: 320px;
+    max-height: 320px;
     overflow: hidden;
+  }
+
+  .product-cover .swiper-wrapper {
+    height: 320px;
+    max-height: 320px;
   }
   
     .category-products-slider .category-product-card {
@@ -1449,7 +1483,6 @@ body {
 
 /* Стили для форматирования цен */
 .formatted-price {
-  font-feature-settings: "tnum";
   letter-spacing: 0.5px;
 }
 
@@ -1461,13 +1494,13 @@ body {
 /* Специфичный селектор для цены на странице товара */
 .price-value .formatted-price .currency-separator {
   margin-left: 1px;
-  font-size: 14px !important;
+  font-size: 16px !important;
   font-weight: 600 !important;
 }
 
 .price-old .formatted-price .currency-separator {
   margin-left: 1px;
-  font-size: 10px !important;
+  font-size: 12px !important;
   font-weight: 500 !important;
   color: #737270 !important;
 }
@@ -1513,13 +1546,20 @@ body {
   
   /* Адаптивные стили для кнопок планов на маленьких экранах */
   .button-group input[name="edition"] + label > div > div {
-    font-size: 11px;
-    line-height: 1.1;
+    font-size: 12px;
+  }
+
+  .button-group input[name="edition"] + label > div > div:nth-child(2) {
+    font-size: 14px;
   }
   
   .button-group input[name="edition"] + label {
-    min-height: 44px;
+    height: 56px;
     padding: 6px;
+  }
+
+  .edition-group .button-group {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   }
   
   .discount-badge {
@@ -1569,8 +1609,15 @@ body {
   
   /* Адаптивные стили для кнопок планов на планшетах */
   .button-group input[name="edition"] + label > div > div {
-    font-size: 14px;
-    line-height: 1.15;
+    font-size: 13px;
+  }
+
+  .button-group input[name="edition"] + label > div > div:nth-child(2) {
+    font-size: 15px;
+  }
+
+  .button-group input[name="edition"] + label {
+    height: 60px;
   }
   
   .discount-badge {
@@ -1626,6 +1673,13 @@ body {
   .period-group,
   .edition-group {
     padding-top: 14px;
+  }
+
+  /* Кнопки плана на десктопе */
+  .edition-group .button-group {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    max-width: 600px;
+    margin: 0 auto;
   }
   
   /* Отступы между группами на десктопе */
