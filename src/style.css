@@ -575,6 +575,8 @@ body {
   padding-top: 12px;
 }
 
+/* Специальные отступы убраны, используем состояния expanded/not expanded */
+
 .button-group input {
   appearance: none;
   position: absolute;
@@ -1319,36 +1321,18 @@ body {
   justify-content: center;
 }
 
-/* Неактивное состояние для других групп */
-.button-group.inactive {
-  pointer-events: none;
-  opacity: 0.3;
-  transition: opacity 0.3s ease;
-}
-
-.button-group.inactive label {
-  color: #666666 !important;
-  background-color: #2f2f2f !important;
-  border-color: #2f2f2f !important;
-  transition: all 0.3s ease;
-}
-
-.button-group.inactive .discount-badge {
-  background-color: #666666 !important;
-  color: #999999 !important;
-  transition: all 0.3s ease;
-}
+/* Неактивное состояние убрано - все группы всегда активны */
 
 /* Активное состояние - переходы */
-.button-group:not(.inactive) {
+.button-group {
   transition: opacity 0.3s ease;
 }
 
-.button-group:not(.inactive) label {
+.button-group label {
   transition: all 0.3s ease;
 }
 
-.button-group:not(.inactive) .discount-badge {
+.button-group .discount-badge {
   transition: all 0.3s ease;
 }
 
@@ -1357,30 +1341,33 @@ body {
 #checkout:not(.expanded) .edition-group {
   pointer-events: auto;
   opacity: 1;
-  margin-top: 8px; /* Еще более компактные отступы как на изображении */
   transition: all 0.3s ease; /* Добавляем плавную анимацию */
 }
 
-/* Увеличиваем отступ между variant-group и period-group */
+/* В закрытом состоянии period-group находится сразу под заголовком */
 #checkout:not(.expanded) .period-group {
-  margin-top: 16px; /* Больший отступ после группы вариантов оформления */
+  margin-top: 16px; /* Отступ от заголовка */
 }
 
-/* Убираем дополнительный отступ у edition-group */
+/* В закрытом состоянии edition-group под period-group */
 #checkout:not(.expanded) .edition-group {
-  margin-top: 8px; /* Делаем такой же отступ как у period-group */
+  margin-top: 16px; /* Отступ от period-group */
 }
 
 /* Анимация сдвига групп при раскрытии variant-group */
 #checkout.expanded .period-group,
 #checkout.expanded .edition-group {
-  margin-top: 8px;
   transition: all 0.3s ease;
 }
 
-/* Увеличиваем отступ между variant-group и period-group в раскрытом состоянии */
+/* В раскрытом состоянии period-group сдвигается вниз под variant-group */
 #checkout.expanded .period-group {
-  margin-top: 16px;
+  margin-top: 16px; /* Отступ от variant-group */
+}
+
+/* В раскрытом состоянии edition-group под period-group */
+#checkout.expanded .edition-group {
+  margin-top: 16px; /* Отступ от period-group */
 }
 
 #checkout:not(.expanded) .variant-group {
@@ -1603,14 +1590,21 @@ body {
   }
   
   /* Компактные отступы между группами на маленьких экранах */
-  #checkout:not(.expanded) .period-group,
-  #checkout:not(.expanded) .edition-group {
-    margin-top: 6px;
+  #checkout:not(.expanded) .period-group {
+    margin-top: 12px; /* Отступ от заголовка на мобильных */
   }
   
-  /* Увеличиваем отступ между variant-group и period-group на мобильных */
-  #checkout:not(.expanded) .period-group {
-    margin-top: 14px;
+  #checkout:not(.expanded) .edition-group {
+    margin-top: 12px; /* Отступ от period-group на мобильных */
+  }
+  
+  /* Раскрытое состояние на мобильных */
+  #checkout.expanded .period-group {
+    margin-top: 12px; /* Отступ от variant-group на мобильных */
+  }
+  
+  #checkout.expanded .edition-group {
+    margin-top: 12px; /* Отступ от period-group на мобильных */
   }
   
   /* Базовые стили сетки уже установлены выше */
@@ -1662,14 +1656,21 @@ body {
   /* Адаптивные стили больше не нужны - используем transform */
   
   /* Отступы между группами на планшетах */
-  #checkout:not(.expanded) .period-group,
-  #checkout:not(.expanded) .edition-group {
-    margin-top: 7px;
+  #checkout:not(.expanded) .period-group {
+    margin-top: 14px; /* Отступ от заголовка на планшетах */
   }
   
-  /* Увеличиваем отступ между variant-group и period-group на планшетах */
-  #checkout:not(.expanded) .period-group {
-    margin-top: 15px;
+  #checkout:not(.expanded) .edition-group {
+    margin-top: 14px; /* Отступ от period-group на планшетах */
+  }
+  
+  /* Раскрытое состояние на планшетах */
+  #checkout.expanded .period-group {
+    margin-top: 14px; /* Отступ от variant-group на планшетах */
+  }
+  
+  #checkout.expanded .edition-group {
+    margin-top: 14px; /* Отступ от period-group на планшетах */
   }
 }
 
@@ -1716,14 +1717,21 @@ body {
   }
   
   /* Отступы между группами на десктопе */
-  #checkout:not(.expanded) .period-group,
-  #checkout:not(.expanded) .edition-group {
-    margin-top: 8px;
+  #checkout:not(.expanded) .period-group {
+    margin-top: 16px; /* Отступ от заголовка на десктопе */
   }
   
-  /* Увеличиваем отступ между variant-group и period-group на десктопе */
-  #checkout:not(.expanded) .period-group {
-    margin-top: 16px;
+  #checkout:not(.expanded) .edition-group {
+    margin-top: 16px; /* Отступ от period-group на десктопе */
+  }
+  
+  /* Раскрытое состояние на десктопе */
+  #checkout.expanded .period-group {
+    margin-top: 16px; /* Отступ от variant-group на десктопе */
+  }
+  
+  #checkout.expanded .edition-group {
+    margin-top: 16px; /* Отступ от period-group на десктопе */
   }
 }
 
