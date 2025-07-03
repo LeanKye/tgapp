@@ -7,7 +7,7 @@ export const products = {
     price: 1000,
     oldPrice: 1500,
     discount: '-30%',
-    priceUSDT: 'от 26.90 USDT',
+    priceUSDT: 'на wallet 26.90 USDT',
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
     images: [
@@ -53,7 +53,7 @@ export const products = {
     price: 800,
     oldPrice: 1200,
     discount: '-33%',
-    priceUSDT: 'от 21.50 USDT',
+    priceUSDT: 'на wallet 21.50 USDT',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
@@ -96,7 +96,7 @@ export const products = {
     price: 1500,
     oldPrice: 2000,
     discount: '-25%',
-    priceUSDT: 'от 40.30 USDT',
+    priceUSDT: 'на wallet 40.30 USDT',
     labels: ['Гарантия'],
     labelColors: ['orange'],
     images: [
@@ -139,7 +139,7 @@ export const products = {
     price: 600,
     oldPrice: 900,
     discount: '-33%',
-    priceUSDT: 'от 16.10 USDT',
+    priceUSDT: 'на wallet 16.10 USDT',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
@@ -179,7 +179,7 @@ export const products = {
     price: 2500,
     oldPrice: 3500,
     discount: '-29%',
-    priceUSDT: 'от 67.10 USDT',
+    priceUSDT: 'на wallet 67.10 USDT',
     labels: ['Гарантия'],
     labelColors: ['orange'],
     images: [
@@ -220,7 +220,7 @@ export const products = {
     price: 1200,
     oldPrice: null,
     discount: null,
-    priceUSDT: 'от 32.20 USDT',
+    priceUSDT: 'на wallet 32.20 USDT',
     labels: ['Подписка'],
     labelColors: ['violet'],
     images: [
@@ -258,7 +258,7 @@ export const products = {
     price: 800,
     oldPrice: 1000,
     discount: '-20%',
-    priceUSDT: 'от 21.50 USDT',
+    priceUSDT: 'на wallet 21.50 USDT',
     labels: ['Подписка', 'ИИ'],
     labelColors: ['violet', 'blue'],
     images: [
@@ -298,7 +298,7 @@ export const products = {
      price: 900,
      oldPrice: 1200,
      discount: '-25%',
-     priceUSDT: 'от 24.20 USDT',
+     priceUSDT: 'на wallet 24.20 USDT',
      labels: ['Лицензия', 'Гарантия'],
      labelColors: ['violet', 'orange'],
      images: [
@@ -341,7 +341,7 @@ export const products = {
     price: 700,
     oldPrice: 1000,
     discount: '-30%',
-    priceUSDT: 'от 18.80 USDT',
+    priceUSDT: 'на wallet 18.80 USDT',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
@@ -380,7 +380,7 @@ export const products = {
     price: 800,
     oldPrice: 1200,
     discount: '-33%',
-    priceUSDT: 'от 21.50 USDT',
+    priceUSDT: 'на wallet 21.50 USDT',
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
     images: [
@@ -419,7 +419,7 @@ export const products = {
     price: 750,
     oldPrice: 1100,
     discount: '-32%',
-    priceUSDT: 'от 20.20 USDT',
+    priceUSDT: 'на wallet 20.20 USDT',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
@@ -459,7 +459,7 @@ export const products = {
     price: 3200,
     oldPrice: 4500,
     discount: '-29%',
-    priceUSDT: 'от 85.90 USDT',
+    priceUSDT: 'на wallet 85.90 USDT',
     labels: ['Гарантия'],
     labelColors: ['orange'],
     images: [
@@ -498,7 +498,7 @@ export const products = {
     price: 2800,
     oldPrice: 3500,
     discount: '-20%',
-    priceUSDT: 'от 75.20 USDT',
+    priceUSDT: 'на wallet 75.20 USDT',
     labels: ['Гарантия'],
     labelColors: ['orange'],
     images: [
@@ -536,7 +536,7 @@ export const products = {
     price: 2200,
     oldPrice: 3000,
     discount: '-27%',
-    priceUSDT: 'от 59.10 USDT',
+    priceUSDT: 'на wallet 59.10 USDT',
     labels: ['Гарантия'],
     labelColors: ['orange'],
     images: [
@@ -575,7 +575,7 @@ export const products = {
     price: 600,
     oldPrice: 800,
     discount: '-25%',
-    priceUSDT: 'от 16.10 USDT',
+    priceUSDT: 'на wallet 16.10 USDT',
     labels: ['Подписка'],
     labelColors: ['violet'],
     images: [
@@ -613,7 +613,7 @@ export const products = {
     price: 400,
     oldPrice: 600,
     discount: '-33%',
-    priceUSDT: 'от 10.80 USDT',
+    priceUSDT: 'на wallet 10.80 USDT',
     labels: ['Подписка'],
     labelColors: ['violet'],
     images: [
@@ -650,7 +650,7 @@ export const products = {
     price: 800,
     oldPrice: 1000,
     discount: '-20%',
-    priceUSDT: 'от 21.50 USDT',
+    priceUSDT: 'на wallet 21.50 USDT',
     labels: ['Подписка', 'ИИ'],
     labelColors: ['violet', 'blue'],
     images: [
@@ -688,7 +688,7 @@ export const products = {
     price: 1100,
     oldPrice: null,
     discount: null,
-    priceUSDT: 'от 29.50 USDT',
+    priceUSDT: 'на wallet 29.50 USDT',
     labels: ['Подписка', 'ИИ'],
     labelColors: ['violet', 'blue'],
     images: [
@@ -724,7 +724,7 @@ export const products = {
     price: 900,
     oldPrice: 1200,
     discount: '-25%',
-    priceUSDT: 'от 24.20 USDT',
+    priceUSDT: 'на wallet 24.20 USDT',
     labels: ['Подписка', 'ИИ'],
     labelColors: ['violet', 'blue'],
     images: [
@@ -761,7 +761,7 @@ export const products = {
     price: 650,
     oldPrice: 900,
     discount: '-28%',
-    priceUSDT: 'от 17.50 USDT',
+    priceUSDT: 'на wallet 17.50 USDT',
     labels: ['Подписка', 'ИИ'],
     labelColors: ['violet', 'blue'],
     images: [
@@ -800,7 +800,7 @@ export const products = {
     price: 1200,
     oldPrice: 1600,
     discount: '-25%',
-    priceUSDT: 'от 32.20 USDT',
+    priceUSDT: 'на wallet 32.20 USDT',
     labels: ['Лицензия', 'Гарантия'],
     labelColors: ['violet', 'orange'],
     images: [
@@ -840,7 +840,7 @@ export const products = {
     price: 1000,
     oldPrice: 1400,
     discount: '-29%',
-    priceUSDT: 'от 26.90 USDT',
+    priceUSDT: 'на wallet 26.90 USDT',
     labels: ['Лицензия', 'Гарантия'],
     labelColors: ['violet', 'orange'],
     images: [
@@ -880,7 +880,7 @@ export const products = {
     price: 800,
     oldPrice: 1100,
     discount: '-27%',
-    priceUSDT: 'от 21.50 USDT',
+    priceUSDT: 'на wallet 21.50 USDT',
     labels: ['Лицензия', 'Гарантия'],
     labelColors: ['violet', 'orange'],
     images: [

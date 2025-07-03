@@ -34,7 +34,7 @@ function renderProduct(product) {
   product.labels.forEach((label, index) => {
     const labelDiv = document.createElement('div');
     labelDiv.className = `label label-${product.labelColors[index]}`;
-    labelDiv.textContent = label;
+    labelDiv.textContent = label + ' >';
     labelsContainer.appendChild(labelDiv);
   });
 

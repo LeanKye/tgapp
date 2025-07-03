@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Roboto', system-ui, Avenir, Helvetica, Arial, sans-serif;
   color: rgb(255, 255, 255);
   background-color: rgb(0, 0, 0);
 
@@ -193,14 +193,19 @@ body {
 .labels {
   display: flex;
   gap: 8px;
+  margin-bottom: 12px;
 }
 
 .label {
-  padding: 4px 8px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+  padding: 0 6px;
   border-radius: 4px;
   background-color: #2f2f2f;
   text-transform: uppercase;
-  font-size: 12px;
+  font-size: 10px;
+  line-height: 1;
 }
 
 .label-orange {
@@ -223,29 +228,42 @@ body {
 
 .category {
   font-size: 14px;
+  font-weight: 400;
+  color: #FFFFFF;
+  margin-bottom: 8px;
 }
 
 .price-discount {
   font-size: 12px;
-  color: #15ea61;
+  font-weight: 500;
+  color: #15EA61;
+  margin-right: 8px;
 }
 
 .price-value {
   font-size: 18px;
   font-weight: 600;
+  margin-right: 8px;
 }
 
 .price-old {
   font-size: 12px;
+  font-weight: 500;
+  color: #737270;
   text-decoration: line-through;
+  margin-right: 8px;
 }
 
 .price-usdt {
   font-size: 12px;
+  font-weight: 400;
+  color: #CAC9C7;
 }
 
 .price-usdt .usdt-currency {
   font-size: 10px;
+  font-weight: 400;
+  color: #CAC9C7;
 }
 
 .category-products {
@@ -810,7 +828,7 @@ body {
 
 /* Адаптивные размеры текста для сетки категорий */
 .category-products-grid .category-product-title {
-  font-size: clamp(12px, 2.5vw, 16px);
+  font-size: clamp(14px, 2.5vw, 16px);
 }
 
 .category-products-grid .category-product-category {
@@ -1444,11 +1462,14 @@ body {
 .price-value .formatted-price .currency-separator {
   margin-left: 1px;
   font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .price-old .formatted-price .currency-separator {
   margin-left: 1px;
   font-size: 10px !important;
+  font-weight: 500 !important;
+  color: #737270 !important;
 }
 
 /* Уменьшаем символ валюты в карточках товаров */
