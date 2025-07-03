@@ -49,7 +49,20 @@ function renderProduct(product) {
   document.querySelector('.price-value').innerHTML = formatPrice(product.price);
   
   if (product.oldPrice) {
-    document.querySelector('.price-old').innerHTML = formatPrice(product.oldPrice);
+    // Форматируем старую цену так чтобы символ валюты не был перечеркнут
+    const priceStr = product.oldPrice.toString();
+    let formattedPrice = '';
+    
+    // Разбиваем число на разряды справа налево
+    for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
+      if (count > 0 && count % 3 === 0) {
+        formattedPrice = ' ' + formattedPrice;
+      }
+      formattedPrice = priceStr[i] + formattedPrice;
+    }
+    
+    // Устанавливаем HTML с перечеркнутым числом но неперечеркнутой валютой
+    document.querySelector('.price-old').innerHTML = `<span style="text-decoration: line-through;">${formattedPrice}</span> <span style="font-size: 0.8em;">₽</span>`;
     document.querySelector('.price-old').style.display = 'inline';
   } else {
     document.querySelector('.price-old').style.display = 'none';

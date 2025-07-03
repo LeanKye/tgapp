@@ -1,5 +1,5 @@
 import './style.css'
-import { getProductsByCategory, categoryData, getAllProducts, formatPrice } from './products-data.js'
+import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
 
 class CategoryPage {
   constructor() {
@@ -144,9 +144,9 @@ class CategoryPage {
     const suggestion = document.createElement('div');
     suggestion.className = 'search-suggestion';
     
-    let priceHTML = `<span class="search-suggestion-price">${formatPrice(product.price)}</span>`;
+    let priceHTML = `<span class="search-suggestion-price">${formatPriceCard(product.price)}</span>`;
     if (product.oldPrice) {
-      priceHTML = `<span class="search-suggestion-price">${formatPrice(product.price)} <span class="price-old">${formatPrice(product.oldPrice)}</span></span>`;
+      priceHTML = `<span class="search-suggestion-price">${formatPriceCard(product.price)} <span class="category-product-price-old">${formatPriceCard(product.oldPrice, '₽', true)}</span></span>`;
     }
 
     suggestion.innerHTML = `
@@ -241,9 +241,9 @@ class CategoryPage {
     const card = document.createElement('div');
     card.className = 'category-product-card';
     
-    let priceHTML = `<span class="category-product-price-current">${formatPrice(product.price)}</span>`;
+    let priceHTML = `<span class="category-product-price-current">${formatPriceCard(product.price)}</span>`;
     if (product.oldPrice) {
-      priceHTML += `<span class="category-product-price-old">${formatPrice(product.oldPrice)}</span>`;
+      priceHTML += `<span class="category-product-price-old">${formatPriceCard(product.oldPrice, '₽', true)}</span>`;
     }
     
     card.innerHTML = `

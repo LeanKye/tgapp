@@ -1,5 +1,5 @@
 import './style.css'
-import { getAllProducts, categoryData, formatPrice } from './products-data.js'
+import { getAllProducts, categoryData, formatPrice, formatPriceCard } from './products-data.js'
 
 const menuButton = document.getElementById('menu-button');
 const closeMenuButton = document.getElementById('close-menu-button')
@@ -46,9 +46,9 @@ function createProductCard(product) {
   const card = document.createElement('div');
   card.className = 'category-product-card';
   
-  let priceHTML = `<span class="category-product-price-current">${formatPrice(product.price)}</span>`;
+  let priceHTML = `<span class="category-product-price-current">${formatPriceCard(product.price)}</span>`;
   if (product.oldPrice) {
-    priceHTML += `<span class="category-product-price-old">${formatPrice(product.oldPrice)}</span>`;
+    priceHTML += `<span class="category-product-price-old">${formatPriceCard(product.oldPrice, '₽', true)}</span>`;
   }
   
   card.innerHTML = `
@@ -572,7 +572,7 @@ class SearchManager {
         <div class="search-suggestion-title">${product.title}</div>
         <div class="search-suggestion-category">${product.category}</div>
       </div>
-      <div class="search-suggestion-price">${formatPrice(product.price)}</div>
+      <div class="search-suggestion-price">${formatPriceCard(product.price)}</div>
     `;
 
     // Обработчик клика по предложению

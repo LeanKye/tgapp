@@ -207,8 +207,7 @@ body {
   height: 18px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 6px;
+  gap: 2px;
   padding: 0 8px;
   border-radius: 4px;
   background-color: #2f2f2f;
@@ -265,7 +264,6 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: #737270;
-  text-decoration: line-through;
   margin-right: 8px;
 }
 
@@ -680,7 +678,7 @@ body {
   background-color: #FE5F4A;
   color: rgb(255, 255, 255);
   border-radius: 3px;
-  padding: 3px 6px;
+  padding: 4px 6px 3px 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -759,7 +757,15 @@ body {
   font-size: 17px;
   font-weight: 600;
   margin-bottom: 16px;
-  padding-inline: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
+}
+
+.category-title:has(img) {
+  padding-left: 0;
+  margin-left: 0px;
 }
 
 /* Убираем двойные отступы для заголовков внутри catalog, так как контейнеры уже имеют отступы */
@@ -832,8 +838,9 @@ body {
 .category-products-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-  padding: 0 4px;
+  column-gap: 16px;
+  row-gap: 12px;
+  padding: 0 0px;
   margin-bottom: 16px;
 }
 
@@ -841,8 +848,9 @@ body {
 @media (min-width: 650px) {
   .category-products-grid {
     grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 0 12px;
+    column-gap: 8px;
+    row-gap: 12px;
+    padding: 0 16px;
   }
 }
 
@@ -956,7 +964,6 @@ body {
 .category-product-price-old {
   font-size: clamp(11px, 2vw, 14px);
   color: #666666;
-  text-decoration: line-through;
 }
 
 .product-sub {
@@ -1201,7 +1208,8 @@ body {
   /* Сетка товаров для больших экранов - 4 колонки */
   .category-products-grid {
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    column-gap: 8px;
+    row-gap: 12px;
     padding: 0 16px;
   }
 }
@@ -1244,8 +1252,9 @@ body {
   /* Сетка товаров для очень больших экранов - 5 колонок */
   .category-products-grid {
     grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
-    padding: 0 20px;
+    column-gap: 8px;
+    row-gap: 12px;
+    padding: 0 16px;
   }
 }
 
@@ -1588,7 +1597,7 @@ body {
   
   .discount-badge {
     font-size: 8px;
-    padding: 2px 4px;
+    padding: 3px 4px 2px 4px;
     top: -4px;
     right: -1px;
   }
@@ -1646,7 +1655,7 @@ body {
   
   .discount-badge {
     font-size: 9px;
-    padding: 3px 5px;
+    padding: 4px 5px 3px 5px;
     top: -5px;
   }
   
@@ -1684,7 +1693,7 @@ body {
   /* Улучшаем отображение плашки скидки на десктопе */
   .discount-badge {
     font-size: 11px;
-    padding: 4px 7px;
+    padding: 5px 7px 4px 7px;
     top: -6px;
     right: -3px;
   }

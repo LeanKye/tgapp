@@ -944,31 +944,54 @@ export function formatPrice(price, currency = '₽') {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = '\u200A' + formattedPrice; // Волосяной пробел (самый узкий)
+      formattedPrice = ' ' + formattedPrice; // Обычный пробел
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }
   
   // Добавляем валюту с отступом
-  return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
+  return `<span class="formatted-price">${formattedPrice} <span class="currency-separator">${currency}</span></span>`;
 }
 
 // Функция для простого форматирования цен с разделителями (для кнопок)
 export function formatPriceSimple(price, currency = '₽') {
-  // Преобразуем число в строку и добавляем волосяные пробелы как разделители
+  // Преобразуем число в строку и добавляем обычные пробелы как разделители
   const priceStr = price.toString();
   let formattedPrice = '';
   
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = '\u200A' + formattedPrice; // Волосяной пробел (самый узкий)
+      formattedPrice = ' ' + formattedPrice; // Обычный пробел
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }
   
   // Возвращаем простую строку без HTML
-  return `${formattedPrice}\u200A${currency}`;
+  return `${formattedPrice} ${currency}`;
+}
+
+// Функция для форматирования цен в карточках товаров с небольшими отступами
+export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
+  // Преобразуем число в строку и добавляем разделители тысяч
+  const priceStr = price.toString();
+  let formattedPrice = '';
+  
+  // Разбиваем число на разряды справа налево
+  for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
+    if (count > 0 && count % 3 === 0) {
+      formattedPrice = '&thinsp;' + formattedPrice; // Узкий пробел
+    }
+    formattedPrice = priceStr[i] + formattedPrice;
+  }
+  
+  // Для перечеркнутой цены делаем так чтобы символ валюты не был перечеркнут
+  if (isOldPrice) {
+    return `<span style="text-decoration: line-through;">${formattedPrice}</span>&thinsp;<span style="font-size: 0.8em;">${currency}</span>`;
+  }
+  
+  // Для обычной цены добавляем валюту с небольшим отступом
+  return `${formattedPrice}&thinsp;<span style="font-size: 0.8em;">${currency}</span>`;
 }
 
 // Данные категорий с изображениями и описаниями
