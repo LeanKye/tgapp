@@ -250,11 +250,15 @@ function initCheckoutPanel() {
     variantGroup.classList.add('collapsing');
     variantGroup.classList.remove('expanding');
     
-    // После анимации убираем все классы
+    // После анимации убираем все классы и возвращаем другие группы в активное состояние
     setTimeout(() => {
       checkoutContainer.classList.remove('expanded');
       checkoutArrow.classList.remove('expanded');
       variantGroup.classList.remove('expanded', 'collapsing');
+      
+      // Возвращаем другие группы в активное состояние только после завершения анимации
+      periodGroup.classList.remove('inactive');
+      editionGroup.classList.remove('inactive');
     }, 150);
     
     // Обновляем выбранный вариант и текст заголовка
@@ -269,7 +273,10 @@ function initCheckoutPanel() {
     checkoutArrow.classList.add('expanded');
     variantGroup.classList.add('expanded');
     
-    // Запускаем анимацию появления variant-group
+    // Сразу делаем другие группы неактивными и запускаем анимацию появления variant-group
+    periodGroup.classList.add('inactive');
+    editionGroup.classList.add('inactive');
+    
     variantGroup.classList.add('expanding');
     variantGroup.classList.remove('collapsing');
     

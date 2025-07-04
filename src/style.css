@@ -575,8 +575,6 @@ body {
   padding-top: 12px;
 }
 
-/* Специальные отступы убраны, используем состояния expanded/not expanded */
-
 .button-group input {
   appearance: none;
   position: absolute;
@@ -1308,9 +1306,9 @@ body {
   padding: 10px 0; /* Добавляем внутренние отступы для предотвращения обрезания */
 }
 
-/* Добавляем одинаковый отступ для variant-group */
+/* Отступ для variant-group от заголовка как на макете */
 #checkout .variant-group {
-  margin-top: 8px;
+  margin-top: 20px;
 }
 
 /* Обеспечиваем правильную высоту для кнопок внутри variant-group */
@@ -1321,53 +1319,68 @@ body {
   justify-content: center;
 }
 
-/* Неактивное состояние убрано - все группы всегда активны */
-
-/* Активное состояние - переходы */
-.button-group {
+/* Неактивное состояние для других групп */
+.button-group.inactive {
+  pointer-events: none;
+  opacity: 0.3;
   transition: opacity 0.3s ease;
 }
 
-.button-group label {
+.button-group.inactive label {
+  color: #666666 !important;
+  background-color: #2f2f2f !important;
+  border-color: #2f2f2f !important;
   transition: all 0.3s ease;
 }
 
-.button-group .discount-badge {
+.button-group.inactive .discount-badge {
+  background-color: #666666 !important;
+  color: #999999 !important;
   transition: all 0.3s ease;
 }
 
-/* Состояние по умолчанию при загрузке страницы */
+/* Активное состояние - переходы */
+.button-group:not(.inactive) {
+  transition: opacity 0.3s ease;
+}
+
+.button-group:not(.inactive) label {
+  transition: all 0.3s ease;
+}
+
+.button-group:not(.inactive) .discount-badge {
+  transition: all 0.3s ease;
+}
+
+/* Состояние по умолчанию при загрузке страницы - кнопки периода близко к верху */
 #checkout:not(.expanded) .period-group,
 #checkout:not(.expanded) .edition-group {
   pointer-events: auto;
   opacity: 1;
-  transition: all 0.3s ease; /* Добавляем плавную анимацию */
+  margin-top: 8px; /* Компактные отступы для закрытого состояния */
+  transition: all 0.3s ease; /* Плавная анимация */
 }
 
-/* В закрытом состоянии period-group находится сразу под заголовком */
+/* В закрытом состоянии отступ между группами как на макете */
 #checkout:not(.expanded) .period-group {
-  margin-top: 16px; /* Отступ от заголовка */
+  margin-top: 20px; /* Отступ между группами кнопок как на макете */
 }
 
-/* В закрытом состоянии edition-group под period-group */
+/* Отступ между группами кнопок как на макете */
 #checkout:not(.expanded) .edition-group {
-  margin-top: 16px; /* Отступ от period-group */
+  margin-top: 20px; /* Отступ между группами кнопок как на макете */
 }
 
-/* Анимация сдвига групп при раскрытии variant-group */
+/* Анимация сдвига групп при раскрытии variant-group - кнопки периода отъезжают вниз */
 #checkout.expanded .period-group,
 #checkout.expanded .edition-group {
+  margin-top: 8px;
   transition: all 0.3s ease;
 }
 
-/* В раскрытом состоянии period-group сдвигается вниз под variant-group */
+/* При раскрытии панели кнопки периода отъезжают значительно вниз, давая место для вариантов */
 #checkout.expanded .period-group {
-  margin-top: 16px; /* Отступ от variant-group */
-}
-
-/* В раскрытом состоянии edition-group под period-group */
-#checkout.expanded .edition-group {
-  margin-top: 16px; /* Отступ от period-group */
+  margin-top: 32px; /* Большой отступ для освобождения места для панели способа оформления */
 }
 
 #checkout:not(.expanded) .variant-group {
@@ -1589,22 +1602,20 @@ body {
     right: -1px;
   }
   
-  /* Компактные отступы между группами на маленьких экранах */
-  #checkout:not(.expanded) .period-group {
-    margin-top: 12px; /* Отступ от заголовка на мобильных */
-  }
-  
+  /* Отступы между группами как на макете на маленьких экранах */
+  #checkout:not(.expanded) .period-group,
   #checkout:not(.expanded) .edition-group {
-    margin-top: 12px; /* Отступ от period-group на мобильных */
+    margin-top: 16px;
   }
   
-  /* Раскрытое состояние на мобильных */
+  /* Отступ между группами как на макете на мобильных */
+  #checkout:not(.expanded) .period-group {
+    margin-top: 16px;
+  }
+  
+  /* При раскрытии панели кнопки периода отъезжают вниз на мобильных */
   #checkout.expanded .period-group {
-    margin-top: 12px; /* Отступ от variant-group на мобильных */
-  }
-  
-  #checkout.expanded .edition-group {
-    margin-top: 12px; /* Отступ от period-group на мобильных */
+    margin-top: 28px;
   }
   
   /* Базовые стили сетки уже установлены выше */
@@ -1655,22 +1666,20 @@ body {
   
   /* Адаптивные стили больше не нужны - используем transform */
   
-  /* Отступы между группами на планшетах */
-  #checkout:not(.expanded) .period-group {
-    margin-top: 14px; /* Отступ от заголовка на планшетах */
-  }
-  
+  /* Отступы между группами как на макете на планшетах */
+  #checkout:not(.expanded) .period-group,
   #checkout:not(.expanded) .edition-group {
-    margin-top: 14px; /* Отступ от period-group на планшетах */
+    margin-top: 4px;
   }
   
-  /* Раскрытое состояние на планшетах */
+  /* Отступ между группами как на макете на планшетах */
+  #checkout:not(.expanded) .period-group {
+    margin-top: -16px;
+  }
+  
+  /* При раскрытии панели кнопки периода отъезжают вниз на планшетах */
   #checkout.expanded .period-group {
-    margin-top: 14px; /* Отступ от variant-group на планшетах */
-  }
-  
-  #checkout.expanded .edition-group {
-    margin-top: 14px; /* Отступ от period-group на планшетах */
+    margin-top: 30px;
   }
 }
 
@@ -1716,22 +1725,20 @@ body {
     margin: 0 auto;
   }
   
-  /* Отступы между группами на десктопе */
-  #checkout:not(.expanded) .period-group {
-    margin-top: 16px; /* Отступ от заголовка на десктопе */
-  }
-  
+  /* Отступы между группами как на макете на десктопе */
+  #checkout:not(.expanded) .period-group,
   #checkout:not(.expanded) .edition-group {
-    margin-top: 16px; /* Отступ от period-group на десктопе */
+    margin-top: 20px;
   }
   
-  /* Раскрытое состояние на десктопе */
+  /* Отступ между группами как на макете на десктопе */
+  #checkout:not(.expanded) .period-group {
+    margin-top: 20px;
+  }
+  
+  /* При раскрытии панели кнопки периода отъезжают вниз на десктопе */
   #checkout.expanded .period-group {
-    margin-top: 16px; /* Отступ от variant-group на десктопе */
-  }
-  
-  #checkout.expanded .edition-group {
-    margin-top: 16px; /* Отступ от period-group на десктопе */
+    margin-top: 34px;
   }
 }
 
