@@ -22,9 +22,9 @@ export const products = {
     ],
     periods: [
       { id: 'period-week', name: 'Неделя', price: 300 },
-      { id: 'period-1', name: '1 Мес', price: 1000 },
-      { id: 'period-3', name: '3 Мес', price: 2500, discount: 'Выгода 17%' },
-      { id: 'period-12', name: '12 Мес', price: 8000, discount: 'Выгода 33%' }
+      { id: 'period-1', name: '1 мес', price: 1000 },
+      { id: 'period-3', name: '3 мес', price: 2500, discount: 'Выгода 17%' },
+      { id: 'period-12', name: '12 мес', price: 8000, discount: 'Выгода 33%' }
     ],
     editions: [
       { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1000 },
@@ -944,13 +944,13 @@ export function formatPrice(price, currency = '₽') {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = ' ' + formattedPrice; // Обычный пробел
+      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }
   
-  // Добавляем валюту с отступом
-  return `<span class="formatted-price">${formattedPrice} <span class="currency-separator">${currency}</span></span>`;
+  // Убираем пробел перед currency-separator - отступ будет через CSS
+  return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
 // Функция для простого форматирования цен с разделителями (для кнопок)
@@ -962,16 +962,16 @@ export function formatPriceSimple(price, currency = '₽') {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = ' ' + formattedPrice; // Обычный пробел
+      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }
   
-  // Возвращаем простую строку без HTML
+  // Возвращаем простую строку с компактным отступом как на Я.Маркете
   return `${formattedPrice} ${currency}`;
 }
 
-// Функция для форматирования цен в карточках товаров с небольшими отступами
+// Функция для форматирования цен в карточках товаров (используем CSS для отступов)
 export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   // Преобразуем число в строку и добавляем разделители тысяч
   const priceStr = price.toString();
@@ -980,18 +980,18 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = '&thinsp;' + formattedPrice; // Узкий пробел
+      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }
   
   // Для перечеркнутой цены делаем так чтобы символ валюты не был перечеркнут
   if (isOldPrice) {
-    return `<span style="text-decoration: line-through;">${formattedPrice}</span>&thinsp;<span style="font-size: 0.8em;">${currency}</span>`;
+    return `<span class="formatted-price"><span style="text-decoration: line-through;">${formattedPrice}</span><span class="currency-separator">${currency}</span></span>`;
   }
   
-  // Для обычной цены добавляем валюту с небольшим отступом
-  return `${formattedPrice}&thinsp;<span style="font-size: 0.8em;">${currency}</span>`;
+  // Для обычной цены используем CSS для отступов
+  return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
 // Данные категорий с изображениями и описаниями

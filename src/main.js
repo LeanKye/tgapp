@@ -142,7 +142,7 @@ class BannerSlider {
     this.originalBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
     this.totalOriginalBanners = this.originalBanners.length;
     this.currentIndex = 1; // Начинаем с 1, так как 0 будет клоном последнего элемента
-    this.gap = 8;
+    this.gap = 0;
     this.isTransitioning = false;
     // Touch/swipe переменные
     this.touchStartX = 0;
@@ -656,10 +656,68 @@ class SearchManager {
   }
 }
 
+// Класс для управления переключателями на главной странице
+class ToggleSwitches {
+  constructor() {
+    this.switchesContainer = document.getElementById('ps-plus-switches');
+    if (!this.switchesContainer) return;
+    
+    this.slider = this.switchesContainer.querySelector('.toggle-switch-slider');
+    this.inputs = this.switchesContainer.querySelectorAll('input[type="radio"]');
+    
+    this.init();
+  }
+  
+  init() {
+    // Добавляем обработчики событий для всех переключателей
+    this.inputs.forEach((input, index) => {
+      input.addEventListener('change', () => {
+        if (input.checked) {
+          this.moveSlider(index);
+        }
+      });
+    });
+    
+    // Устанавливаем начальную позицию слайдера
+    const checkedInput = this.switchesContainer.querySelector('input[type="radio"]:checked');
+    if (checkedInput) {
+      const index = Array.from(this.inputs).indexOf(checkedInput);
+      this.moveSlider(index);
+    }
+    
+    // Обновляем позицию при изменении размера окна
+    window.addEventListener('resize', () => {
+      const checkedInput = this.switchesContainer.querySelector('input[type="radio"]:checked');
+      if (checkedInput) {
+        const index = Array.from(this.inputs).indexOf(checkedInput);
+        this.moveSlider(index);
+      }
+    });
+  }
+  
+  moveSlider(index) {
+    // Получаем реальные размеры для точного позиционирования
+    const containerWidth = this.switchesContainer.offsetWidth;
+    const padding = 6; // 3px с каждой стороны
+    const availableWidth = containerWidth - padding;
+    const buttonWidth = availableWidth / 3;
+    
+    // Рассчитываем позицию в пикселях относительно левого края контейнера
+    const translateXPx = index * buttonWidth;
+    
+    // Применяем плавную анимацию перекатывания
+    this.slider.style.transform = `translateX(${translateXPx}px)`;
+    
+    // Добавляем небольшую анимацию отскока через CSS
+    this.slider.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  }
+}
+
 // Инициализация слайдера после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
   const slider = new BannerSlider();
   const searchManager = new SearchManager();
+  const toggleSwitches = new ToggleSwitches();
   
   // Рендерим товары
   renderNewProducts();

@@ -301,6 +301,15 @@ body {
   background-color: #2f2f2f;
 }
 
+.header-container {
+  background-color: #1f1f1f;
+  border-radius: 0 0 16px 16px;
+  padding: 16px;
+  margin-bottom: 0px;
+  position: relative;
+  z-index: 2;
+}
+
 .catalog {
   padding-inline: 0;
   display: flex;
@@ -314,7 +323,6 @@ body {
 }
 
 .search {
-  padding-inline: 16px;
   display: flex;
   align-items: flex-start;
   width: 100%;
@@ -337,12 +345,12 @@ body {
   align-items: center;
   gap: 12px;
   padding-inline: 12px;
-  border: 1px solid #3f3f3f;
-  transition: border-color 0.2s ease;
+  border: none;
+  transition: background-color 0.2s ease;
 }
 
 .input-container:focus-within {
-  border-color: #29A5FF;
+  background-color: #3f3f3f;
 }
 
 .search input {
@@ -373,6 +381,10 @@ body {
 .menu-button svg {
   color: #999999;
   transition: color 0.2s ease;
+}
+
+.menu-button:hover {
+  background-color: #3f3f3f;
 }
 
 .menu-button:hover svg {
@@ -471,11 +483,15 @@ body {
 
 .menu-button {
   width: 44px;
-  height: 44px;
+  height: 42px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  background-color: #2f2f2f;
+  border-radius: 12px;
+  border: none;
+  transition: background-color 0.2s ease;
 }
 
 .menu {
@@ -569,10 +585,17 @@ body {
   justify-content: center;
 }
 
-/* Добавляем отступ сверху только для групп с плашками скидки */
+/* Единый верхний отступ для всех групп кнопок */
 .period-group,
-.edition-group {
-  padding-top: 12px;
+.edition-group,
+.variant-group.button-group {
+  padding-top: 0px;
+}
+
+/* Убираем стандартный margin-top у variant-group, так как он имеет класс button-group */
+.variant-group.button-group {
+  margin-top: 0px; /* Убираем стандартный margin-top от button-group */
+  padding-top: 0px; /* Добавляем верхний отступ для кнопок вариантов оформления */
 }
 
 .button-group input {
@@ -856,6 +879,7 @@ body {
 
 .category-products-grid .category-product-card {
   width: 100%;
+  gap: clamp(2px, 0.3vw, 3px);
 }
 
 .category-products-grid .category-product-card img {
@@ -867,6 +891,7 @@ body {
 /* Адаптивные размеры текста для сетки категорий */
 .category-products-grid .category-product-title {
   font-size: clamp(14px, 2.5vw, 16px);
+  margin-bottom: -2px;
 }
 
 .category-products-grid .category-product-category {
@@ -874,7 +899,7 @@ body {
 }
 
 .category-products-grid .category-product-price-current {
-  font-size: clamp(14px, 2.8vw, 18px);
+  font-size: clamp(15px, 2.8vw, 19px);
 }
 
 .category-products-grid .category-product-price-old {
@@ -930,7 +955,7 @@ body {
 }
 
 .category-products-slider .category-product-price-current {
-  font-size: clamp(14px, 2.8vw, 18px);
+  font-size: clamp(15px, 2.8vw, 19px);
 }
 
 .category-product-title {
@@ -956,7 +981,7 @@ body {
 }
 
 .category-product-price-current {
-  font-size: clamp(14px, 2.8vw, 18px);
+  font-size: clamp(15px, 2.8vw, 19px);
   font-weight: 500;
   color: white;
 }
@@ -999,7 +1024,7 @@ body {
 .banner-slider {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0px;
   transition: transform 0.3s ease;
   will-change: transform;
 }
@@ -1298,25 +1323,16 @@ body {
   overflow: visible; /* Кнопки никогда не обрезаются */
 }
 
-/* Убираем лишний отступ сверху у button-group внутри variant-group */
-.variant-group .button-group {
-  margin-top: 0;
-  height: auto;
-  min-height: 44px; /* Обеспечиваем минимальную высоту для кнопок */
-  padding: 10px 0; /* Добавляем внутренние отступы для предотвращения обрезания */
-}
+
 
 /* Отступ для variant-group от заголовка как на макете */
 #checkout .variant-group {
   margin-top: 20px;
 }
 
-/* Обеспечиваем правильную высоту для кнопок внутри variant-group */
-.variant-group .button-group span {
-  min-height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Отступ для variant-group в развернутом состоянии от заголовка */
+#checkout.expanded .variant-group {
+  margin-top: 28px; /* Отступ от заголовка "Выберите способ оформления" (16px базовый + 12px дополнительный) */
 }
 
 /* Неактивное состояние для других групп */
@@ -1378,9 +1394,9 @@ body {
   transition: all 0.3s ease;
 }
 
-/* При раскрытии панели кнопки периода отъезжают значительно вниз, давая место для вариантов */
+/* При раскрытии панели кнопки периода отъезжают вниз, давая место для вариантов */
 #checkout.expanded .period-group {
-  margin-top: 32px; /* Большой отступ для освобождения места для панели способа оформления */
+  margin-top: 20px; /* Уменьшенный отступ для панели способа оформления */
 }
 
 #checkout:not(.expanded) .variant-group {
@@ -1514,25 +1530,25 @@ body {
   display: none;
 }
 
-/* Стили для форматирования цен */
+/* Стили для форматирования цен как на Яндекс Маркете */
 .formatted-price {
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px; /* Уменьшенный отступ между разрядами как на Я.Маркете */
 }
 
 .formatted-price .currency-separator {
-  margin-left: 1px;
+  margin-left: 0.2em; /* Небольшой отступ от цифры до символа валюты как на Я.Маркете */
   font-size: 0.8em !important;
 }
 
 /* Специфичный селектор для цены на странице товара */
 .price-value .formatted-price .currency-separator {
-  margin-left: 1px;
+  margin-left: 0.2em; /* Отступ как на Я.Маркете */
   font-size: 16px !important;
   font-weight: 600 !important;
 }
 
 .price-old .formatted-price .currency-separator {
-  margin-left: 1px;
+  margin-left: 0.2em; /* Отступ как на Я.Маркете */
   font-size: 12px !important;
   font-weight: 500 !important;
   color: #737270 !important;
@@ -1541,7 +1557,7 @@ body {
 /* Уменьшаем символ валюты в карточках товаров */
 .category-product-price-current .formatted-price .currency-separator,
 .category-product-price-old .formatted-price .currency-separator {
-  margin-left: 1px;
+  margin-left: 0.2em; /* Отступ как на Я.Маркете */
   font-size: 0.8em !important;
 }
 
@@ -1615,7 +1631,12 @@ body {
   
   /* При раскрытии панели кнопки периода отъезжают вниз на мобильных */
   #checkout.expanded .period-group {
-    margin-top: 28px;
+    margin-top: 18px; /* Уменьшенный отступ для мобильных */
+  }
+
+  /* Отступ для variant-group в развернутом состоянии на мобильных */
+  #checkout.expanded .variant-group {
+    margin-top: 24px; /* Компактный отступ для мобильных (12px базовый + 12px дополнительный) */
   }
   
   /* Базовые стили сетки уже установлены выше */
@@ -1679,7 +1700,12 @@ body {
   
   /* При раскрытии панели кнопки периода отъезжают вниз на планшетах */
   #checkout.expanded .period-group {
-    margin-top: 30px;
+    margin-top: 19px; /* Уменьшенный отступ для планшетов */
+  }
+
+  /* Отступ для variant-group в развернутом состоянии на планшетах */
+  #checkout.expanded .variant-group {
+    margin-top: 26px; /* Увеличенный отступ для планшетов (14px базовый + 12px дополнительный) */
   }
 }
 
@@ -1738,7 +1764,12 @@ body {
   
   /* При раскрытии панели кнопки периода отъезжают вниз на десктопе */
   #checkout.expanded .period-group {
-    margin-top: 34px;
+    margin-top: 22px; /* Уменьшенный отступ для десктопа */
+  }
+
+  /* Отступ для variant-group в развернутом состоянии на десктопе */
+  #checkout.expanded .variant-group {
+    margin-top: 28px; /* Оптимальный отступ для десктопа (16px базовый + 12px дополнительный) */
   }
 }
 
@@ -1781,6 +1812,113 @@ body {
 /* Анимация только для variant-group при закрытии панели */
 .variant-group.collapsing {
   animation: fadeOutToTop 0.3s ease forwards;
+}
+
+/* Новые стили для кнопок-переключателей на главной странице */
+.toggle-switches-container {
+  padding: 0 16px;
+  margin-bottom: 16px;
+}
+
+.toggle-switches {
+  position: relative;
+  display: flex;
+  background-color: #2f2f2f;
+  border-radius: 12px;
+  padding: 3px;
+  height: 48px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.toggle-switch-slider {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / 3);
+  height: 48px;
+  background-color: #29A5FF;
+  border-radius: 9px;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(41, 165, 255, 0.3);
+  will-change: transform;
+}
+
+.toggle-switches input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  margin: 0;
+}
+
+.toggle-switches label {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  color: #CACACA;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.25s ease-out;
+  z-index: 2;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  border-radius: 9px;
+}
+
+.toggle-switches input[type="radio"]:checked + label {
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-switches label:hover {
+  color: #E0E0E0;
+}
+
+.toggle-switches input[type="radio"]:checked + label:hover {
+  color: white;
+}
+
+/* Адаптивные стили для переключателей */
+@media (max-width: 375px) {
+  .toggle-switches {
+    height: 44px;
+    padding: 3px;
+  }
+  
+  .toggle-switch-slider {
+    top: 3px;
+    left: 3px;
+    height: 38px;
+    width: calc((100% - 6px) / 3);
+    border-radius: 8px;
+  }
+  
+  .toggle-switches label {
+    height: 38px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .toggle-switches label {
+    font-size: 15px;
+    height: 48px;
+  }
+  
+  .toggle-switch-slider {
+    width: calc((100% - 6px) / 3);
+    height: 48px;
+  }
 }
 
 

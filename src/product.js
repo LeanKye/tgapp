@@ -250,16 +250,18 @@ function initCheckoutPanel() {
     variantGroup.classList.add('collapsing');
     variantGroup.classList.remove('expanding');
     
-    // После анимации убираем все классы и возвращаем другие группы в активное состояние
+    // Одновременно убираем класс expanded, чтобы другие группы начали анимацию перемещения
+    checkoutContainer.classList.remove('expanded');
+    checkoutArrow.classList.remove('expanded');
+    
+    // После завершения анимации убираем все классы и возвращаем другие группы в активное состояние
     setTimeout(() => {
-      checkoutContainer.classList.remove('expanded');
-      checkoutArrow.classList.remove('expanded');
       variantGroup.classList.remove('expanded', 'collapsing');
       
-      // Возвращаем другие группы в активное состояние только после завершения анимации
+      // Возвращаем другие группы в активное состояние после завершения анимации
       periodGroup.classList.remove('inactive');
       editionGroup.classList.remove('inactive');
-    }, 150);
+    }, 300); // Увеличиваем до 300ms - длительность анимации collapsing
     
     // Обновляем выбранный вариант и текст заголовка
     selectedVariant = getSelectedVariantText();
