@@ -11,6 +11,81 @@
 
 body {
   margin: 0;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  /* Предотвращаем pull-to-refresh и сворачивание мини-приложения */
+  overscroll-behavior-y: none;
+  -webkit-overscroll-behavior-y: none;
+  /* Предотвращаем нежелательные жесты в Telegram WebApp */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  /* Добавляем отступ сверху для хедера на внутренних страницах */
+  padding-top: 0;
+}
+
+/* Отступ для страниц с хедером */
+body.has-header {
+  padding-top: calc(56px + env(safe-area-inset-top));
+}
+
+/* Стили для хедера */
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background-color: #1f1f1f;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top);
+  z-index: 1000;
+  border-bottom: 1px solid #2f2f2f;
+  /* Предотвращаем сворачивание при тапе на хедер */
+  touch-action: manipulation;
+}
+
+.back-button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 12px;
+  color: #29A5FF;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-right: 8px;
+  touch-action: manipulation;
+}
+
+.back-button:hover {
+  background-color: rgba(41, 165, 255, 0.1);
+}
+
+.back-button:active {
+  transform: scale(0.96);
+  background-color: rgba(41, 165, 255, 0.2);
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  flex: 1;
+  text-align: center;
+  margin-right: 52px; /* Компенсируем ширину кнопки назад для центрирования */
+}
+
+/* Скрытие хедера на главной странице */
+.app-header.hidden {
+  display: none;
 }
 
 .reset-Button {
@@ -218,6 +293,25 @@ body {
   min-width: fit-content;
   white-space: nowrap;
   margin-bottom: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  width: fit-content;
+  max-width: max-content;
+}
+
+.label:hover {
+  background-color: #3f3f3f;
+  transform: scale(1.02);
+}
+
+.label:active {
+  transform: scale(0.98);
+}
+
+.label svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
 }
 
 .label-orange {
@@ -315,6 +409,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Предотвращаем сворачивание мини-приложения при переполнении */
+  overscroll-behavior-y: none;
 }
 
 .catalog > h1 {
@@ -937,7 +1033,6 @@ body {
 .category-products-slider .category-product-card {
   flex-shrink: 0;
   width: clamp(140px, 25vw, 180px);
-  scroll-snap-align: start;
 }
 
 .category-products-slider .category-product-card img {
@@ -1027,6 +1122,9 @@ body {
   gap: 0px;
   transition: transform 0.3s ease;
   will-change: transform;
+  /* Предотвращаем мигание при переключениях */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .banner-item {
@@ -1047,6 +1145,9 @@ body {
   user-select: none;
   /* Улучшенный touch для мобильных */
   touch-action: manipulation;
+  /* Предотвращаем мигание */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .banner-item:not(.active) {
@@ -1288,19 +1389,45 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  cursor: pointer;
   font-size: 16px;
   font-weight: 500;
   margin-bottom: 16px;
   user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.checkout-header #checkout-header-text {
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+.checkout-header #checkout-header-text:hover {
+  opacity: 0.8;
+}
+
+.checkout-header #checkout-header-text:active {
+  opacity: 0.6;
 }
 
 .checkout-arrow {
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
+  cursor: pointer;
+}
+
+.checkout-arrow:hover {
+  opacity: 0.8;
+}
+
+.checkout-arrow:active {
+  opacity: 0.6;
 }
 
 .checkout-arrow.expanded {
@@ -1339,33 +1466,33 @@ body {
 .button-group.inactive {
   pointer-events: none;
   opacity: 0.3;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
 }
 
 .button-group.inactive label {
   color: #666666 !important;
   background-color: #2f2f2f !important;
   border-color: #2f2f2f !important;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 .button-group.inactive .discount-badge {
   background-color: #666666 !important;
   color: #999999 !important;
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 /* Активное состояние - переходы */
 .button-group:not(.inactive) {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.15s ease;
 }
 
 .button-group:not(.inactive) label {
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 .button-group:not(.inactive) .discount-badge {
-  transition: all 0.3s ease;
+  transition: all 0.15s ease;
 }
 
 /* Состояние по умолчанию при загрузке страницы - кнопки периода близко к верху */
@@ -1405,14 +1532,7 @@ body {
   display: flex;
 }
 
-/* Дополнительные стили для плавности */
-.checkout-header:hover {
-  opacity: 0.8;
-}
-
-.checkout-header:active {
-  opacity: 0.6;
-}
+/* Дополнительные стили для плавности убраны - hover/active только на текст и стрелочку */
 
 /* Анимация при выборе варианта */
 .variant-group input[type="radio"]:checked + label {
@@ -1520,10 +1640,33 @@ body {
   gap: clamp(8px, 1.5vw, 14px);
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
-  scroll-snap-type: x mandatory;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
+  /* Предотвращаем сворачивание мини-приложения при свайпе */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: none;
+}
+
+/* Touch-действия только для мобильных устройств */
+@media (hover: none) and (pointer: coarse) {
+  .category-products-slider {
+    touch-action: pan-x; /* Разрешаем только горизонтальные жесты на мобильных */
+  }
+}
+
+/* Исправляем проблему с вертикальным скроллом на десктопе */
+@media (hover: hover) and (pointer: fine) {
+  .category-products-slider {
+    /* Разрешаем вертикальный скролл страницы при наведении на слайдер */
+    overscroll-behavior-y: auto;
+    /* Позволяем вертикальному скроллу работать через слайдер */
+    scroll-behavior: auto;
+  }
+  
+  /* Обеспечиваем нормальное поведение скролла для карточек товаров */
+  .category-products-slider .category-product-card {
+    pointer-events: auto;
+  }
 }
 
 .category-products-slider::-webkit-scrollbar {
@@ -1826,7 +1969,7 @@ body {
   background-color: #2f2f2f;
   border-radius: 12px;
   padding: 3px;
-  height: 48px;
+  height: 40px;
   align-items: center;
   overflow: hidden;
 }
@@ -1836,7 +1979,7 @@ body {
   top: 3px;
   left: 3px;
   width: calc((100% - 6px) / 3);
-  height: 48px;
+  height: calc(100% - 6px);
   background-color: #29A5FF;
   border-radius: 9px;
   transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -1860,7 +2003,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 42px;
+  height: 34px;
   color: #CACACA;
   font-size: 16px;
   font-weight: 500;
@@ -1891,20 +2034,20 @@ body {
 /* Адаптивные стили для переключателей */
 @media (max-width: 375px) {
   .toggle-switches {
-    height: 44px;
+    height: 34px;
     padding: 3px;
   }
   
   .toggle-switch-slider {
     top: 3px;
     left: 3px;
-    height: 38px;
+    height: calc(100% - 6px);
     width: calc((100% - 6px) / 3);
     border-radius: 8px;
   }
   
   .toggle-switches label {
-    height: 38px;
+    height: 28px;
     font-size: 14px;
   }
 }
@@ -1912,15 +2055,185 @@ body {
 @media (max-width: 768px) {
   .toggle-switches label {
     font-size: 15px;
-    height: 48px;
+    height: 34px;
   }
   
   .toggle-switch-slider {
     width: calc((100% - 6px) / 3);
-    height: 48px;
+    height: calc(100% - 6px);
   }
 }
 
+/* Модальное окно для плашек в стиле Яндекс.Маркет */
+.label-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
 
+.label-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
 
+.label-modal-content {
+  background-color: #1f1f1f;
+  border-radius: 16px 16px 0 0;
+  width: 100%;
+  max-height: 70vh;
+  overflow-y: auto;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+}
 
+.label-modal.show .label-modal-content {
+  transform: translateY(0);
+}
+
+.label-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #2f2f2f;
+}
+
+.label-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.label-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #2f2f2f;
+  border: none;
+  color: #999999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.label-modal-close:hover {
+  background-color: #3f3f3f;
+  color: white;
+}
+
+.label-modal-body {
+  padding: 20px;
+}
+
+.label-modal-description {
+  color: #CACACA;
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0 0 16px 0;
+}
+
+.label-modal-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.label-modal-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+  color: #CACACA;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.label-modal-features li:last-child {
+  margin-bottom: 0;
+}
+
+.label-modal-features li::before {
+  content: "✓";
+  color: #15EA61;
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.label-modal-warning {
+  background-color: #2f2f2f;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  border-left: 4px solid #FF6E06;
+}
+
+.label-modal-warning-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #FF6E06;
+  margin: 0 0 8px 0;
+}
+
+.label-modal-warning-text {
+  font-size: 13px;
+  color: #CACACA;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Адаптивные стили для модального окна */
+@media (max-width: 768px) {
+  .label-modal-content {
+    max-height: 80vh;
+    border-radius: 16px 16px 0 0;
+  }
+  
+  .label-modal-header {
+    padding: 14px 16px;
+  }
+  
+  .label-modal-title {
+    font-size: 16px;
+  }
+  
+  .label-modal-body {
+    padding: 16px;
+  }
+  
+  .label-modal-description {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 375px) {
+  .label-modal-content {
+    max-height: 85vh;
+  }
+  
+  .label-modal-header {
+    padding: 12px 16px;
+  }
+  
+  .label-modal-body {
+    padding: 16px;
+  }
+  
+  .label-modal-warning {
+    padding: 10px 12px;
+  }
+}

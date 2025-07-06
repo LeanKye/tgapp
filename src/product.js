@@ -17,6 +17,11 @@ function renderProduct(product) {
 
   // Обновляем заголовок страницы
   document.title = product.title;
+  
+  // Обновляем заголовок в хедере
+  if (window.navigationManager) {
+    window.navigationManager.setProductTitle(product.title);
+  }
 
   // Обновляем слайдер изображений
   const swiperWrapper = document.querySelector('.swiper-wrapper');
@@ -34,12 +39,19 @@ function renderProduct(product) {
   product.labels.forEach((label, index) => {
     const labelDiv = document.createElement('div');
     labelDiv.className = `label label-${product.labelColors[index]}`;
+    labelDiv.dataset.labelType = label.toLowerCase().replace(/\s+/g, '-');
     labelDiv.innerHTML = `
       <span>${label}</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `;
+    
+    // Добавляем обработчик клика для открытия модального окна
+    labelDiv.addEventListener('click', () => {
+      openLabelModal(label);
+    });
+    
     labelsContainer.appendChild(labelDiv);
   });
 
@@ -92,6 +104,14 @@ function renderProduct(product) {
 
   // Обновляем описание и системные требования
   updateTabs(product);
+  
+  // Настраиваем главную кнопку Telegram для покупки
+  if (window.navigationManager) {
+    window.navigationManager.updateMainButton('Купить', () => {
+      // Здесь можно добавить логику покупки
+      console.log('Покупка товара:', product.title);
+    });
+  }
 }
 
 function updateVariants(product) {
@@ -254,14 +274,14 @@ function initCheckoutPanel() {
     checkoutContainer.classList.remove('expanded');
     checkoutArrow.classList.remove('expanded');
     
-    // После завершения анимации убираем все классы и возвращаем другие группы в активное состояние
+    // Сразу возвращаем другие группы в активное состояние
+    periodGroup.classList.remove('inactive');
+    editionGroup.classList.remove('inactive');
+    
+    // После завершения анимации убираем все классы
     setTimeout(() => {
       variantGroup.classList.remove('expanded', 'collapsing');
-      
-      // Возвращаем другие группы в активное состояние после завершения анимации
-      periodGroup.classList.remove('inactive');
-      editionGroup.classList.remove('inactive');
-    }, 300); // Увеличиваем до 300ms - длительность анимации collapsing
+    }, 300); // Длительность анимации collapsing
     
     // Обновляем выбранный вариант и текст заголовка
     selectedVariant = getSelectedVariantText();
@@ -291,12 +311,18 @@ function initCheckoutPanel() {
     updateHeaderText();
   }
   
-  // Обработчик клика по заголовку
-  checkoutToggle.addEventListener('click', function() {
-    if (isExpanded) {
-      collapseCheckout();
-    } else {
-      expandCheckout();
+  // Обработчик клика по заголовку - только на текст или стрелочку
+  checkoutToggle.addEventListener('click', function(e) {
+    // Проверяем, что клик был именно по тексту или стрелочке
+    const clickedOnText = e.target.id === 'checkout-header-text' || e.target.closest('#checkout-header-text');
+    const clickedOnArrow = e.target.classList.contains('checkout-arrow') || e.target.closest('.checkout-arrow');
+    
+    if (clickedOnText || clickedOnArrow) {
+      if (isExpanded) {
+        collapseCheckout();
+      } else {
+        expandCheckout();
+      }
     }
   });
   
@@ -339,6 +365,134 @@ function initCheckoutPanel() {
   updateHeaderText();
 }
 
+// Данные для модальных окон плашек
+const labelModalData = {
+  'гарантия': {
+    title: 'Гарантия',
+    description: 'Мы предоставляем гарантию на приобретенный товар согласно условиям.',
+    features: [
+      'Гарантия распространяется на все функции товара',
+      'Бесплатная замена в случае технических проблем',
+      'Поддержка 24/7 в течение гарантийного периода',
+      'Возврат средств при невозможности решения проблемы'
+    ],
+    warning: {
+      title: 'Важно знать',
+      text: 'Гарантия не распространяется на проблемы, возникшие в результате нарушения правил использования или блокировки аккаунта по вине пользователя.'
+    }
+  },
+  'лицензия': {
+    title: 'Лицензия',
+    description: 'Все наши товары имеют официальную лицензию и полностью законны.',
+    features: [
+      'Официальная лицензия от правообладателя',
+      'Полное соответствие лицензионным требованиям',
+      'Безопасное использование без риска блокировки',
+      'Все обновления и DLC включены в лицензию'
+    ],
+    warning: {
+      title: 'Преимущества лицензии',
+      text: 'Лицензионный товар гарантирует стабильную работу, безопасность и доступ ко всем функциям без ограничений.'
+    }
+  },
+  'нужен-vpn': {
+    title: 'Нужен VPN',
+    description: 'Для использования данного товара требуется VPN-подключение.',
+    features: [
+      'VPN необходим для активации и использования',
+      'Рекомендуем использовать надежные VPN-сервисы',
+      'Подключение через любую страну, кроме запрещенных',
+      'Инструкция по настройке VPN предоставляется'
+    ],
+    warning: {
+      title: 'Обратите внимание',
+      text: 'VPN-сервис не входит в стоимость товара. Вам необходимо самостоятельно обеспечить VPN-подключение для корректной работы.'
+    }
+  }
+};
+
+// Функция для открытия модального окна плашки
+function openLabelModal(labelText) {
+  const modal = document.getElementById('label-modal');
+  const modalTitle = document.getElementById('label-modal-title');
+  const modalBody = document.getElementById('label-modal-body');
+  
+  const labelKey = labelText.toLowerCase().replace(/\s+/g, '-');
+  const modalData = labelModalData[labelKey];
+  
+  if (!modalData) {
+    console.warn('Данные для плашки не найдены:', labelText);
+    return;
+  }
+  
+  // Устанавливаем заголовок
+  modalTitle.textContent = modalData.title;
+  
+  // Формируем контент
+  let featuresHtml = '';
+  if (modalData.features && modalData.features.length > 0) {
+    featuresHtml = `
+      <ul class="label-modal-features">
+        ${modalData.features.map(feature => `<li>${feature}</li>`).join('')}
+      </ul>
+    `;
+  }
+  
+  let warningHtml = '';
+  if (modalData.warning) {
+    warningHtml = `
+      <div class="label-modal-warning">
+        <div class="label-modal-warning-title">${modalData.warning.title}</div>
+        <div class="label-modal-warning-text">${modalData.warning.text}</div>
+      </div>
+    `;
+  }
+  
+  modalBody.innerHTML = `
+    <div class="label-modal-description">${modalData.description}</div>
+    ${featuresHtml}
+    ${warningHtml}
+  `;
+  
+  // Показываем модальное окно
+  modal.classList.add('show');
+  
+  // Блокируем скролл страницы
+  document.body.style.overflow = 'hidden';
+}
+
+// Функция для закрытия модального окна плашки
+function closeLabelModal() {
+  const modal = document.getElementById('label-modal');
+  modal.classList.remove('show');
+  
+  // Разблокируем скролл страницы
+  document.body.style.overflow = '';
+}
+
+// Инициализация модального окна плашек
+function initLabelModal() {
+  const modal = document.getElementById('label-modal');
+  const closeButton = document.getElementById('label-modal-close');
+  
+  // Закрытие по клику на кнопку
+  closeButton.addEventListener('click', closeLabelModal);
+  
+  // Закрытие по клику на фон
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeLabelModal();
+    }
+  });
+  
+  // Закрытие по клавише Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeLabelModal();
+    }
+  });
+}
+
 // Инициализация Swiper
 function initSwiper() {
   const swiper = new Swiper('.swiper', {
@@ -369,6 +523,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initSwiper();
       initCheckoutPanel();
+      initLabelModal();
     }, 100);
   }
   
