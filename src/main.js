@@ -783,6 +783,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем правильное поведение скролла для слайдера товаров
   initProductSliderScroll();
   
+  // Скрываем главную кнопку Telegram на главной странице
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.MainButton.hide();
+  }
+  
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров

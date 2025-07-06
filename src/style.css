@@ -196,6 +196,11 @@ body {
   cursor: pointer;
 }
 
+/* Скрываем кнопку "Купить" на всех страницах кроме страницы товара */
+body:not(.product-page) .add-to-cart {
+  display: none !important;
+}
+
 .add-to-cart:hover {
   transform: translateY(-2px);
   box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);

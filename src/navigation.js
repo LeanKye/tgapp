@@ -38,24 +38,23 @@ class NavigationManager {
       tg.setHeaderColor('#1f1f1f');
       tg.setBackgroundColor('#000000');
       
-      // Показываем главную кнопку только на страницах товаров
+      // Скрываем главную кнопку по умолчанию на всех страницах
+      // Она будет показана только на странице товара через product.js
+      tg.MainButton.hide();
+
+      // Определяем текущую страницу для навигации
       const path = window.location.pathname;
-      if (path.includes('product.html')) {
-        // Главная кнопка будет настроена в product.js
-        tg.MainButton.show();
-      } else {
-        tg.MainButton.hide();
-      }
+      const isProductPage = path.includes('product.html') || window.location.search.includes('product=');
+      const isMainPage = path.includes('index.html') || path === '/' || path === '/tgapp/' || path === '/tgapp/index.html';
 
       // Включаем кнопку назад Telegram для внутренних страниц
-      // На главной странице показываем кнопку "Закрыть" (через BackButton)
-      if (!path.includes('index.html') && path !== '/') {
+      if (!isMainPage) {
         tg.BackButton.show();
         tg.BackButton.onClick(() => {
           this.goBack();
         });
       } else {
-        // На главной странице тоже показываем кнопку, но она будет работать как "Закрыть"
+        // На главной странице скрываем кнопку назад
         tg.BackButton.hide();
         // Включаем кнопку закрытия для главной страницы
         tg.enableClosingConfirmation();
@@ -73,9 +72,19 @@ class NavigationManager {
   updateMainButton(text, callback) {
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
-      tg.MainButton.setText(text);
-      tg.MainButton.onClick(callback);
-      tg.MainButton.show();
+      
+      // Дополнительная проверка - показываем кнопку только на странице товара
+      const path = window.location.pathname;
+      const isProductPage = path.includes('product.html') || window.location.search.includes('product=');
+      
+      if (isProductPage) {
+        tg.MainButton.setText(text);
+        tg.MainButton.onClick(callback);
+        tg.MainButton.show();
+      } else {
+        // Если не на странице товара, скрываем кнопку
+        tg.MainButton.hide();
+      }
     }
   }
 }
