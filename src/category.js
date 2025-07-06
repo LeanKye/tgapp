@@ -20,11 +20,6 @@ class CategoryPage {
       return;
     }
 
-    // Скрываем главную кнопку Telegram на странице категории
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.MainButton.hide();
-    }
-
     // Инициализируем компоненты
     this.initMenu();
     this.initSearch();

@@ -8,13 +8,11 @@
       <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>Product</title>
 </head>
 
-<body class="product-page">
-
-  <div class="product">
+<body>
+    <div class="product">
         <div class="product-cover">
             <div class="swiper">
                 <div class="swiper-wrapper">
@@ -81,27 +79,32 @@
             </div>
         </div>
     </div>
-  
-
-    <!-- Модальное окно для плашек -->
-    <div class="label-modal" id="label-modal">
-        <div class="label-modal-content">
-            <div class="label-modal-header">
-                <h3 class="label-modal-title" id="label-modal-title">Информация</h3>
-                <button class="label-modal-close reset-Button" id="label-modal-close">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <button class="add-to-cart reset-Button">Купить</button>
+    
+    <!-- Модальное окно для информации о лейблах -->
+    <div id="label-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-container">
+                    <div id="modal-icon" class="modal-icon">
+                        ⚡
+                    </div>
+                    <h3 id="modal-title">Информация</h3>
+                </div>
+                <button id="modal-close" class="modal-close-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
             </div>
-            <div class="label-modal-body" id="label-modal-body">
-                <!-- Контент будет добавлен JavaScript-ом -->
+            <div class="modal-body">
+                <p id="modal-description">Загрузка информации...</p>
             </div>
         </div>
     </div>
-
-    <script type="module" src="/src/navigation.js"></script>
-  <script type="module" src="/src/product.js"></script>
+    
+    <script type="module" src="/src/product.js"></script>
 </body>
 
 </html>

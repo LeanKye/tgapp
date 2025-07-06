@@ -393,33 +393,37 @@ class BannerSlider {
       }, { capture: true });
     });
 
-    // Mouse события для тестирования на десктопе - только на баннерах
+    // Mouse события для тестирования на десктопе
+    container.addEventListener('mousedown', (e) => {
+      this.touchStartX = e.clientX;
+      this.isMouseDown = true;
+      container.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    });
+
+    container.addEventListener('mouseup', (e) => {
+      this.touchEndX = e.clientX;
+      this.isMouseDown = false;
+      container.removeEventListener('mousemove', this.handleMouseMove.bind(this));
+      this.handleSwipe();
+    });
+
+    // Mouse события на баннерах
     this.allBanners.forEach(banner => {
       banner.addEventListener('mousedown', (e) => {
         this.touchStartX = e.clientX;
         this.isMouseDown = true;
-        // Добавляем обработчик на document для отслеживания движения вне баннера
-        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
       });
-    });
 
-    document.addEventListener('mouseup', (e) => {
-      if (this.isMouseDown) {
+      banner.addEventListener('mouseup', (e) => {
         this.touchEndX = e.clientX;
         this.isMouseDown = false;
-        document.removeEventListener('mousemove', this.handleMouseMove.bind(this));
         this.handleSwipe();
-      }
+      });
     });
-
-    // Mouse события на баннерах уже добавлены выше
   }
 
   handleMouseMove(e) {
-    // Предотвращаем только выделение текста, но разрешаем прокрутку
-    if (this.isMouseDown) {
-      e.preventDefault();
-    }
+    e.preventDefault();
   }
 
   // Обработка свайпа
@@ -733,38 +737,6 @@ class ToggleSwitches {
   }
 }
 
-// Функция для исправления проблемы с вертикальным скроллом на слайдере товаров
-function initProductSliderScroll() {
-  const productSlider = document.querySelector('.category-products-slider');
-  if (!productSlider) return;
-  
-  // Обработчик событий колеса мыши на слайдере товаров
-  productSlider.addEventListener('wheel', (e) => {
-    // Проверяем, что устройство имеет hover (десктоп)
-    if (window.matchMedia('(hover: hover)').matches) {
-      const isVerticalScroll = Math.abs(e.deltaY) > Math.abs(e.deltaX);
-      
-      // Если скролл вертикальный, передаем его на страницу
-      if (isVerticalScroll) {
-        // Позволяем браузеру обработать вертикальный скролл страницы
-        return;
-      }
-      
-      // Если скролл горизонтальный, используем его для прокрутки слайдера
-      if (Math.abs(e.deltaX) > 5) {
-        e.preventDefault();
-        
-        // Плавная прокрутка слайдера по горизонтали
-        const scrollAmount = e.deltaX * 2;
-        productSlider.scrollBy({
-          left: scrollAmount,
-          behavior: 'smooth'
-        });
-      }
-    }
-  }, { passive: false });
-}
-
 // Инициализация слайдера после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
   const slider = new BannerSlider();
@@ -779,14 +751,6 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Инициализируем навигацию из бургер меню
   initMenuNavigation();
-  
-  // Инициализируем правильное поведение скролла для слайдера товаров
-  initProductSliderScroll();
-  
-  // Скрываем главную кнопку Telegram на главной странице
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.MainButton.hide();
-  }
   
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {

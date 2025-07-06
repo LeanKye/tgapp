@@ -11,19 +11,9 @@
 
 body {
   margin: 0;
-  touch-action: manipulation;
+  touch-action: pan-x pan-y;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
-  /* Предотвращаем pull-to-refresh и сворачивание мини-приложения */
-  overscroll-behavior-y: none;
-  -webkit-overscroll-behavior-y: none;
-  /* Предотвращаем нежелательные жесты в Telegram WebApp */
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-  /* Убираем зазор сверху на iPhone - используем только хедер Telegram */
-  padding-top: env(safe-area-inset-top);
 }
 
 .reset-Button {
@@ -60,8 +50,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* Добавляем небольшой отступ снизу */
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  /* Добавляем отступ снизу для фиксированной кнопки */
+  padding-bottom: calc(46px + 32px + env(safe-area-inset-bottom));
 }
 
 .product-cover {
@@ -171,7 +161,40 @@ body {
   font-size: 16px;
 }
 
+.add-to-cart {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  right: 16px;
+  display: block;
+  background-color: #29A5FF;
+  width: calc(100% - 32px);
+  height: 46px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+  z-index: 1000;
+  margin: 0;
+  /* Добавляем безопасную зону для iOS */
+  margin-bottom: env(safe-area-inset-bottom);
+  box-sizing: border-box;
+  /* Добавляем тень для лучшей видимости */
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
+  /* Добавляем плавные переходы */
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
 
+.add-to-cart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
+}
+
+.add-to-cart:active {
+  transform: translateY(0px);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2);
+}
 
 .text-gray {
   color: #868480;
@@ -187,8 +210,8 @@ body {
   height: 18px;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 0 8px;
+  gap: 4px;
+  padding: 0 6px 0 8px;
   border-radius: 4px;
   background-color: #2f2f2f;
   text-transform: uppercase;
@@ -199,24 +222,15 @@ body {
   white-space: nowrap;
   margin-bottom: 12px;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  width: fit-content;
-  max-width: max-content;
+  transition: background-color 0.2s ease;
 }
 
 .label:hover {
   background-color: #3f3f3f;
-  transform: scale(1.02);
 }
 
 .label:active {
-  transform: scale(0.98);
-}
-
-.label svg {
-  flex-shrink: 0;
-  width: 14px;
-  height: 14px;
+  background-color: #4f4f4f;
 }
 
 .label-orange {
@@ -314,8 +328,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* Предотвращаем сворачивание мини-приложения при переполнении */
-  overscroll-behavior-y: none;
 }
 
 .catalog > h1 {
@@ -866,8 +878,6 @@ body {
   row-gap: 12px;
   padding: 0 0px;
   margin-bottom: 16px;
-  /* Разрешаем вертикальный скролл через сетку товаров */
-  touch-action: manipulation;
 }
 
 /* Переход на 3 колонки для средних экранов */
@@ -918,8 +928,6 @@ body {
   flex-direction: column;
   gap: clamp(3px, 0.5vw, 5px);
   padding-bottom: 4px;
-  /* Разрешаем вертикальный скролл через карточки */
-  touch-action: manipulation;
 }
 
 .category-product-card:hover {
@@ -1549,33 +1557,9 @@ body {
   gap: clamp(8px, 1.5vw, 14px);
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
-  /* Предотвращаем сворачивание мини-приложения при свайпе */
-  overscroll-behavior-x: contain;
-  overscroll-behavior-y: none;
-}
-
-/* Touch-действия для мобильных устройств */
-@media (hover: none) and (pointer: coarse) {
-  .category-products-slider {
-    touch-action: pan-x pan-y; /* Разрешаем и горизонтальные, и вертикальные жесты */
-  }
-}
-
-/* Исправляем проблему с вертикальным скроллом на десктопе */
-@media (hover: hover) and (pointer: fine) {
-  .category-products-slider {
-    /* Разрешаем вертикальный скролл страницы при наведении на слайдер */
-    overscroll-behavior-y: auto;
-    /* Позволяем вертикальному скроллу работать через слайдер */
-    scroll-behavior: auto;
-  }
-  
-  /* Обеспечиваем нормальное поведение скролла для карточек товаров */
-  .category-products-slider .category-product-card {
-    pointer-events: auto;
-  }
 }
 
 .category-products-slider::-webkit-scrollbar {
@@ -1613,10 +1597,18 @@ body {
   font-size: 0.8em !important;
 }
 
-/* Адаптивные стили для мобильных устройств */
+/* Адаптивные стили для кнопки "Купить" */
 @media (max-width: 375px) {
+  .add-to-cart {
+    left: 12px;
+    right: 12px;
+    width: calc(100% - 24px);
+    font-size: 16px;
+    height: 44px;
+  }
+  
   .product {
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-bottom: calc(44px + 28px + env(safe-area-inset-bottom));
   }
   
   /* Адаптивные стили для кнопок периода на маленьких экранах */
@@ -1689,6 +1681,9 @@ body {
 }
 
 @media (max-width: 768px) {
+  .add-to-cart {
+    font-size: 17px;
+  }
   
   /* Адаптивные стили для кнопок периода на планшетах */
   .period-buttons {
@@ -1751,6 +1746,21 @@ body {
 }
 
 @media (min-width: 1024px) {
+  .add-to-cart {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: 400px;
+    max-width: calc(100% - 32px);
+  }
+  
+  .add-to-cart:hover {
+    transform: translateX(-50%) translateY(-2px);
+  }
+  
+  .add-to-cart:active {
+    transform: translateX(-50%) translateY(0px);
+  }
   
   /* Улучшаем отображение плашки скидки на десктопе */
   .discount-badge {
@@ -1947,176 +1957,290 @@ body {
   }
 }
 
-/* Модальное окно для плашек в стиле Яндекс.Маркет */
-.label-modal {
+/* Модальное окно для информации о лейблах */
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+  backdrop-filter: blur(4px);
+  z-index: 1000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.label-modal.show {
+.modal-overlay.show {
   opacity: 1;
   visibility: visible;
 }
 
-.label-modal-content {
-  background-color: #1f1f1f;
-  border-radius: 16px 16px 0 0;
+.modal-content {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   width: 100%;
-  max-height: 70vh;
-  overflow-y: auto;
+  max-width: 100%;
+  border-radius: 20px 20px 0 0;
+  padding: 0;
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.3);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+  position: relative;
 }
 
-.label-modal.show .label-modal-content {
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.modal-content::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.03) 0%, transparent 70%);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none;
+}
+
+.modal-overlay.show .modal-content {
   transform: translateY(0);
+  animation: modalBounce 0.6s ease-out;
 }
 
-.label-modal-header {
+@keyframes modalBounce {
+  0% {
+    transform: translateY(100%);
+  }
+  70% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 24px 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.modal-header::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+  border-radius: 2px;
+}
+
+.modal-title-container {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid #2f2f2f;
+  gap: 12px;
+  opacity: 0;
+  transform: translateX(-10px);
+  animation: slideInLeft 0.5s ease-out 0.3s forwards;
 }
 
-.label-modal-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  margin: 0;
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
-.label-modal-close {
+.modal-icon {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
-  background-color: #2f2f2f;
-  border: none;
-  color: #999999;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 18px;
+  transition: transform 0.3s ease;
+  animation: modalIconPulse 2s infinite;
+  position: relative;
+  overflow: hidden;
 }
 
-.label-modal-close:hover {
-  background-color: #3f3f3f;
-  color: white;
-}
-
-.label-modal-body {
-  padding: 20px;
-}
-
-.label-modal-description {
-  color: #CACACA;
-  font-size: 16px;
-  line-height: 1.5;
-  margin: 0 0 16px 0;
-}
-
-.label-modal-features {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.label-modal-features li {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 12px;
-  color: #CACACA;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.label-modal-features li:last-child {
-  margin-bottom: 0;
-}
-
-.label-modal-features li::before {
-  content: "✓";
-  color: #15EA61;
-  font-weight: 600;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.label-modal-warning {
-  background-color: #2f2f2f;
+.modal-icon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
   border-radius: 8px;
-  padding: 12px 16px;
-  margin-top: 16px;
-  border-left: 4px solid #FF6E06;
 }
 
-.label-modal-warning-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #FF6E06;
-  margin: 0 0 8px 0;
+@keyframes modalIconPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-.label-modal-warning-text {
-  font-size: 13px;
-  color: #CACACA;
+.modal-icon:hover {
+  transform: scale(1.1);
+  animation: none;
+}
+
+.modal-icon.guarantee {
+  background: linear-gradient(135deg, #15EA61 0%, #12D657 100%);
+  box-shadow: 0 4px 12px rgba(21, 234, 97, 0.3);
+}
+
+.modal-icon.license {
+  background: linear-gradient(135deg, #29A5FF 0%, #1E90FF 100%);
+  box-shadow: 0 4px 12px rgba(41, 165, 255, 0.3);
+}
+
+.modal-icon.vpn {
+  background: linear-gradient(135deg, #FF6E06 0%, #E55A00 100%);
+  box-shadow: 0 4px 12px rgba(255, 110, 6, 0.3);
+}
+
+.modal-header h3 {
   margin: 0;
-  line-height: 1.4;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  transition: color 0.3s ease;
 }
 
-/* Адаптивные стили для модального окна */
+.modal-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  color: #999999;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translateX(10px);
+  animation: slideInRight 0.5s ease-out 0.4s forwards;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.modal-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.modal-body {
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-body::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.modal-body p {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.5s ease-out 0.5s forwards;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
-  .label-modal-content {
-    max-height: 80vh;
-    border-radius: 16px 16px 0 0;
+  .modal-header {
+    padding: 20px 20px 12px 20px;
   }
   
-  .label-modal-header {
-    padding: 14px 16px;
+  .modal-body {
+    padding: 20px;
   }
   
-  .label-modal-title {
+  .modal-body::before {
+    left: 20px;
+    right: 20px;
+  }
+  
+  .modal-header h3 {
+    font-size: 18px;
+  }
+  
+  .modal-body p {
+    font-size: 15px;
+  }
+  
+  .modal-icon {
+    width: 28px;
+    height: 28px;
     font-size: 16px;
   }
-  
-  .label-modal-body {
-    padding: 16px;
-  }
-  
-  .label-modal-description {
-    font-size: 14px;
-  }
 }
 
-@media (max-width: 375px) {
-  .label-modal-content {
-    max-height: 85vh;
-  }
-  
-  .label-modal-header {
-    padding: 12px 16px;
-  }
-  
-  .label-modal-body {
-    padding: 16px;
-  }
-  
-  .label-modal-warning {
-    padding: 10px 12px;
-  }
-}
+
+
+
