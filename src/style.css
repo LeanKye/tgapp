@@ -30,74 +30,7 @@ body {
   min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 
-/* Отступ для страниц с хедером */
-body.has-header {
-  padding-top: calc(56px + env(safe-area-inset-top)) !important;
-}
 
-/* Для страниц с хедером catalog не нужен дополнительный padding */
-body.has-header .catalog {
-  padding-top: 0 !important;
-}
-
-/* Стили для хедера */
-.app-header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: calc(56px + env(safe-area-inset-top));
-  background-color: #1f1f1f;
-  display: flex;
-  align-items: center;
-  padding: env(safe-area-inset-top) 16px 0 16px;
-  z-index: 1000;
-  border-bottom: 1px solid #2f2f2f;
-  /* Предотвращаем сворачивание при тапе на хедер */
-  touch-action: manipulation;
-}
-
-.back-button,
-.close-button {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  border-radius: 12px;
-  color: #29A5FF;
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  margin-right: 8px;
-  touch-action: manipulation;
-}
-
-.back-button:hover,
-.close-button:hover {
-  background-color: rgba(41, 165, 255, 0.1);
-}
-
-.back-button:active,
-.close-button:active {
-  transform: scale(0.96);
-  background-color: rgba(41, 165, 255, 0.2);
-}
-
-.header-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  flex: 1;
-  text-align: center;
-  margin-right: 52px; /* Компенсируем ширину кнопки назад для центрирования */
-}
-
-/* Скрытие хедера на главной странице - больше не используется */
-.app-header.hidden {
-  display: none;
-}
 
 .reset-Button {
   border: none;
@@ -133,10 +66,6 @@ body.has-header .catalog {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* Добавляем отступ снизу для фиксированной кнопки */
-  padding-bottom: calc(46px + 32px + env(safe-area-inset-bottom));
-  /* Убираем отступ сверху, так как он уже есть в body.has-header */
-  padding-top: 0;
 }
 
 .product-cover {
@@ -246,40 +175,7 @@ body.has-header .catalog {
   font-size: 16px;
 }
 
-.add-to-cart {
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
-  right: 16px;
-  display: block;
-  background-color: #29A5FF;
-  width: calc(100% - 32px);
-  height: 46px;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  z-index: 1000;
-  margin: 0;
-  /* Добавляем безопасную зону для iOS */
-  margin-bottom: env(safe-area-inset-bottom);
-  box-sizing: border-box;
-  /* Добавляем тень для лучшей видимости */
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
-  /* Добавляем плавные переходы */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
 
-.add-to-cart:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
-}
-
-.add-to-cart:active {
-  transform: translateY(0px);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2);
-}
 
 .text-gray {
   color: #868480;
@@ -424,8 +320,6 @@ body.has-header .catalog {
   gap: 8px;
   /* Предотвращаем сворачивание мини-приложения при переполнении */
   overscroll-behavior-y: none;
-  /* Отступ сверху для хедера на главной странице */
-  padding-top: calc(56px + env(safe-area-inset-top));
 }
 
 .catalog > h1 {
@@ -1758,19 +1652,7 @@ body.has-header .catalog {
   font-size: 0.8em !important;
 }
 
-/* Адаптивные стили для кнопки "Купить" */
 @media (max-width: 375px) {
-  .add-to-cart {
-    left: 12px;
-    right: 12px;
-    width: calc(100% - 24px);
-    font-size: 16px;
-    height: 44px;
-  }
-  
-  .product {
-    padding-bottom: calc(44px + 28px + env(safe-area-inset-bottom));
-  }
   
   /* Адаптивные стили для кнопок периода на маленьких экранах */
   .period-buttons {
@@ -1842,9 +1724,6 @@ body.has-header .catalog {
 }
 
 @media (max-width: 768px) {
-  .add-to-cart {
-    font-size: 17px;
-  }
   
   /* Адаптивные стили для кнопок периода на планшетах */
   .period-buttons {
@@ -1907,21 +1786,6 @@ body.has-header .catalog {
 }
 
 @media (min-width: 1024px) {
-  .add-to-cart {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: 400px;
-    max-width: calc(100% - 32px);
-  }
-  
-  .add-to-cart:hover {
-    transform: translateX(-50%) translateY(-2px);
-  }
-  
-  .add-to-cart:active {
-    transform: translateX(-50%) translateY(0px);
-  }
   
   /* Улучшаем отображение плашки скидки на десктопе */
   .discount-badge {

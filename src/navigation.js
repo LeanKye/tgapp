@@ -1,50 +1,21 @@
 // Модуль для управления навигацией в Telegram мини-приложении
 class NavigationManager {
   constructor() {
-    this.backButton = document.getElementById('back-button');
-    this.closeButton = document.getElementById('close-button');
-    this.headerTitle = document.getElementById('header-title');
+    // Убираем все ссылки на наши кнопки и элементы, используем только Telegram API
     this.init();
   }
 
   init() {
-    // Добавляем обработчик для кнопки назад
-    if (this.backButton) {
-      this.backButton.addEventListener('click', () => {
-        this.goBack();
-      });
-    }
-
-    // Добавляем обработчик для кнопки закрыть
-    if (this.closeButton) {
-      this.closeButton.addEventListener('click', () => {
-        this.closeApp();
-      });
-    }
-
-    // Устанавливаем заголовок в зависимости от страницы
-    this.setPageTitle();
-
-    // Добавляем поддержку Telegram WebApp API
+    // Инициализируем только Telegram WebApp API
     this.initTelegramWebApp();
   }
 
-  // Определение текущей страницы и установка заголовка
-  setPageTitle() {
-    const path = window.location.pathname;
-    const params = new URLSearchParams(window.location.search);
-    
-    if (!this.headerTitle) return;
-
-    if (path.includes('category.html')) {
-      const categoryName = params.get('category');
-      this.headerTitle.textContent = categoryName || 'Категория';
-    } else if (path.includes('product.html')) {
-      // Заголовок будет установлен динамически при загрузке товара
-      this.headerTitle.textContent = 'Товар';
-    } else {
-      // Главная страница
-      this.headerTitle.textContent = 'Каталог';
+  // Определение текущей страницы и установка заголовка через Telegram API
+  setPageTitle(title) {
+    // Устанавливаем заголовок только через Telegram WebApp API
+    if (window.Telegram && window.Telegram.WebApp) {
+      // Заголовок устанавливается автоматически Telegram
+      // Но мы можем сохранить функциональность для использования в других местах
     }
   }
 
@@ -71,11 +42,10 @@ class NavigationManager {
     }
   }
 
-  // Установка заголовка товара (вызывается из product.js)
+  // Установка заголовка товара через Telegram API
   setProductTitle(title) {
-    if (this.headerTitle && title) {
-      this.headerTitle.textContent = title;
-    }
+    // Заголовок устанавливается автоматически через Telegram WebApp
+    // Эта функция оставлена для совместимости, но не используется
   }
 
   // Инициализация Telegram WebApp API
@@ -83,13 +53,24 @@ class NavigationManager {
     // Проверяем, доступен ли Telegram WebApp API
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
+      const path = window.location.pathname;
+      const params = new URLSearchParams(window.location.search);
       
       // Настраиваем тему
       tg.setHeaderColor('#1f1f1f');
       tg.setBackgroundColor('#000000');
       
+      // Устанавливаем заголовки
+      if (path.includes('category.html')) {
+        const categoryName = params.get('category');
+        tg.setHeaderText(categoryName || 'Категория');
+      } else if (path.includes('product.html')) {
+        tg.setHeaderText('Товар');
+      } else {
+        tg.setHeaderText('Каталог');
+      }
+      
       // Показываем главную кнопку только на страницах товаров
-      const path = window.location.pathname;
       if (path.includes('product.html')) {
         // Главная кнопка будет настроена в product.js
         tg.MainButton.show();
@@ -105,8 +86,6 @@ class NavigationManager {
         });
       } else {
         tg.BackButton.hide();
-        // На главной странице можно показать кнопку закрытия в интерфейсе Telegram
-        // Но мы уже добавили свою кнопку в HTML
       }
 
       // Расширяем приложение
