@@ -2,6 +2,7 @@
 class NavigationManager {
   constructor() {
     this.backButton = document.getElementById('back-button');
+    this.closeButton = document.getElementById('close-button');
     this.headerTitle = document.getElementById('header-title');
     this.init();
   }
@@ -11,6 +12,13 @@ class NavigationManager {
     if (this.backButton) {
       this.backButton.addEventListener('click', () => {
         this.goBack();
+      });
+    }
+
+    // Добавляем обработчик для кнопки закрыть
+    if (this.closeButton) {
+      this.closeButton.addEventListener('click', () => {
+        this.closeApp();
       });
     }
 
@@ -50,6 +58,18 @@ class NavigationManager {
     }
   }
 
+  // Логика закрытия приложения
+  closeApp() {
+    // Проверяем, доступен ли Telegram WebApp API
+    if (window.Telegram && window.Telegram.WebApp) {
+      // Закрываем мини-приложение
+      window.Telegram.WebApp.close();
+    } else {
+      // Fallback для браузера - просто закрываем окно
+      window.close();
+    }
+  }
+
   // Установка заголовка товара (вызывается из product.js)
   setProductTitle(title) {
     if (this.headerTitle && title) {
@@ -84,6 +104,8 @@ class NavigationManager {
         });
       } else {
         tg.BackButton.hide();
+        // На главной странице можно показать кнопку закрытия в интерфейсе Telegram
+        // Но мы уже добавили свою кнопку в HTML
       }
 
       // Расширяем приложение
@@ -91,6 +113,9 @@ class NavigationManager {
       
       // Отключаем вертикальные свайпы для предотвращения закрытия
       tg.disableVerticalSwipes();
+      
+      // Устанавливаем настройки для мини-приложения
+      tg.enableClosingConfirmation();
     }
   }
 

@@ -24,11 +24,19 @@ body {
   -webkit-tap-highlight-color: transparent;
   /* Добавляем отступ сверху для хедера на внутренних страницах */
   padding-top: 0;
+  /* Поддержка iPhone с вырезом */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  /* Высота экрана с учетом safe-area */
+  min-height: 100vh;
+  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 
 /* Отступ для страниц с хедером */
 body.has-header {
   padding-top: calc(56px + env(safe-area-inset-top));
+  /* Убираем базовый padding-top для страниц с хедером */
+  padding-top: calc(56px + env(safe-area-inset-top)) !important;
 }
 
 /* Стили для хедера */
@@ -37,19 +45,19 @@ body.has-header {
   top: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  height: calc(56px + env(safe-area-inset-top));
   background-color: #1f1f1f;
   display: flex;
   align-items: center;
-  padding: 0 16px;
-  padding-top: env(safe-area-inset-top);
+  padding: env(safe-area-inset-top) 16px 0 16px;
   z-index: 1000;
   border-bottom: 1px solid #2f2f2f;
   /* Предотвращаем сворачивание при тапе на хедер */
   touch-action: manipulation;
 }
 
-.back-button {
+.back-button,
+.close-button {
   width: 44px;
   height: 44px;
   display: flex;
@@ -65,11 +73,13 @@ body.has-header {
   touch-action: manipulation;
 }
 
-.back-button:hover {
+.back-button:hover,
+.close-button:hover {
   background-color: rgba(41, 165, 255, 0.1);
 }
 
-.back-button:active {
+.back-button:active,
+.close-button:active {
   transform: scale(0.96);
   background-color: rgba(41, 165, 255, 0.2);
 }
@@ -83,7 +93,7 @@ body.has-header {
   margin-right: 52px; /* Компенсируем ширину кнопки назад для центрирования */
 }
 
-/* Скрытие хедера на главной странице */
+/* Скрытие хедера на главной странице - больше не используется */
 .app-header.hidden {
   display: none;
 }
@@ -920,6 +930,12 @@ body.has-header {
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
+  /* Предотвращаем нежелательные свайпы */
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .category-card:hover {
@@ -961,6 +977,9 @@ body.has-header {
   row-gap: 12px;
   padding: 0 0px;
   margin-bottom: 16px;
+  /* Предотвращаем нежелательные свайпы */
+  touch-action: manipulation;
+  overscroll-behavior-y: auto;
 }
 
 /* Переход на 3 колонки для средних экранов */
@@ -1011,6 +1030,12 @@ body.has-header {
   flex-direction: column;
   gap: clamp(3px, 0.5vw, 5px);
   padding-bottom: 4px;
+  /* Предотвращаем нежелательные свайпы */
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .category-product-card:hover {
@@ -1645,12 +1670,24 @@ body.has-header {
   /* Предотвращаем сворачивание мини-приложения при свайпе */
   overscroll-behavior-x: contain;
   overscroll-behavior-y: none;
+  /* Разрешаем только горизонтальный свайп */
+  touch-action: pan-x;
 }
 
 /* Touch-действия только для мобильных устройств */
 @media (hover: none) and (pointer: coarse) {
   .category-products-slider {
     touch-action: pan-x; /* Разрешаем только горизонтальные жесты на мобильных */
+  }
+  
+  /* Для мобильных устройств карточки товаров не должны мешать вертикальному скроллу */
+  .category-product-card {
+    touch-action: manipulation;
+  }
+  
+  /* Категории на мобильных */
+  .category-card {
+    touch-action: manipulation;
   }
 }
 
@@ -1661,11 +1698,23 @@ body.has-header {
     overscroll-behavior-y: auto;
     /* Позволяем вертикальному скроллу работать через слайдер */
     scroll-behavior: auto;
+    /* На десктопе разрешаем все жесты */
+    touch-action: auto;
   }
   
   /* Обеспечиваем нормальное поведение скролла для карточек товаров */
   .category-products-slider .category-product-card {
     pointer-events: auto;
+    touch-action: auto;
+  }
+  
+  /* На десктопе карточки могут иметь обычные touch-action */
+  .category-product-card {
+    touch-action: auto;
+  }
+  
+  .category-card {
+    touch-action: auto;
   }
 }
 
