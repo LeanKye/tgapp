@@ -24,30 +24,6 @@
     </div>
 
     <div class="catalog">
-    <!-- Поиск и меню как на главной странице -->
-    <div class="header-container">
-      <div class="search">
-        <div class="search-container">
-          <div class="input-container">
-            <div class="search-icon">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            <input id="search-input" placeholder="Найти товар в категории">
-          </div>
-          <div class="search-dropdown" id="search-dropdown">
-            <!-- Здесь будут появляться предложения -->
-          </div>
-        </div>
-        <button id="menu-button" class="menu-button reset-Button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-    </div>
-
     <!-- Название категории -->
     <div class="container">
       <div class="category-title" id="category-title">
@@ -67,27 +43,7 @@
       </div>
     </div>
 
-        <!-- Темный фон за меню -->
-        <div class="menu-overlay menu-closed" id="menu-overlay"></div>
-        
-        <!-- Меню -->
-        <div class="menu menu-closed" id="menu">
-            <div class="menu-top">
-                <div class="menu-title">
-                    Категории
-                </div>
-                <button class="reset-Button" id="close-menu-button">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-            </div>
-                  <div class="menu-item" data-category="Adobe">Adobe</div>
-      <div class="menu-item" data-category="Нейросети">Нейросети</div>
-      <div class="menu-item" data-category="Игры">Игры</div>
-      <div class="menu-item" data-category="Подписки">Подписки</div>
-      <div class="menu-item" data-category="Антивирусы">Антивирусы</div>
-        </div>
+
     </div>
     <script type="module" src="/src/navigation.js"></script>
     <script type="module" src="/src/category.js"></script>

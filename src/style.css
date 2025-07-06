@@ -22,8 +22,6 @@ body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  /* Добавляем отступ сверху для хедера на внутренних страницах */
-  padding-top: 0;
   /* Поддержка iPhone с вырезом */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -34,9 +32,12 @@ body {
 
 /* Отступ для страниц с хедером */
 body.has-header {
-  padding-top: calc(56px + env(safe-area-inset-top));
-  /* Убираем базовый padding-top для страниц с хедером */
   padding-top: calc(56px + env(safe-area-inset-top)) !important;
+}
+
+/* Для страниц с хедером catalog не нужен дополнительный padding */
+body.has-header .catalog {
+  padding-top: 0 !important;
 }
 
 /* Стили для хедера */
@@ -134,6 +135,8 @@ body.has-header {
   gap: 8px;
   /* Добавляем отступ снизу для фиксированной кнопки */
   padding-bottom: calc(46px + 32px + env(safe-area-inset-bottom));
+  /* Убираем отступ сверху, так как он уже есть в body.has-header */
+  padding-top: 0;
 }
 
 .product-cover {
@@ -421,6 +424,8 @@ body.has-header {
   gap: 8px;
   /* Предотвращаем сворачивание мини-приложения при переполнении */
   overscroll-behavior-y: none;
+  /* Отступ сверху для хедера на главной странице */
+  padding-top: calc(56px + env(safe-area-inset-top));
 }
 
 .catalog > h1 {

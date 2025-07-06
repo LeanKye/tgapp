@@ -43,6 +43,7 @@ class NavigationManager {
       // Заголовок будет установлен динамически при загрузке товара
       this.headerTitle.textContent = 'Товар';
     } else {
+      // Главная страница
       this.headerTitle.textContent = 'Каталог';
     }
   }
