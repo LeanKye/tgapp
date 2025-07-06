@@ -47,17 +47,22 @@ class NavigationManager {
       const isProductPage = path.includes('product.html') || window.location.search.includes('product=');
       const isMainPage = path.includes('index.html') || path === '/' || path === '/tgapp/' || path === '/tgapp/index.html';
 
-      // Включаем кнопку назад Telegram для внутренних страниц
-      if (!isMainPage) {
+      // Настройка кнопки назад/закрыть
+      // Сначала очищаем все предыдущие обработчики
+      tg.BackButton.hide();
+      
+      if (isMainPage) {
+        // На главной странице показываем кнопку, которая закрывает приложение
+        tg.BackButton.onClick(() => {
+          tg.close();
+        });
         tg.BackButton.show();
+      } else {
+        // На внутренних страницах показываем кнопку назад
         tg.BackButton.onClick(() => {
           this.goBack();
         });
-      } else {
-        // На главной странице скрываем кнопку назад
-        tg.BackButton.hide();
-        // Включаем кнопку закрытия для главной страницы
-        tg.enableClosingConfirmation();
+        tg.BackButton.show();
       }
 
       // Расширяем приложение на весь экран

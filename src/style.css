@@ -60,8 +60,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  /* Добавляем отступ снизу для фиксированной кнопки */
-  padding-bottom: calc(46px + 32px + env(safe-area-inset-bottom));
+  /* Добавляем небольшой отступ снизу */
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
 }
 
 .product-cover {
@@ -171,45 +171,7 @@ body {
   font-size: 16px;
 }
 
-.add-to-cart {
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
-  right: 16px;
-  display: block;
-  background-color: #29A5FF;
-  width: calc(100% - 32px);
-  height: 46px;
-  border-radius: 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  z-index: 1000;
-  margin: 0;
-  /* Добавляем безопасную зону для iOS */
-  margin-bottom: env(safe-area-inset-bottom);
-  box-sizing: border-box;
-  /* Добавляем тень для лучшей видимости */
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
-  /* Добавляем плавные переходы */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: pointer;
-}
 
-/* Скрываем кнопку "Купить" на всех страницах кроме страницы товара */
-body:not(.product-page) .add-to-cart {
-  display: none !important;
-}
-
-.add-to-cart:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
-}
-
-.add-to-cart:active {
-  transform: translateY(0px);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2);
-}
 
 .text-gray {
   color: #868480;
@@ -1651,18 +1613,10 @@ body:not(.product-page) .add-to-cart {
   font-size: 0.8em !important;
 }
 
-/* Адаптивные стили для кнопки "Купить" */
+/* Адаптивные стили для мобильных устройств */
 @media (max-width: 375px) {
-  .add-to-cart {
-    left: 12px;
-    right: 12px;
-    width: calc(100% - 24px);
-    font-size: 16px;
-    height: 44px;
-  }
-  
   .product {
-    padding-bottom: calc(44px + 28px + env(safe-area-inset-bottom));
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
   }
   
   /* Адаптивные стили для кнопок периода на маленьких экранах */
@@ -1735,9 +1689,6 @@ body:not(.product-page) .add-to-cart {
 }
 
 @media (max-width: 768px) {
-  .add-to-cart {
-    font-size: 17px;
-  }
   
   /* Адаптивные стили для кнопок периода на планшетах */
   .period-buttons {
@@ -1800,21 +1751,6 @@ body:not(.product-page) .add-to-cart {
 }
 
 @media (min-width: 1024px) {
-  .add-to-cart {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: 400px;
-    max-width: calc(100% - 32px);
-  }
-  
-  .add-to-cart:hover {
-    transform: translateX(-50%) translateY(-2px);
-  }
-  
-  .add-to-cart:active {
-    transform: translateX(-50%) translateY(0px);
-  }
   
   /* Улучшаем отображение плашки скидки на десктопе */
   .discount-badge {
