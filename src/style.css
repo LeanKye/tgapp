@@ -1,3 +1,17 @@
+/* Отключаем анимации до полной загрузки страницы */
+.preload * {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -ms-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
+  -webkit-animation: none !important;
+  -moz-animation: none !important;
+  -ms-animation: none !important;
+  -o-animation: none !important;
+  animation: none !important;
+}
+
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   color: rgb(255, 255, 255);
@@ -11,9 +25,18 @@
 
 body {
   margin: 0;
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  /* Предотвращаем bounce эффект в Telegram WebApp */
+  overscroll-behavior: contain;
+  /* Предотвращаем pulldown обновление и сворачивание */
+  overscroll-behavior-y: none;
+  /* Основные стили для мини-приложения */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Open Sans', 'Helvetica Neue', sans-serif;
+  background-color: #1f1f1f;
+  color: white;
 }
 
 .reset-Button {
@@ -1557,9 +1580,12 @@ body {
   gap: clamp(8px, 1.5vw, 14px);
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
+  touch-action: pan-x;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
+  /* Исправляем прокрутку для Telegram WebApp */
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
 }
 
 .category-products-slider::-webkit-scrollbar {
