@@ -1,14 +1,5 @@
 import './style.css'
 import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
-import TelegramWebApp from './telegram-webapp.js'
-
-// Отключаем анимации до полной загрузки страницы
-document.documentElement.classList.add('preload');
-
-// Включаем анимации после полной загрузки
-window.addEventListener('load', () => {
-  document.documentElement.classList.remove('preload');
-});
 
 class CategoryPage {
   constructor() {
@@ -28,9 +19,6 @@ class CategoryPage {
       window.location.href = 'index.html';
       return;
     }
-
-    // Настраиваем Telegram WebApp для страницы категории
-    this.setupTelegramWebApp();
 
     // Инициализируем компоненты
     this.initMenu();
@@ -271,22 +259,6 @@ class CategoryPage {
     });
     
     return card;
-  }
-
-  setupTelegramWebApp() {
-    if (!window.telegramWebApp.isInTelegram()) {
-      console.log('Приложение запущено не в Telegram');
-      return;
-    }
-
-    // Показываем кнопку "Назад" на странице категории
-    window.telegramWebApp.setupBackButton(() => {
-      // Возвращаемся на главную страницу при нажатии кнопки "Назад"
-      window.location.href = 'index.html';
-    });
-    
-    // Скрываем главную кнопку на странице категории
-    window.telegramWebApp.hideMainButton();
   }
 }
 

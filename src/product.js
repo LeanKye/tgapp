@@ -1,15 +1,6 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple } from './products-data.js'
 import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs'
-import TelegramWebApp from './telegram-webapp.js'
-
-// Отключаем анимации до полной загрузки страницы
-document.documentElement.classList.add('preload');
-
-// Включаем анимации после полной загрузки
-window.addEventListener('load', () => {
-  document.documentElement.classList.remove('preload');
-});
 
 // Функция для получения параметров URL
 function getUrlParameter(name) {
@@ -468,9 +459,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const product = getProductById(productId);
   renderProduct(product);
   
-  // Настраиваем Telegram WebApp для страницы товара
-  setupTelegramWebApp();
-  
   // Инициализируем компоненты после отрисовки продукта
   if (product) {
     // Небольшая задержка чтобы DOM успел обновиться
@@ -488,23 +476,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 2000);
   }
 });
-
-// Настройка Telegram WebApp для страницы товара
-function setupTelegramWebApp() {
-  if (!window.telegramWebApp.isInTelegram()) {
-    console.log('Приложение запущено не в Telegram');
-    return;
-  }
-
-  // Показываем кнопку "Назад" на странице товара
-  window.telegramWebApp.setupBackButton(() => {
-    // Возвращаемся на главную страницу при нажатии кнопки "Назад"
-    window.history.back();
-  });
-  
-  // Настраиваем главную кнопку "Купить"
-  window.telegramWebApp.setupMainButton('Купить', () => {
-    // Здесь будет логика покупки
-    window.telegramWebApp.showAlert('Функция покупки будет добавлена позже');
-  });
-}

@@ -1,14 +1,5 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard } from './products-data.js'
-import TelegramWebApp from './telegram-webapp.js'
-
-// Отключаем анимации до полной загрузки страницы
-document.documentElement.classList.add('preload');
-
-// Включаем анимации после полной загрузки
-window.addEventListener('load', () => {
-  document.documentElement.classList.remove('preload');
-});
 
 const menuButton = document.getElementById('menu-button');
 const closeMenuButton = document.getElementById('close-menu-button')
@@ -379,16 +370,17 @@ class BannerSlider {
         this.handleSwipe();
       }, { passive: true });
 
-      // Предотвращаем стандартное поведение для элементов внутри баннера
+      // Предотвращаем стандартное поведение только для четко горизонтальных свайпов
       banner.addEventListener('touchmove', (e) => {
         if (!this.touchStartX || !this.touchStartY) return;
         
-        // Позволяем горизонтальное перемещение, но предотвращаем вертикальное
         const touch = e.touches[0];
         const deltaX = Math.abs(touch.clientX - this.touchStartX);
         const deltaY = Math.abs(touch.clientY - this.touchStartY);
         
-        if (deltaX > deltaY && deltaX > 10) {
+        // Предотвращаем поведение только если это явно горизонтальный жест
+        // и есть достаточное смещение
+        if (deltaX > deltaY && deltaX > 20 && deltaY < 10) {
           e.preventDefault();
         }
       }, { passive: false });
@@ -761,9 +753,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем навигацию из бургер меню
   initMenuNavigation();
   
-  // Настраиваем Telegram WebApp для главной страницы
-  setupTelegramWebApp();
-  
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров
@@ -772,17 +761,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 100);
   });
 });
-
-// Настройка Telegram WebApp для главной страницы
-function setupTelegramWebApp() {
-  if (!window.telegramWebApp.isInTelegram()) {
-    console.log('Приложение запущено не в Telegram');
-    return;
-  }
-
-  // Скрываем кнопку "Назад" на главной странице
-  window.telegramWebApp.hideBackButton();
-  
-  // Скрываем главную кнопку на главной странице
-  window.telegramWebApp.hideMainButton();
-}

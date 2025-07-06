@@ -1,149 +1,77 @@
-// Модуль для работы с Telegram WebApp API
+// Telegram Web App настройки
 class TelegramWebApp {
   constructor() {
-    this.tg = window.Telegram?.WebApp;
-    this.isInitialized = false;
+    this.isMainPage = window.location.pathname === '/' || window.location.pathname.includes('index.html');
     this.init();
   }
 
   init() {
-    if (!this.tg) {
-      console.warn('Telegram WebApp не найден. Приложение может работать некорректно.');
-      return;
-    }
-
-    try {
-      // Расширяем приложение на весь экран
-      this.tg.expand();
-      
-      // Отключаем сворачиваемость при прокрутке
-      this.tg.disableVerticalSwipes();
-      
-      // Настраиваем внешний вид
-      this.setupTheme();
-      
-      // Готовим приложение к работе
-      this.tg.ready();
-      
-      this.isInitialized = true;
-      console.log('Telegram WebApp инициализирован');
-    } catch (error) {
-      console.error('Ошибка при инициализации Telegram WebApp:', error);
+    // Ждем загрузки Telegram WebApp SDK
+    if (window.Telegram?.WebApp) {
+      this.setupTelegramWebApp();
+    } else {
+      // Если SDK еще не загружен, ждем
+      window.addEventListener('load', () => {
+        setTimeout(() => {
+          this.setupTelegramWebApp();
+        }, 100);
+      });
     }
   }
 
-  setupTheme() {
-    if (!this.tg) return;
-
-    // Устанавливаем цвет фона хедера
-    this.tg.setHeaderColor('#1f1f1f');
+  setupTelegramWebApp() {
+    const tg = window.Telegram.WebApp;
     
-    // Устанавливаем цвет фона приложения
-    this.tg.setBackgroundColor('#1f1f1f');
-  }
-
-  // Настройка главной кнопки
-  setupMainButton(text, callback) {
-    if (!this.tg) return;
-
-    this.tg.MainButton.text = text;
-    this.tg.MainButton.onClick(callback);
-    this.tg.MainButton.show();
-  }
-
-  hideMainButton() {
-    if (!this.tg) return;
-    this.tg.MainButton.hide();
-  }
-
-  // Настройка кнопки "Назад"
-  setupBackButton(callback) {
-    if (!this.tg) return;
-
-    this.tg.BackButton.onClick(callback);
-    this.tg.BackButton.show();
-  }
-
-  hideBackButton() {
-    if (!this.tg) return;
-    this.tg.BackButton.hide();
-  }
-
-  // Закрытие приложения
-  close() {
-    if (!this.tg) return;
-    this.tg.close();
-  }
-
-  // Получение данных пользователя
-  getUserData() {
-    if (!this.tg) return null;
-    return this.tg.initDataUnsafe?.user || null;
-  }
-
-  // Показ всплывающего уведомления
-  showAlert(message) {
-    if (!this.tg) {
-      alert(message);
-      return;
-    }
-    this.tg.showAlert(message);
-  }
-
-  // Показ подтверждения
-  showConfirm(message, callback) {
-    if (!this.tg) {
-      callback(confirm(message));
-      return;
-    }
-    this.tg.showConfirm(message, callback);
-  }
-
-  // Вибрация
-  vibrate(type = 'medium') {
-    if (!this.tg) return;
+    // Расширяем приложение на весь экран
+    tg.expand();
     
-    switch (type) {
-      case 'light':
-        this.tg.HapticFeedback.impactOccurred('light');
-        break;
-      case 'medium':
-        this.tg.HapticFeedback.impactOccurred('medium');
-        break;
-      case 'heavy':
-        this.tg.HapticFeedback.impactOccurred('heavy');
-        break;
-      case 'error':
-        this.tg.HapticFeedback.notificationOccurred('error');
-        break;
-      case 'success':
-        this.tg.HapticFeedback.notificationOccurred('success');
-        break;
-      case 'warning':
-        this.tg.HapticFeedback.notificationOccurred('warning');
-        break;
+    // Отключаем возможность сворачивания при свайпе вниз
+    tg.disableVerticalSwipes();
+    
+    // Включаем подтверждение закрытия
+    tg.enableClosingConfirmation();
+    
+    // Настройка цветовой схемы
+    tg.setHeaderColor('#000000');
+    
+    // Настройка кнопки "Назад" или "Закрыть"
+    if (this.isMainPage) {
+      // На главной странице используем заголовок с кнопкой "Закрыть"
+      tg.MainButton.hide();
+      tg.BackButton.hide();
+      // В Web App заголовок автоматически показывает кнопку закрытия
+    } else {
+      // На других страницах показываем кнопку "Назад"
+      tg.BackButton.show();
+      tg.BackButton.onClick(() => {
+        if (document.referrer && document.referrer.includes(window.location.origin)) {
+          window.history.back();
+        } else {
+          window.location.href = 'index.html';
+        }
+      });
     }
-  }
 
-  // Проверка, запущено ли приложение в Telegram
-  isInTelegram() {
-    return !!this.tg;
-  }
+    // Отключаем контекстное меню
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
 
-  // Получение платформы
-  getPlatform() {
-    if (!this.tg) return 'web';
-    return this.tg.platform;
-  }
+    // Предотвращаем drag and drop
+    document.addEventListener('dragstart', (e) => {
+      e.preventDefault();
+    });
 
-  // Получение версии приложения
-  getVersion() {
-    if (!this.tg) return '1.0';
-    return this.tg.version;
+    // Отключаем выделение текста при длительном нажатии
+    document.addEventListener('selectstart', (e) => {
+      if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+      }
+    });
   }
 }
 
-// Создаем глобальный экземпляр
-window.telegramWebApp = new TelegramWebApp();
-
-export default TelegramWebApp; 
+// Инициализация при загрузке
+document.addEventListener('DOMContentLoaded', () => {
+  new TelegramWebApp();
+});
