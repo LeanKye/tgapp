@@ -18,9 +18,9 @@ function renderProduct(product) {
   // Обновляем заголовок страницы
   document.title = product.title;
   
-  // Обновляем заголовок через Telegram API
-  if (window.Telegram && window.Telegram.WebApp) {
-    window.Telegram.WebApp.setHeaderText(product.title);
+  // Обновляем заголовок в хедере
+  if (window.navigationManager) {
+    window.navigationManager.setProductTitle(product.title);
   }
 
   // Обновляем слайдер изображений

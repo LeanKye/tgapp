@@ -1,22 +1,12 @@
 // Модуль для управления навигацией в Telegram мини-приложении
 class NavigationManager {
   constructor() {
-    // Убираем все ссылки на наши кнопки и элементы, используем только Telegram API
     this.init();
   }
 
   init() {
-    // Инициализируем только Telegram WebApp API
+    // Добавляем поддержку Telegram WebApp API
     this.initTelegramWebApp();
-  }
-
-  // Определение текущей страницы и установка заголовка через Telegram API
-  setPageTitle(title) {
-    // Устанавливаем заголовок только через Telegram WebApp API
-    if (window.Telegram && window.Telegram.WebApp) {
-      // Заголовок устанавливается автоматически Telegram
-      // Но мы можем сохранить функциональность для использования в других местах
-    }
   }
 
   // Логика возврата назад
@@ -30,22 +20,12 @@ class NavigationManager {
     }
   }
 
-  // Логика закрытия приложения
-  closeApp() {
-    // Проверяем, доступен ли Telegram WebApp API
-    if (window.Telegram && window.Telegram.WebApp) {
-      // Закрываем мини-приложение
-      window.Telegram.WebApp.close();
-    } else {
-      // Fallback для браузера - просто закрываем окно
-      window.close();
-    }
-  }
-
-  // Установка заголовка товара через Telegram API
+  // Установка заголовка товара (вызывается из product.js)
   setProductTitle(title) {
-    // Заголовок устанавливается автоматически через Telegram WebApp
-    // Эта функция оставлена для совместимости, но не используется
+    // Устанавливаем заголовок в Telegram WebApp
+    if (window.Telegram && window.Telegram.WebApp && title) {
+      window.Telegram.WebApp.setHeaderColor('#1f1f1f');
+    }
   }
 
   // Инициализация Telegram WebApp API
@@ -53,24 +33,13 @@ class NavigationManager {
     // Проверяем, доступен ли Telegram WebApp API
     if (window.Telegram && window.Telegram.WebApp) {
       const tg = window.Telegram.WebApp;
-      const path = window.location.pathname;
-      const params = new URLSearchParams(window.location.search);
       
       // Настраиваем тему
       tg.setHeaderColor('#1f1f1f');
       tg.setBackgroundColor('#000000');
       
-      // Устанавливаем заголовки
-      if (path.includes('category.html')) {
-        const categoryName = params.get('category');
-        tg.setHeaderText(categoryName || 'Категория');
-      } else if (path.includes('product.html')) {
-        tg.setHeaderText('Товар');
-      } else {
-        tg.setHeaderText('Каталог');
-      }
-      
       // Показываем главную кнопку только на страницах товаров
+      const path = window.location.pathname;
       if (path.includes('product.html')) {
         // Главная кнопка будет настроена в product.js
         tg.MainButton.show();
@@ -79,23 +48,24 @@ class NavigationManager {
       }
 
       // Включаем кнопку назад Telegram для внутренних страниц
+      // На главной странице показываем кнопку "Закрыть" (через BackButton)
       if (!path.includes('index.html') && path !== '/') {
         tg.BackButton.show();
         tg.BackButton.onClick(() => {
           this.goBack();
         });
       } else {
+        // На главной странице тоже показываем кнопку, но она будет работать как "Закрыть"
         tg.BackButton.hide();
+        // Включаем кнопку закрытия для главной страницы
+        tg.enableClosingConfirmation();
       }
 
-      // Расширяем приложение
+      // Расширяем приложение на весь экран
       tg.expand();
       
-      // Отключаем вертикальные свайпы для предотвращения закрытия
-      tg.disableVerticalSwipes();
-      
-      // Устанавливаем настройки для мини-приложения
-      tg.enableClosingConfirmation();
+      // Разрешаем вертикальные свайпы для нормального скролла
+      tg.enableVerticalSwipes();
     }
   }
 
