@@ -4,6 +4,18 @@ class TelegramWebApp {
     this.init();
   }
 
+  // Определение iOS/MacOS устройств
+  isIOSorMacOS() {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const platform = navigator.platform.toLowerCase();
+    
+    const isIOS = /iphone|ipad|ipod/.test(userAgent) || 
+                  (platform.includes('mac') && 'ontouchend' in document);
+    const isMacOS = platform.includes('mac') && !('ontouchend' in document);
+    
+    return isIOS || isMacOS;
+  }
+
   // Определение главной страницы
   isMainPath() {
     const pathname = window.location.pathname;
@@ -23,8 +35,42 @@ class TelegramWebApp {
     return isMainPath && hasNoParams;
   }
 
-  // Настройка кнопки "Назад"
-  setupBackButton(tg) {
+  // Настройка кнопки "Назад" для iOS/MacOS
+  setupBackButtonIOS(tg) {
+    if (this.isMainPath()) {
+      // На главной странице - агрессивно скрываем кнопку "Назад"
+      tg.BackButton.hide();
+      tg.BackButton.offClick();
+      
+      // Дополнительные попытки скрытия с задержками
+      setTimeout(() => {
+        tg.BackButton.hide();
+      }, 100);
+      
+      setTimeout(() => {
+        tg.BackButton.hide();
+      }, 300);
+      
+      setTimeout(() => {
+        tg.BackButton.hide();
+      }, 500);
+    } else {
+      // На всех остальных страницах - показываем кнопку "Назад"
+      tg.BackButton.offClick(); // Очищаем предыдущие обработчики
+      tg.BackButton.show();
+      
+      tg.BackButton.onClick(() => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/';
+        }
+      });
+    }
+  }
+
+  // Настройка кнопки "Назад" для обычных устройств
+  setupBackButtonDefault(tg) {
     if (this.isMainPath()) {
       // На главной странице - скрываем кнопку "Назад"
       tg.BackButton.hide();
@@ -44,6 +90,15 @@ class TelegramWebApp {
           window.location.href = '/';
         }
       });
+    }
+  }
+
+  // Универсальная настройка кнопки "Назад"
+  setupBackButton(tg) {
+    if (this.isIOSorMacOS()) {
+      this.setupBackButtonIOS(tg);
+    } else {
+      this.setupBackButtonDefault(tg);
     }
   }
 
@@ -71,11 +126,17 @@ class TelegramWebApp {
     // Настройка кнопки "Назад"
     this.setupBackButton(tg);
 
-    // Отслеживание навигации
+    // Отслеживание навигации с учетом платформы
     window.addEventListener('popstate', () => {
-      setTimeout(() => {
-        this.setupBackButton(tg);
-      }, 100);
+      if (this.isIOSorMacOS()) {
+        setTimeout(() => {
+          this.setupBackButton(tg);
+        }, 200);
+      } else {
+        setTimeout(() => {
+          this.setupBackButton(tg);
+        }, 100);
+      }
     });
 
     // Настройки UI
