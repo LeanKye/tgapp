@@ -120,35 +120,144 @@ hasNoParams: ${hasNoParams}`);
       }, index * 100);
     });
 
+    // Агрессивный поиск кнопки "Назад" в DOM
+    setTimeout(() => {
+      this.hideBackButtonInDOM();
+    }, 500);
+
     // Финальная проверка через 1 секунду
     setTimeout(() => {
       const isVisible = tg.BackButton.isVisible;
       this.showDebugInfo(`Финальная проверка: кнопка видима = ${isVisible}`);
       
-      if (isVisible) {
-        // Если кнопка все еще видна, попробуем экстремальные методы
-        this.showDebugInfo('Кнопка все еще видна! Применяем экстремальные методы...');
-        
-        // Попытка скрыть через DOM
-        const backButtons = document.querySelectorAll('[data-testid="back-button"], .back-button, button[aria-label*="ack"], button[aria-label*="азад"]');
-        backButtons.forEach(btn => {
-          btn.style.display = 'none';
-          btn.style.visibility = 'hidden';
-        });
-        
-        // Попытка через CSS
-        const style = document.createElement('style');
-        style.textContent = `
-          .tg-back-button,
-          [data-testid="back-button"],
-          .back-button {
-            display: none !important;
-            visibility: hidden !important;
-          }
-        `;
-        document.head.appendChild(style);
-      }
+      // Повторный поиск в DOM
+      this.hideBackButtonInDOM();
     }, 1000);
+  }
+
+  // Поиск и скрытие кнопки "Назад" в DOM
+  hideBackButtonInDOM() {
+    const selectors = [
+      // Общие селекторы для кнопок "Назад"
+      'button[aria-label*="ack"]',
+      'button[aria-label*="азад"]',
+      'button[title*="ack"]',
+      'button[title*="азад"]',
+      '[data-testid="back-button"]',
+      '.back-button',
+      '.tg-back-button',
+      
+      // Селекторы для Telegram Web App
+      '.tgme_head_button',
+      '.tgme_head_button_back',
+      '.tg-header-back',
+      '.header-back',
+      
+      // Селекторы для элементов с иконками "назад"
+      'button svg[viewBox*="24"]',
+      'button [d*="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"]',
+      'button [d*="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"]',
+      
+      // Поиск по тексту
+      'button:contains("Назад")',
+      'button:contains("Back")',
+      'a:contains("Назад")',
+      'a:contains("Back")',
+      
+      // Поиск по классам
+      '.btn-back',
+      '.navigation-back',
+      '.nav-back',
+      
+      // Поиск в заголовке
+      'header button:first-child',
+      '.header button:first-child',
+      '.top-bar button:first-child',
+      '.nav-bar button:first-child'
+    ];
+
+    let foundButtons = [];
+    
+    selectors.forEach(selector => {
+      try {
+        const elements = document.querySelectorAll(selector);
+        elements.forEach(el => {
+          if (el && !foundButtons.includes(el)) {
+            foundButtons.push(el);
+          }
+        });
+      } catch (e) {
+        // Игнорируем ошибки селекторов
+      }
+    });
+
+    // Дополнительный поиск по тексту (для :contains которые могут не работать)
+    const allButtons = document.querySelectorAll('button, a');
+    allButtons.forEach(btn => {
+      const text = btn.textContent || btn.innerText || btn.getAttribute('aria-label') || btn.getAttribute('title');
+      if (text && (text.includes('Назад') || text.includes('Back') || text.includes('назад') || text.includes('back'))) {
+        if (!foundButtons.includes(btn)) {
+          foundButtons.push(btn);
+        }
+      }
+    });
+
+    // Поиск по позиции (первая кнопка в заголовке)
+    const headerElements = document.querySelectorAll('header, .header, .top-bar, .nav-bar, .tg-header');
+    headerElements.forEach(header => {
+      const firstButton = header.querySelector('button, a');
+      if (firstButton && !foundButtons.includes(firstButton)) {
+        foundButtons.push(firstButton);
+      }
+    });
+
+    this.showDebugInfo(`Найдено кнопок для скрытия: ${foundButtons.length}`);
+
+    // Скрываем все найденные кнопки
+    foundButtons.forEach((btn, index) => {
+      try {
+        btn.style.display = 'none';
+        btn.style.visibility = 'hidden';
+        btn.style.opacity = '0';
+        btn.style.pointerEvents = 'none';
+        btn.setAttribute('hidden', 'true');
+        
+        // Скрываем родительские элементы если они выглядят как контейнеры кнопки
+        if (btn.parentElement && btn.parentElement.children.length === 1) {
+          btn.parentElement.style.display = 'none';
+        }
+        
+        this.showDebugInfo(`Скрыта кнопка ${index + 1}: ${btn.tagName} "${btn.textContent || btn.getAttribute('aria-label') || 'без текста'}"`);
+      } catch (e) {
+        this.showDebugInfo(`Ошибка скрытия кнопки ${index + 1}: ${e.message}`);
+      }
+    });
+
+    // Добавляем глобальные CSS правила для скрытия
+    const style = document.createElement('style');
+    style.textContent = `
+      .tg-back-button,
+      [data-testid="back-button"],
+      .back-button,
+      .tgme_head_button,
+      .tgme_head_button_back,
+      .tg-header-back,
+      .header-back {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
+      /* Скрываем первую кнопку в заголовке */
+      .tg-header button:first-child,
+      header button:first-child,
+      .header button:first-child,
+      .top-bar button:first-child,
+      .nav-bar button:first-child {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
   }
 
   init() {
