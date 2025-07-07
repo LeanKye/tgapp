@@ -87,21 +87,17 @@ class TelegramWebApp {
     // Очищаем все обработчики кнопки "Назад"
     tg.BackButton.offClick();
     
-    // Дополнительные проверки для полного скрытия кнопки "Назад"
-    setTimeout(() => {
-      if (this.isMainPage()) {
-        tg.BackButton.hide();
-      }
-    }, 50);
+    // Множественные проверки для полного скрытия кнопки "Назад"
+    [10, 50, 100, 200, 300, 500, 800, 1000].forEach(delay => {
+      setTimeout(() => {
+        if (this.isMainPage()) {
+          tg.BackButton.hide();
+          tg.BackButton.offClick();
+        }
+      }, delay);
+    });
     
-    // Еще одна проверка через больший интервал
-    setTimeout(() => {
-      if (this.isMainPage()) {
-        tg.BackButton.hide();
-      }
-    }, 200);
-    
-    // Дополнительная принудительная проверка через 500ms
+    // Дополнительная принудительная проверка
     setTimeout(() => {
       this.forceBackButtonUpdate(tg);
     }, 500);
@@ -199,9 +195,24 @@ class TelegramWebApp {
     
     // Отслеживаем изменения в истории браузера
     window.addEventListener('popstate', (e) => {
+      // Немедленно проверяем, если вернулись на главную страницу
+      if (this.isMainPage()) {
+        tg.BackButton.hide();
+        tg.BackButton.offClick();
+      }
+      
       setTimeout(() => {
         this.setupNavigation(tg, true);
       }, 150);
+      
+      // Дополнительная проверка через большую задержку
+      setTimeout(() => {
+        if (this.isMainPage()) {
+          tg.BackButton.hide();
+          tg.BackButton.offClick();
+          this.forceBackButtonUpdate(tg);
+        }
+      }, 300);
     });
 
     // Отслеживаем изменения в DOM для SPA навигации
@@ -223,27 +234,69 @@ class TelegramWebApp {
 
     // Отслеживаем события фокуса и загрузки
     window.addEventListener('focus', () => {
+      // Немедленно проверяем, если мы на главной странице
+      if (this.isMainPage()) {
+        tg.BackButton.hide();
+        tg.BackButton.offClick();
+      }
+      
       this.setupNavigation(tg);
+      
       // Дополнительная проверка при возврате фокуса
       if (this.isMainPage()) {
         setTimeout(() => {
           this.forceBackButtonUpdate(tg);
         }, 100);
+        
+        // Еще одна проверка через большую задержку
+        setTimeout(() => {
+          if (this.isMainPage()) {
+            tg.BackButton.hide();
+            tg.BackButton.offClick();
+          }
+        }, 500);
       }
     });
 
     window.addEventListener('load', () => {
+      // Немедленно проверяем, если мы на главной странице
+      if (this.isMainPage()) {
+        tg.BackButton.hide();
+        tg.BackButton.offClick();
+      }
+      
       setTimeout(() => {
         this.setupNavigation(tg, true);
       }, 200);
+      
+      // Дополнительная проверка после загрузки
+      setTimeout(() => {
+        if (this.isMainPage()) {
+          tg.BackButton.hide();
+          tg.BackButton.offClick();
+          this.forceBackButtonUpdate(tg);
+        }
+      }, 400);
     });
     
     // Отслеживаем изменения видимости страницы
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && this.isMainPage()) {
+        // Немедленно скрываем кнопку "Назад" при возврате на главную
+        tg.BackButton.hide();
+        tg.BackButton.offClick();
+        
         setTimeout(() => {
           this.forceBackButtonUpdate(tg);
         }, 100);
+        
+        // Дополнительная проверка
+        setTimeout(() => {
+          if (this.isMainPage()) {
+            tg.BackButton.hide();
+            tg.BackButton.offClick();
+          }
+        }, 500);
       }
     });
     
@@ -333,12 +386,25 @@ document.addEventListener('DOMContentLoaded', () => {
 // Дополнительная инициализация при полной загрузке
 window.addEventListener('load', () => {
   if (window.telegramWebApp) {
+    // Проверяем, если мы на главной странице
+    if (window.telegramWebApp.isMainPage() && window.Telegram?.WebApp) {
+      window.Telegram.WebApp.BackButton.hide();
+      window.Telegram.WebApp.BackButton.offClick();
+    }
+    
     // Принудительно обновляем навигацию после полной загрузки
     setTimeout(() => {
       if (window.Telegram?.WebApp) {
         window.telegramWebApp.setupNavigation(window.Telegram.WebApp, true);
       }
     }, 300);
+    
+    // Дополнительная проверка для главной страницы
+    setTimeout(() => {
+      if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
+        window.checkAndHideBackButtonOnMainPage();
+      }
+    }, 500);
   }
 });
 
@@ -367,6 +433,29 @@ window.forceHideBackButton = function() {
         tg.BackButton.hide();
         tg.BackButton.offClick();
       }, i * 50);
+    }
+  }
+};
+
+// Экспорт функции для проверки и скрытия кнопки при возврате на главную
+window.checkAndHideBackButtonOnMainPage = function() {
+  if (window.telegramWebApp && window.Telegram?.WebApp) {
+    const tg = window.Telegram.WebApp;
+    
+    if (window.telegramWebApp.isMainPage()) {
+      // Немедленно скрываем
+      tg.BackButton.hide();
+      tg.BackButton.offClick();
+      
+      // Множественные попытки скрытия
+      for (let i = 0; i < 15; i++) {
+        setTimeout(() => {
+          if (window.telegramWebApp.isMainPage()) {
+            tg.BackButton.hide();
+            tg.BackButton.offClick();
+          }
+        }, i * 30);
+      }
     }
   }
 };

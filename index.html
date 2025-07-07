@@ -193,6 +193,13 @@
           window.forceHideBackButton();
         }
       }, 1500);
+      
+      // Проверка при возврате на главную страницу
+      setTimeout(() => {
+        if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
+          window.checkAndHideBackButtonOnMainPage();
+        }
+      }, 2000);
     });
   </script>
 </body>
