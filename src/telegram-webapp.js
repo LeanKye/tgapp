@@ -66,8 +66,7 @@ hasNoParams: ${hasNoParams}`);
     
     if (isMain) {
       // На главной странице - скрываем кнопку "Назад"
-      tg.BackButton.hide();
-      this.showDebugInfo('Действие: СКРЫТЬ кнопку "Назад"');
+      this.hideBackButtonForced(tg);
     } else {
       // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.show();
@@ -82,6 +81,74 @@ hasNoParams: ${hasNoParams}`);
         }
       });
     }
+  }
+
+  // Принудительное скрытие кнопки "Назад"
+  hideBackButtonForced(tg) {
+    const attempts = [
+      () => {
+        tg.BackButton.hide();
+        this.showDebugInfo('Попытка 1: tg.BackButton.hide()');
+      },
+      () => {
+        tg.BackButton.isVisible = false;
+        this.showDebugInfo('Попытка 2: установка isVisible = false');
+      },
+      () => {
+        if (tg.BackButton.element) {
+          tg.BackButton.element.style.display = 'none';
+        }
+        this.showDebugInfo('Попытка 3: style.display = none');
+      },
+      () => {
+        // Попытка через внутренние методы Telegram
+        if (tg.BackButton._hide) {
+          tg.BackButton._hide();
+        }
+        this.showDebugInfo('Попытка 4: _hide()');
+      }
+    ];
+
+    // Выполняем все попытки с интервалами
+    attempts.forEach((attempt, index) => {
+      setTimeout(() => {
+        try {
+          attempt();
+        } catch (e) {
+          this.showDebugInfo(`Ошибка в попытке ${index + 1}: ${e.message}`);
+        }
+      }, index * 100);
+    });
+
+    // Финальная проверка через 1 секунду
+    setTimeout(() => {
+      const isVisible = tg.BackButton.isVisible;
+      this.showDebugInfo(`Финальная проверка: кнопка видима = ${isVisible}`);
+      
+      if (isVisible) {
+        // Если кнопка все еще видна, попробуем экстремальные методы
+        this.showDebugInfo('Кнопка все еще видна! Применяем экстремальные методы...');
+        
+        // Попытка скрыть через DOM
+        const backButtons = document.querySelectorAll('[data-testid="back-button"], .back-button, button[aria-label*="ack"], button[aria-label*="азад"]');
+        backButtons.forEach(btn => {
+          btn.style.display = 'none';
+          btn.style.visibility = 'hidden';
+        });
+        
+        // Попытка через CSS
+        const style = document.createElement('style');
+        style.textContent = `
+          .tg-back-button,
+          [data-testid="back-button"],
+          .back-button {
+            display: none !important;
+            visibility: hidden !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    }, 1000);
   }
 
   init() {
