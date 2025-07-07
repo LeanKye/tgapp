@@ -4,23 +4,57 @@ class TelegramWebApp {
     this.init();
   }
 
-  // Определение главной страницы
+  // Отладочная функция для показа информации
+  showDebugInfo(message) {
+    // Создаем элемент для отладки если его нет
+    let debugElement = document.getElementById('telegram-debug');
+    if (!debugElement) {
+      debugElement = document.createElement('div');
+      debugElement.id = 'telegram-debug';
+      debugElement.style.cssText = `
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 12px;
+        z-index: 9999;
+        max-width: 300px;
+        white-space: pre-wrap;
+      `;
+      document.body.appendChild(debugElement);
+    }
+    
+    const timestamp = new Date().toLocaleTimeString();
+    debugElement.innerHTML = `[${timestamp}] ${message}`;
+    
+    // Автоматически скрываем через 10 секунд
+    setTimeout(() => {
+      if (debugElement) {
+        debugElement.remove();
+      }
+    }, 10000);
+  }
+
+  // Определение главной страницы (упрощенная версия)
   isMainPath() {
     const pathname = window.location.pathname;
     const search = window.location.search;
     
-    // Главная страница - это корень или index.html без параметров товаров/категорий
-    const isMainPath = pathname === '/' || 
-                      pathname === '/tgapp/' || 
-                      pathname === '/tgapp' ||
-                      pathname === '/index.html' ||
-                      pathname === '/tgapp/index.html' ||
-                      pathname.endsWith('/tgapp') ||
-                      pathname.endsWith('/tgapp/');
-    
+    // Упрощенная логика - главная страница это любая без параметров продукта или категории
     const hasNoParams = !search.includes('product=') && !search.includes('category=');
     
-    return isMainPath && hasNoParams;
+    // Считаем главной любую страницу без параметров товаров/категорий
+    const isMain = hasNoParams;
+    
+    this.showDebugInfo(`URL: ${pathname}${search}
+Параметры: ${search || 'нет'}
+Главная: ${isMain ? 'ДА' : 'НЕТ'}
+hasNoParams: ${hasNoParams}`);
+    
+    return isMain;
   }
 
   // Настройка кнопки "Назад"
@@ -28,12 +62,16 @@ class TelegramWebApp {
     // Очищаем предыдущие обработчики
     tg.BackButton.offClick();
     
-    if (this.isMainPath()) {
+    const isMain = this.isMainPath();
+    
+    if (isMain) {
       // На главной странице - скрываем кнопку "Назад"
       tg.BackButton.hide();
+      this.showDebugInfo('Действие: СКРЫТЬ кнопку "Назад"');
     } else {
       // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.show();
+      this.showDebugInfo('Действие: ПОКАЗАТЬ кнопку "Назад"');
       
       // Добавляем один обработчик для возврата
       tg.BackButton.onClick(() => {
@@ -74,6 +112,7 @@ class TelegramWebApp {
     window.addEventListener('popstate', () => {
       // Используем setTimeout чтобы дать время браузеру обновить URL
       setTimeout(() => {
+        this.showDebugInfo('Событие: popstate');
         this.setupBackButton(tg);
       }, 50);
     });
@@ -85,6 +124,7 @@ class TelegramWebApp {
     history.pushState = function() {
       originalPushState.apply(history, arguments);
       setTimeout(() => {
+        window.telegramWebApp.showDebugInfo('Событие: pushState');
         window.telegramWebApp.setupBackButton(tg);
       }, 50);
     };
@@ -92,9 +132,15 @@ class TelegramWebApp {
     history.replaceState = function() {
       originalReplaceState.apply(history, arguments);
       setTimeout(() => {
+        window.telegramWebApp.showDebugInfo('Событие: replaceState');
         window.telegramWebApp.setupBackButton(tg);
       }, 50);
     };
+
+    // Дополнительная проверка каждые 2 секунды (для отладки)
+    setInterval(() => {
+      this.setupBackButton(tg);
+    }, 2000);
 
     // Настройки UI
     this.setupUIBehavior();
