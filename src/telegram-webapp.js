@@ -30,6 +30,16 @@ class TelegramWebApp {
     return 'inner';
   }
 
+  // Проверка и обновление хедера при необходимости
+  checkAndUpdateHeader() {
+    const newPageType = this.getCurrentPageType();
+    
+    // Обновляем только если страница изменилась
+    if (this.currentPage !== newPageType) {
+      this.setupHeader();
+    }
+  }
+
   init() {
     // Ждем загрузки Telegram WebApp SDK
     if (window.Telegram?.WebApp) {
@@ -87,6 +97,13 @@ class TelegramWebApp {
 // Создаем экземпляр
 window.telegramWebApp = new TelegramWebApp();
 
+// Функция для принудительного обновления хедера
+window.updateTelegramHeader = function() {
+  if (window.telegramWebApp) {
+    window.telegramWebApp.setupHeader();
+  }
+};
+
 // Инициализация при загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
@@ -104,3 +121,5 @@ window.addEventListener('load', () => {
     }
   }, 300);
 });
+
+
