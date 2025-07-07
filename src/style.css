@@ -1834,6 +1834,21 @@ body {
   contain: layout style paint;
   /* Принудительно скрываем все что выходит за границы */
   clip-path: inset(0 0 0 0);
+  /* Ограничиваем прокрутку до последнего элемента */
+  padding-right: 16px; /* Отступ как у контейнера */
+  /* Улучшенное поведение скролла */
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+
+/* Псевдо-элемент для четкого ограничения прокрутки */
+.category-products-slider::after {
+  content: '';
+  flex-shrink: 0;
+  width: 1px; /* Минимальная ширина для остановки скролла */
+  height: 1px;
+  /* Фиксируем позицию для правильного snap */
+  scroll-snap-align: end;
 }
 
 .category-products-slider::-webkit-scrollbar {
