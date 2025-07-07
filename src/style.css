@@ -202,8 +202,11 @@ input, textarea {
 /* Убираем системные жесты на краях экрана */
 .catalog,
 .product {
-  touch-action: pan-y;
+  touch-action: none; /* Полностью отключаем системные жесты */
   overscroll-behavior: none;
+  /* Дополнительная защита от системных жестов */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
 }
 
 /* Плавное переключение контента табов */
@@ -279,9 +282,16 @@ input, textarea {
 
 body {
   margin: 0;
-  touch-action: pan-y;
+  touch-action: none; /* Полностью отключаем системные жесты */
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  /* Дополнительная защита от системных жестов iOS */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 .reset-Button {
@@ -2791,6 +2801,48 @@ html > .modal-overlay .modal-footer * {
   .modal-understand-btn {
     padding: 10px 16px;
     font-size: 14px;
+  }
+}
+
+/* Специальные стили для iOS - предотвращение системных жестов */
+@supports (-webkit-touch-callout: none) {
+  /* Это стили только для iOS */
+  html, body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    touch-action: none;
+    overscroll-behavior: none;
+    /* Предотвращаем системные жесты */
+    -webkit-overflow-scrolling: auto;
+  }
+  
+  /* Убираем системные жесты на краях экрана */
+  .catalog, .product {
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+  
+  /* Специальная зона для edge swipe */
+  .edge-swipe-area {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    overscroll-behavior: none;
+  }
+}
+
+/* Telegram WebApp специфичные стили */
+@media all and (display-mode: standalone) {
+  body {
+    /* Убираем все системные жесты в мини-приложении */
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
   }
 }
 

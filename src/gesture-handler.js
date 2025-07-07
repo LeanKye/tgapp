@@ -93,13 +93,34 @@ class GestureHandler {
     // Определяем направление движения
     const direction = this.getSwipeDirection(deltaX, deltaY);
     
+    // Более агрессивная обработка для iOS
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
     // Предотвращаем прокрутку для горизонтальных свайпов
-    if (direction === 'horizontal' && Math.abs(deltaX) > 20) {
+    if (direction === 'horizontal' && Math.abs(deltaX) > 10) {
       e.preventDefault();
+      e.stopPropagation();
       this.isSwipeInProgress = true;
       
       // Показываем визуальный фидбек
       this.showSwipeFeedback(deltaX, direction);
+    }
+    
+    // Дополнительная обработка для iOS - предотвращаем системные жесты
+    if (isIOS && Math.abs(deltaX) > 20) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Принудительно отключаем системные жесты
+      document.body.style.touchAction = 'none';
+      document.body.style.overscrollBehavior = 'none';
+    }
+    
+    // Если начинаем от левого края - это потенциальный edge swipe
+    if (this.startZone && this.startZone.isLeftEdge && deltaX > 30) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.showSwipeFeedback(deltaX, 'horizontal');
     }
   }
 
@@ -117,9 +138,21 @@ class GestureHandler {
     // Скрываем визуальный фидбек
     this.hideSwipeFeedback();
     
+    // Восстанавливаем стили после жеста
+    setTimeout(() => {
+      document.body.style.touchAction = 'none';
+      document.body.style.overscrollBehavior = 'none';
+    }, 50);
+    
     // Обрабатываем жест, если он соответствует критериям
     if (deltaTime <= this.maxSwipeTime) {
-      this.processGesture(deltaX, deltaY);
+      // Специальная обработка для edge swipe
+      if (this.startZone && this.startZone.isLeftEdge && deltaX > 50) {
+        console.log('🔄 Edge swipe detected - возврат назад');
+        this.handleSwipeRight();
+      } else {
+        this.processGesture(deltaX, deltaY);
+      }
     }
     
     // Сбрасываем состояние
@@ -240,25 +273,60 @@ class GestureHandler {
 
   // Настройка свайпа с края экрана
   setupEdgeSwipe() {
+    // Создаем более широкую зону для edge swipe на iOS
+    const edgeWidth = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 40 : 20;
+    
     let edgeSwipeArea = document.createElement('div');
     edgeSwipeArea.className = 'edge-swipe-area';
     edgeSwipeArea.style.cssText = `
       position: fixed;
       left: 0;
       top: 0;
-      width: 20px;
+      width: ${edgeWidth}px;
       height: 100vh;
       z-index: 9999;
       pointer-events: auto;
       background: transparent;
+      touch-action: none;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      overscroll-behavior: none;
     `;
     
     document.body.appendChild(edgeSwipeArea);
     
-    edgeSwipeArea.addEventListener('touchstart', (e) => {
+    // Более агрессивная обработка для iOS
+    const handleEdgeTouch = (e) => {
       e.stopPropagation();
-      this.handleTouchStart(e);
-    }, { passive: true });
+      e.preventDefault();
+      
+      // Для iOS - принудительно обрабатываем жест
+      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        const touch = e.touches[0];
+        if (touch.clientX <= edgeWidth) {
+          this.handleTouchStart(e);
+        }
+      } else {
+        this.handleTouchStart(e);
+      }
+    };
+    
+    edgeSwipeArea.addEventListener('touchstart', handleEdgeTouch, { passive: false });
+    edgeSwipeArea.addEventListener('touchmove', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      this.handleTouchMove(e);
+    }, { passive: false });
+    edgeSwipeArea.addEventListener('touchend', (e) => {
+      e.stopPropagation();
+      this.handleTouchEnd(e);
+    }, { passive: false });
+    
+    // Добавляем визуальный индикатор для отладки (только в dev режиме)
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      edgeSwipeArea.style.background = 'rgba(255, 0, 0, 0.1)';
+      console.log(`Edge swipe area created: ${edgeWidth}px width`);
+    }
   }
 
   // Визуальный фидбек для свайпов

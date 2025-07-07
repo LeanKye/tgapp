@@ -75,12 +75,17 @@ class AppInitializer {
 
   // Инициализация жестов
   initGestures() {
-    // Импортируем и инициализируем модуль gesture-handler
-    import('./gesture-handler.js').then(module => {
-      console.log('Gesture handler initialized');
-    }).catch(error => {
-      console.error('Failed to initialize gesture handler:', error);
-    });
+    // Создаем script элемент для синхронной загрузки gesture-handler
+    const gestureScript = document.createElement('script');
+    gestureScript.type = 'module';
+    gestureScript.src = './src/gesture-handler.js';
+    gestureScript.onload = () => {
+      console.log('Gesture handler loaded successfully');
+    };
+    gestureScript.onerror = () => {
+      console.error('Failed to load gesture handler');
+    };
+    document.head.appendChild(gestureScript);
   }
 
   // Инициализация bounce scroll
