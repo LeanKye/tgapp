@@ -5,7 +5,7 @@ class TelegramWebApp {
   }
 
   // Определение главной страницы
-  isMainPage() {
+  isMainPath() {
     const pathname = window.location.pathname;
     const search = window.location.search;
     
@@ -25,7 +25,7 @@ class TelegramWebApp {
 
   // Настройка кнопки "Назад"
   setupBackButton(tg) {
-    if (this.isMainPage()) {
+    if (this.isMainPath()) {
       // На главной странице - скрываем кнопку "Назад"
       tg.BackButton.hide();
       tg.BackButton.offClick();
