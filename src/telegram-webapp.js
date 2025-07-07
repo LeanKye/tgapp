@@ -169,9 +169,22 @@ class TelegramWebApp {
     // Отслеживание навигации с учетом платформы
     window.addEventListener('popstate', () => {
       if (this.isIOSMacOS) {
+        // Для iOS - множественные проверки с разными задержками
+        setTimeout(() => {
+          this.setupBackButton(tg);
+        }, 50);
+        
+        setTimeout(() => {
+          this.setupBackButton(tg);
+        }, 150);
+        
         setTimeout(() => {
           this.setupBackButton(tg);
         }, 300);
+        
+        setTimeout(() => {
+          this.setupBackButton(tg);
+        }, 500);
       } else {
         setTimeout(() => {
           this.setupBackButton(tg);
@@ -198,6 +211,33 @@ class TelegramWebApp {
           window.telegramWebApp.setupBackButton(tg);
         }, 200);
       };
+
+      // Отслеживание изменений URL
+      let currentURL = window.location.href;
+      setInterval(() => {
+        if (currentURL !== window.location.href) {
+          currentURL = window.location.href;
+          setTimeout(() => {
+            this.setupBackButton(tg);
+          }, 100);
+        }
+      }, 100);
+
+      // Отслеживание focus события для надежности
+      window.addEventListener('focus', () => {
+        setTimeout(() => {
+          this.setupBackButton(tg);
+        }, 200);
+      });
+
+      // Отслеживание видимости страницы
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          setTimeout(() => {
+            this.setupBackButton(tg);
+          }, 300);
+        }
+      });
     }
 
     // Настройки UI
