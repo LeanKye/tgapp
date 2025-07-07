@@ -65,7 +65,7 @@ hasNoParams: ${hasNoParams}`);
     const isMain = this.isMainPath();
     
     if (isMain) {
-      // На главной странице - не скрываем кнопку, а делаем её неактивной
+      // На главной странице - блокируем кнопку "Назад" и показываем кнопку "Закрыть"
       tg.BackButton.show(); // Показываем кнопку
       this.showDebugInfo('Главная страница: кнопка "Назад" отключена');
       
@@ -76,13 +76,19 @@ hasNoParams: ${hasNoParams}`);
         return false;
       });
       
+      // Показываем кнопку "Закрыть"
+      this.showCloseButton(tg);
+      
       // Дополнительно пытаемся заблокировать нативные действия
       this.blockNativeBackButton();
       
     } else {
-      // На всех остальных страницах - показываем кнопку "Назад" и делаем её активной
+      // На всех остальных страницах - показываем кнопку "Назад" и скрываем кнопку "Закрыть"
       tg.BackButton.show();
       this.showDebugInfo('Внутренняя страница: кнопка "Назад" активна');
+      
+      // Скрываем кнопку "Закрыть"
+      this.hideCloseButton(tg);
       
       // Добавляем обработчик для возврата
       tg.BackButton.onClick(() => {
@@ -93,6 +99,130 @@ hasNoParams: ${hasNoParams}`);
           window.location.href = '/';
         }
       });
+    }
+  }
+
+  // Показать кнопку "Закрыть" на главной странице
+  showCloseButton(tg) {
+    try {
+      // Метод 1: Используем MainButton как кнопку "Закрыть"
+      if (tg.MainButton) {
+        tg.MainButton.setText('Закрыть');
+        tg.MainButton.setParams({
+          color: '#ff4444',
+          textColor: '#ffffff',
+          is_visible: true,
+          is_active: true
+        });
+        tg.MainButton.show();
+        
+        // Очищаем предыдущие обработчики
+        tg.MainButton.offClick();
+        
+        // Добавляем обработчик для закрытия
+        tg.MainButton.onClick(() => {
+          this.showDebugInfo('Клик по кнопке "Закрыть"');
+          tg.close();
+        });
+        
+        this.showDebugInfo('Показана кнопка "Закрыть" через MainButton');
+      }
+      
+      // Метод 2: Попытка создать кнопку "Закрыть" в интерфейсе
+      if (tg.SettingsButton) {
+        tg.SettingsButton.show();
+        tg.SettingsButton.onClick(() => {
+          this.showDebugInfo('Клик по кнопке настроек - закрытие');
+          tg.close();
+        });
+        this.showDebugInfo('Показана кнопка настроек как "Закрыть"');
+      }
+      
+      // Метод 3: Попытка через методы управления заголовком
+      if (tg.HeaderButton) {
+        tg.HeaderButton.show();
+        tg.HeaderButton.setText('Закрыть');
+        tg.HeaderButton.onClick(() => {
+          this.showDebugInfo('Клик по кнопке заголовка - закрытие');
+          tg.close();
+        });
+        this.showDebugInfo('Показана кнопка в заголовке');
+      }
+      
+      // Метод 4: Создаем собственную кнопку "Закрыть"
+      this.createCustomCloseButton();
+      
+    } catch (e) {
+      this.showDebugInfo(`Ошибка показа кнопки "Закрыть": ${e.message}`);
+    }
+  }
+
+  // Скрыть кнопку "Закрыть" на внутренних страницах
+  hideCloseButton(tg) {
+    try {
+      if (tg.MainButton) {
+        tg.MainButton.hide();
+        this.showDebugInfo('Скрыта кнопка "Закрыть" (MainButton)');
+      }
+      
+      if (tg.SettingsButton) {
+        tg.SettingsButton.hide();
+        this.showDebugInfo('Скрыта кнопка настроек');
+      }
+      
+      if (tg.HeaderButton) {
+        tg.HeaderButton.hide();
+        this.showDebugInfo('Скрыта кнопка заголовка');
+      }
+      
+      // Скрываем собственную кнопку
+      this.hideCustomCloseButton();
+      
+    } catch (e) {
+      this.showDebugInfo(`Ошибка скрытия кнопки "Закрыть": ${e.message}`);
+    }
+  }
+
+  // Создать собственную кнопку "Закрыть"
+  createCustomCloseButton() {
+    // Удаляем предыдущую кнопку если есть
+    this.hideCustomCloseButton();
+    
+    const closeButton = document.createElement('button');
+    closeButton.id = 'telegram-close-button';
+    closeButton.innerHTML = '✕ Закрыть';
+    closeButton.style.cssText = `
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: bold;
+      z-index: 10000;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    `;
+    
+    closeButton.onclick = () => {
+      this.showDebugInfo('Клик по собственной кнопке "Закрыть"');
+      const tg = window.Telegram.WebApp;
+      tg.close();
+    };
+    
+    document.body.appendChild(closeButton);
+    this.showDebugInfo('Создана собственная кнопка "Закрыть"');
+  }
+
+  // Скрыть собственную кнопку "Закрыть"
+  hideCustomCloseButton() {
+    const existingButton = document.getElementById('telegram-close-button');
+    if (existingButton) {
+      existingButton.remove();
+      this.showDebugInfo('Удалена собственная кнопка "Закрыть"');
     }
   }
 
