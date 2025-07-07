@@ -9,29 +9,47 @@ class TelegramWebApp {
     const pathname = window.location.pathname;
     const search = window.location.search;
     
-    // Главная страница - это только корень или index.html без параметров
-    return (pathname === '/' || pathname === '/tgapp' || pathname.endsWith('/tgapp')) && 
-           !search.includes('product=') && 
-           !search.includes('category=');
+    // Главная страница для GitHub Pages
+    const isMainPath = pathname === '/' || 
+                      pathname === '/tgapp/' || 
+                      pathname === '/tgapp' ||
+                      pathname === '/index.html' ||
+                      pathname === '/tgapp/index.html' ||
+                      pathname.endsWith('/tgapp') ||
+                      pathname.endsWith('/tgapp/');
+    
+    // Проверяем, что нет параметров товаров или категорий
+    const hasNoParams = !search.includes('product=') && !search.includes('category=');
+    
+    return isMainPath && hasNoParams;
   }
 
   // Настройка хедера
   setupHeader(tg) {
     if (this.isMainPage()) {
-      // На главной странице - скрываем кнопку "Назад"
+      // На главной странице - скрываем кнопку "Назад" и настраиваем закрытие
       tg.BackButton.hide();
       tg.BackButton.offClick();
+      
+      // Включаем подтверждение закрытия на главной странице
+      tg.enableClosingConfirmation();
+      
+      // Скрываем главную кнопку
+      tg.MainButton.hide();
     } else {
       // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.show();
       tg.BackButton.offClick();
+      
+      // Отключаем подтверждение закрытия на внутренних страницах
+      tg.disableClosingConfirmation();
       
       // Добавляем обработчик для возврата
       tg.BackButton.onClick(() => {
         if (window.history.length > 1) {
           window.history.back();
         } else {
-          window.location.href = '/';
+          window.location.href = '/tgapp/';
         }
       });
     }
@@ -57,6 +75,14 @@ class TelegramWebApp {
     tg.expand();
     tg.disableVerticalSwipes();
     tg.setHeaderColor('#000000');
+    
+    // Немедленная принудительная настройка для главной страницы
+    if (this.isMainPage()) {
+      tg.BackButton.hide();
+      tg.BackButton.offClick();
+      tg.enableClosingConfirmation();
+      tg.MainButton.hide();
+    }
     
     // Настройка хедера
     this.setupHeader(tg);
@@ -162,6 +188,26 @@ window.addEventListener('load', () => {
 window.updateTelegramHeader = function() {
   if (window.telegramWebApp && window.Telegram?.WebApp) {
     window.telegramWebApp.setupHeader(window.Telegram.WebApp);
+  }
+};
+
+// Функция диагностики для проверки состояния (показывает через MainButton)
+window.showTelegramState = function() {
+  if (window.telegramWebApp && window.Telegram?.WebApp) {
+    const tg = window.Telegram.WebApp;
+    const isMain = window.telegramWebApp.isMainPage();
+    const pathname = window.location.pathname;
+    const search = window.location.search;
+    
+    const stateText = `Main: ${isMain}, Path: ${pathname}, Search: ${search}, BackBtn: ${tg.BackButton.isVisible}`;
+    
+    tg.MainButton.setText(stateText);
+    tg.MainButton.show();
+    
+    // Скрываем через 5 секунд
+    setTimeout(() => {
+      tg.MainButton.hide();
+    }, 5000);
   }
 };
 

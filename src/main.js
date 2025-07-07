@@ -758,6 +758,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.updateTelegramHeader === 'function') {
       window.updateTelegramHeader();
     }
+  }, 100);
+  
+  // Дополнительная проверка
+  setTimeout(() => {
+    if (typeof window.updateTelegramHeader === 'function') {
+      window.updateTelegramHeader();
+    }
   }, 500);
   
   // Обновляем позиционирование при изменении размера окна

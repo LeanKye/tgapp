@@ -192,6 +192,13 @@
         if (typeof window.updateTelegramHeader === 'function') {
           window.updateTelegramHeader();
         }
+      }, 500);
+      
+      // Еще одна проверка через большую задержку
+      setTimeout(() => {
+        if (typeof window.updateTelegramHeader === 'function') {
+          window.updateTelegramHeader();
+        }
       }, 1500);
     });
   </script>
