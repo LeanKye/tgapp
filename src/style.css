@@ -1190,6 +1190,8 @@ body {
 .category-products-slider .category-product-card {
   flex-shrink: 0;
   width: clamp(140px, 25vw, 180px);
+  position: relative;
+  z-index: 1; /* Не выше родительского слайдера */
 }
 
 .category-products-slider .category-product-card img {
@@ -1813,6 +1815,8 @@ body {
   touch-action: pan-x pan-y;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
+  position: relative;
+  z-index: 1; /* Ниже меню (menu z-index: 1000) */
 }
 
 .category-products-slider::-webkit-scrollbar {
