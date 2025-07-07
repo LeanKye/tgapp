@@ -30,44 +30,6 @@ class TelegramWebApp {
     return 'inner';
   }
 
-  // Настройка хедера в зависимости от страницы
-  setupHeader() {
-    if (!this.tg) return;
-    
-    const pageType = this.getCurrentPageType();
-    
-    if (pageType === 'main') {
-      // Главная страница - скрываем кнопку "Назад" (показываем кнопку "Закрыть")
-      this.tg.BackButton.hide();
-      this.tg.BackButton.offClick();
-    } else {
-      // Все остальные страницы - показываем кнопку "Назад"
-      this.tg.BackButton.show();
-      this.tg.BackButton.offClick();
-      
-      // Настраиваем действие кнопки "Назад"
-      this.tg.BackButton.onClick(() => {
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          window.location.href = '/';
-        }
-      });
-    }
-    
-    this.currentPage = pageType;
-  }
-
-  // Проверка и обновление хедера при необходимости
-  checkAndUpdateHeader() {
-    const newPageType = this.getCurrentPageType();
-    
-    // Обновляем только если страница изменилась
-    if (this.currentPage !== newPageType) {
-      this.setupHeader();
-    }
-  }
-
   init() {
     // Ждем загрузки Telegram WebApp SDK
     if (window.Telegram?.WebApp) {
@@ -125,13 +87,6 @@ class TelegramWebApp {
 // Создаем экземпляр
 window.telegramWebApp = new TelegramWebApp();
 
-// Функция для принудительного обновления хедера
-window.updateTelegramHeader = function() {
-  if (window.telegramWebApp) {
-    window.telegramWebApp.setupHeader();
-  }
-};
-
 // Инициализация при загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
@@ -149,5 +104,3 @@ window.addEventListener('load', () => {
     }
   }, 300);
 });
-
-
