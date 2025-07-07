@@ -659,12 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
       initLabelModal(); // Добавляем инициализацию модального окна
         }, 100);
     
-    // Обновляем кнопку "Назад" для страницы товара
-    setTimeout(() => {
-      if (typeof window.updateTelegramBackButton === 'function') {
-        window.updateTelegramBackButton();
-      }
-    }, 300);
+    
   }
   
   // Если продукт не найден, перенаправляем на главную
