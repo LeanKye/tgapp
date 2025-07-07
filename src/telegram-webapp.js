@@ -85,27 +85,62 @@ hasNoParams: ${hasNoParams}`);
 
   // Принудительное скрытие кнопки "Назад"
   hideBackButtonForced(tg) {
+    // Попробуем скрыть весь заголовок на главной странице
+    try {
+      // Делаем заголовок прозрачным
+      tg.setHeaderColor('rgba(0,0,0,0)');
+      this.showDebugInfo('Попытка 1: сделать заголовок прозрачным');
+      
+      // Попытка скрыть заголовок полностью
+      if (tg.setHeaderColor) {
+        tg.setHeaderColor('transparent');
+        this.showDebugInfo('Попытка 2: заголовок transparent');
+      }
+      
+      // Попытка через методы управления UI
+      if (tg.disableVerticalSwipes) {
+        tg.disableVerticalSwipes();
+        this.showDebugInfo('Попытка 3: отключить свайпы');
+      }
+      
+      // Попытка через методы управления заголовком
+      if (tg.MainButton) {
+        tg.MainButton.hide();
+        this.showDebugInfo('Попытка 4: скрыть главную кнопку');
+      }
+      
+      // Попытка через методы управления темой
+      if (tg.setBackgroundColor) {
+        tg.setBackgroundColor('#000000');
+        this.showDebugInfo('Попытка 5: установить цвет фона');
+      }
+      
+    } catch (e) {
+      this.showDebugInfo(`Ошибка при работе с заголовком: ${e.message}`);
+    }
+
+    // Стандартные попытки скрытия BackButton
     const attempts = [
       () => {
         tg.BackButton.hide();
-        this.showDebugInfo('Попытка 1: tg.BackButton.hide()');
+        this.showDebugInfo('Попытка 6: tg.BackButton.hide()');
       },
       () => {
         tg.BackButton.isVisible = false;
-        this.showDebugInfo('Попытка 2: установка isVisible = false');
+        this.showDebugInfo('Попытка 7: установка isVisible = false');
       },
       () => {
         if (tg.BackButton.element) {
           tg.BackButton.element.style.display = 'none';
         }
-        this.showDebugInfo('Попытка 3: style.display = none');
+        this.showDebugInfo('Попытка 8: style.display = none');
       },
       () => {
         // Попытка через внутренние методы Telegram
         if (tg.BackButton._hide) {
           tg.BackButton._hide();
         }
-        this.showDebugInfo('Попытка 4: _hide()');
+        this.showDebugInfo('Попытка 9: _hide()');
       }
     ];
 
@@ -115,15 +150,80 @@ hasNoParams: ${hasNoParams}`);
         try {
           attempt();
         } catch (e) {
-          this.showDebugInfo(`Ошибка в попытке ${index + 1}: ${e.message}`);
+          this.showDebugInfo(`Ошибка в попытке ${index + 6}: ${e.message}`);
         }
       }, index * 100);
     });
+
+    // Попробуем скрыть весь viewport или изменить его свойства
+    setTimeout(() => {
+      try {
+        // Попытка скрыть весь заголовок через CSS
+        const style = document.createElement('style');
+        style.textContent = `
+          /* Попытка скрыть весь заголовок */
+          .tg-viewport,
+          .tg-header,
+          .telegram-header,
+          .webview-header,
+          .header-container {
+            --tg-header-height: 0px !important;
+            margin-top: -56px !important;
+          }
+          
+          /* Попытка сместить контент вверх */
+          body {
+            margin-top: -56px !important;
+            padding-top: 56px !important;
+          }
+          
+          /* Попытка скрыть область заголовка */
+          .tg-header-container,
+          .telegram-header-container {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+          }
+        `;
+        document.head.appendChild(style);
+        this.showDebugInfo('Попытка 10: скрытие заголовка через CSS');
+      } catch (e) {
+        this.showDebugInfo(`Ошибка CSS скрытия: ${e.message}`);
+      }
+    }, 200);
 
     // Агрессивный поиск кнопки "Назад" в DOM
     setTimeout(() => {
       this.hideBackButtonInDOM();
     }, 500);
+
+    // Попытка изменить высоту viewport
+    setTimeout(() => {
+      try {
+        if (tg.expand) {
+          tg.expand();
+          this.showDebugInfo('Попытка 11: tg.expand()');
+        }
+        
+        // Попытка изменить размеры окна
+        if (tg.setViewportHeight) {
+          tg.setViewportHeight(window.innerHeight + 56);
+          this.showDebugInfo('Попытка 12: увеличить высоту viewport');
+        }
+        
+        // Попытка через методы управления UI
+        document.body.style.paddingTop = '0px';
+        document.body.style.marginTop = '0px';
+        document.documentElement.style.paddingTop = '0px';
+        document.documentElement.style.marginTop = '0px';
+        
+        this.showDebugInfo('Попытка 13: сброс отступов');
+        
+      } catch (e) {
+        this.showDebugInfo(`Ошибка изменения viewport: ${e.message}`);
+      }
+    }, 800);
 
     // Финальная проверка через 1 секунду
     setTimeout(() => {
