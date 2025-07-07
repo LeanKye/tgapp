@@ -1,127 +1,40 @@
 // Telegram Web App настройки
 class TelegramWebApp {
   constructor() {
-    this.lastPageState = null; // Для отслеживания изменений страницы
-    this.navigationUpdateTimeout = null; // Для debounce
     this.init();
   }
 
-  // Точное определение главной страницы
+  // Определение главной страницы
   isMainPage() {
     const pathname = window.location.pathname;
     const search = window.location.search;
-    const hash = window.location.hash;
     
-    // Простая и надежная логика - главная это только index.html или корень
-    const isIndexPage = pathname === '/' || 
-                       pathname === '/index.html' || 
-                       pathname.endsWith('/index.html') ||
-                       (pathname === '' && !search && !hash);
-    
-    // Дополнительно проверяем, что это не product или category страница
-    const isNotProductPage = !pathname.includes('product.html') && !search.includes('product=');
-    const isNotCategoryPage = !pathname.includes('category.html') && !search.includes('category=');
-    
-    const result = isIndexPage && isNotProductPage && isNotCategoryPage;
-    
-    return result;
+    // Главная страница - это только корень или index.html без параметров
+    return (pathname === '/' || pathname === '/index.html' || pathname.endsWith('/index.html')) && 
+           !search.includes('product=') && 
+           !search.includes('category=');
   }
 
-  // Принудительная проверка и обновление состояния кнопки "Назад"
-  forceBackButtonUpdate(tg) {
-    const isMain = this.isMainPage();
-    
-    if (isMain) {
-      // Множественные попытки скрытия
-      for (let i = 0; i < 5; i++) {
-        setTimeout(() => {
-          if (this.isMainPage()) {
-            tg.BackButton.hide();
-            tg.BackButton.offClick();
-          }
-        }, i * 10);
-      }
+  // Настройка хедера
+  setupHeader(tg) {
+    if (this.isMainPage()) {
+      // На главной странице - скрываем кнопку "Назад"
+      tg.BackButton.hide();
+      tg.BackButton.offClick();
     } else {
+      // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.show();
-    }
-  }
-
-  // Настройка навигации в зависимости от страницы с debounce
-  setupNavigation(tg, force = false) {
-    // Очищаем предыдущий таймер
-    if (this.navigationUpdateTimeout) {
-      clearTimeout(this.navigationUpdateTimeout);
-    }
-    
-    // Используем debounce для предотвращения частых обновлений
-    this.navigationUpdateTimeout = setTimeout(() => {
-      this.updateNavigationState(tg, force);
-    }, force ? 0 : 100);
-  }
-  
-  // Основная логика обновления состояния навигации
-  updateNavigationState(tg, force = false) {
-    const isMain = this.isMainPage();
-    
-    // Проверяем, нужно ли обновлять состояние
-    if (!force && this.lastPageState === isMain) {
-      return;
-    }
-    
-    // Сохраняем новое состояние
-    this.lastPageState = isMain;
-    
-    if (isMain) {
-      this.setupMainPageNavigation(tg);
-    } else {
-      this.setupInnerPageNavigation(tg);
-    }
-  }
-  
-  // Настройка навигации для главной страницы
-  setupMainPageNavigation(tg) {
-    // Принудительно скрываем кнопку "Назад"
-    tg.BackButton.hide();
-    tg.MainButton.hide();
-    
-    // Очищаем все обработчики кнопки "Назад"
-    tg.BackButton.offClick();
-    
-    // Множественные проверки для полного скрытия кнопки "Назад"
-    [10, 50, 100, 200, 300, 500, 800, 1000].forEach(delay => {
-      setTimeout(() => {
-        if (this.isMainPage()) {
-          tg.BackButton.hide();
-          tg.BackButton.offClick();
+      tg.BackButton.offClick();
+      
+      // Добавляем обработчик для возврата
+      tg.BackButton.onClick(() => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/';
         }
-      }, delay);
-    });
-    
-    // Дополнительная принудительная проверка
-    setTimeout(() => {
-      this.forceBackButtonUpdate(tg);
-    }, 500);
-  }
-  
-  // Настройка навигации для внутренних страниц
-  setupInnerPageNavigation(tg) {
-    // Скрываем главную кнопку и показываем кнопку "Назад"
-    tg.MainButton.hide();
-    tg.BackButton.show();
-    
-    // Очищаем предыдущие обработчики
-    tg.BackButton.offClick();
-    
-    // Добавляем обработчик кнопки "Назад"
-    tg.BackButton.onClick(() => {
-      // Проверяем, есть ли история для возврата
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        // Если истории нет, переходим на главную страницу
-        window.location.href = '/index.html';
-      }
-    });
+      });
+    }
   }
 
   init() {
@@ -129,7 +42,6 @@ class TelegramWebApp {
     if (window.Telegram?.WebApp) {
       this.setupTelegramWebApp();
     } else {
-      // Если SDK еще не загружен, ждем
       window.addEventListener('load', () => {
         setTimeout(() => {
           this.setupTelegramWebApp();
@@ -141,198 +53,71 @@ class TelegramWebApp {
   setupTelegramWebApp() {
     const tg = window.Telegram.WebApp;
     
-    // КРИТИЧЕСКИ ВАЖНО: Сначала скрываем кнопку "Назад" до всех проверок
-    tg.BackButton.hide();
-    tg.BackButton.offClick();
-    
-    // Расширяем приложение на весь экран
+    // Базовые настройки
     tg.expand();
-    
-    // Отключаем возможность сворачивания при свайпе вниз
     tg.disableVerticalSwipes();
-    
-    // Включаем подтверждение закрытия (только для главной страницы)
-    if (this.isMainPage()) {
-      tg.enableClosingConfirmation();
-    }
-    
-    // Настройка цветовой схемы
     tg.setHeaderColor('#000000');
     
-    // Еще раз принудительно скрываем кнопку "Назад" перед настройкой навигации
-    tg.BackButton.hide();
-    tg.BackButton.offClick();
+    // Настройка хедера
+    this.setupHeader(tg);
     
-    // Первоначальная настройка навигации
-    this.setupNavigation(tg, true);
-    
-    // Агрессивная серия проверок для главной страницы
-    if (this.isMainPage()) {
-      // Немедленно
-      tg.BackButton.hide();
-      tg.BackButton.offClick();
-      
-      // Через разные интервалы
-      [50, 100, 200, 300, 500, 1000, 2000].forEach(delay => {
-        setTimeout(() => {
-          if (this.isMainPage()) {
-            tg.BackButton.hide();
-            tg.BackButton.offClick();
-          }
-        }, delay);
-      });
-    }
-    
-    // Дополнительная принудительная проверка кнопки "Назад"
-    setTimeout(() => {
-      this.forceBackButtonUpdate(tg);
-    }, 100);
-    
-    // Еще одна проверка через большую задержку
-    setTimeout(() => {
-      this.forceBackButtonUpdate(tg);
-    }, 1000);
-    
-    // Отслеживаем изменения в истории браузера
-    window.addEventListener('popstate', (e) => {
-      // Немедленно проверяем, если вернулись на главную страницу
-      if (this.isMainPage()) {
-        tg.BackButton.hide();
-        tg.BackButton.offClick();
-      }
-      
+    // Отслеживание навигации
+    window.addEventListener('popstate', () => {
       setTimeout(() => {
-        this.setupNavigation(tg, true);
-      }, 150);
-      
-      // Дополнительная проверка через большую задержку
-      setTimeout(() => {
-        if (this.isMainPage()) {
-          tg.BackButton.hide();
-          tg.BackButton.offClick();
-          this.forceBackButtonUpdate(tg);
-        }
-      }, 300);
-    });
-
-    // Отслеживаем изменения в DOM для SPA навигации
-    const observer = new MutationObserver((mutations) => {
-      const urlChanged = mutations.some(mutation => 
-        mutation.type === 'childList' && 
-        (mutation.target === document.head || mutation.target === document.body)
-      );
-      
-      if (urlChanged) {
-        this.setupNavigation(tg);
-      }
+        this.setupHeader(tg);
+      }, 100);
     });
     
-    observer.observe(document, {
-      childList: true,
-      subtree: true
-    });
-
-    // Отслеживаем события фокуса и загрузки
-    window.addEventListener('focus', () => {
-      // Немедленно проверяем, если мы на главной странице
-      if (this.isMainPage()) {
-        tg.BackButton.hide();
-        tg.BackButton.offClick();
-      }
-      
-      this.setupNavigation(tg);
-      
-      // Дополнительная проверка при возврате фокуса
-      if (this.isMainPage()) {
-        setTimeout(() => {
-          this.forceBackButtonUpdate(tg);
-        }, 100);
-        
-        // Еще одна проверка через большую задержку
-        setTimeout(() => {
-          if (this.isMainPage()) {
-            tg.BackButton.hide();
-            tg.BackButton.offClick();
-          }
-        }, 500);
-      }
-    });
-
-    window.addEventListener('load', () => {
-      // Немедленно проверяем, если мы на главной странице
-      if (this.isMainPage()) {
-        tg.BackButton.hide();
-        tg.BackButton.offClick();
-      }
-      
-      setTimeout(() => {
-        this.setupNavigation(tg, true);
-      }, 200);
-      
-      // Дополнительная проверка после загрузки
-      setTimeout(() => {
-        if (this.isMainPage()) {
-          tg.BackButton.hide();
-          tg.BackButton.offClick();
-          this.forceBackButtonUpdate(tg);
-        }
-      }, 400);
-    });
-    
-    // Отслеживаем изменения видимости страницы
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && this.isMainPage()) {
-        // Немедленно скрываем кнопку "Назад" при возврате на главную
-        tg.BackButton.hide();
-        tg.BackButton.offClick();
-        
-        setTimeout(() => {
-          this.forceBackButtonUpdate(tg);
-        }, 100);
-        
-        // Дополнительная проверка
-        setTimeout(() => {
-          if (this.isMainPage()) {
-            tg.BackButton.hide();
-            tg.BackButton.offClick();
-          }
-        }, 500);
-      }
-    });
-    
-    // Отслеживаем изменения URL через hashchange
-    window.addEventListener('hashchange', () => {
-      this.setupNavigation(tg, true);
-    });
-
-    // Перехватываем изменения URL для SPA навигации
-    this.interceptHistoryMethods(tg);
-
-    // Настройки для улучшения UX
-    this.setupUIBehavior();
-    
-    // Периодическая проверка состояния кнопки "Назад" для главной страницы
-    this.startPeriodicBackButtonCheck(tg);
-  }
-  
-  // Перехват методов истории для отслеживания навигации
-  interceptHistoryMethods(tg) {
+    // Отслеживание изменений URL
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
     
-    history.pushState = function(...args) {
+    history.pushState = (...args) => {
       originalPushState.apply(history, args);
       setTimeout(() => {
-        this.setupNavigation(tg, true);
+        this.setupHeader(tg);
       }, 100);
-    }.bind(this);
+    };
     
-    history.replaceState = function(...args) {
+    history.replaceState = (...args) => {
       originalReplaceState.apply(history, args);
       setTimeout(() => {
-        this.setupNavigation(tg, true);
+        this.setupHeader(tg);
       }, 100);
-    }.bind(this);
+    };
+    
+    // Отслеживание фокуса
+    window.addEventListener('focus', () => {
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 100);
+    });
+    
+    // Отслеживание видимости
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        setTimeout(() => {
+          this.setupHeader(tg);
+        }, 100);
+      }
+    });
+    
+    // Дополнительные проверки через интервалы
+    setTimeout(() => {
+      this.setupHeader(tg);
+    }, 500);
+    
+    setTimeout(() => {
+      this.setupHeader(tg);
+    }, 1000);
+    
+    // Периодическая проверка каждые 3 секунды
+    setInterval(() => {
+      this.setupHeader(tg);
+    }, 3000);
+
+    // Настройки UI
+    this.setupUIBehavior();
   }
   
   // Настройка поведения UI
@@ -354,25 +139,6 @@ class TelegramWebApp {
       }
     });
   }
-  
-  // Периодическая проверка состояния кнопки "Назад"
-  startPeriodicBackButtonCheck(tg) {
-    // Проверяем каждые 2 секунды
-    setInterval(() => {
-      if (this.isMainPage() && tg.BackButton.isVisible) {
-        tg.BackButton.hide();
-        tg.BackButton.offClick();
-        
-        // Дополнительная агрессивная проверка
-        setTimeout(() => {
-          if (this.isMainPage() && tg.BackButton.isVisible) {
-            tg.BackButton.hide();
-            tg.BackButton.offClick();
-          }
-        }, 100);
-      }
-    }, 2000);
-  }
 }
 
 // Глобальная переменная для доступа к экземпляру
@@ -385,78 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Дополнительная инициализация при полной загрузке
 window.addEventListener('load', () => {
-  if (window.telegramWebApp) {
-    // Проверяем, если мы на главной странице
-    if (window.telegramWebApp.isMainPage() && window.Telegram?.WebApp) {
-      window.Telegram.WebApp.BackButton.hide();
-      window.Telegram.WebApp.BackButton.offClick();
-    }
-    
-    // Принудительно обновляем навигацию после полной загрузки
+  if (window.telegramWebApp && window.Telegram?.WebApp) {
     setTimeout(() => {
-      if (window.Telegram?.WebApp) {
-        window.telegramWebApp.setupNavigation(window.Telegram.WebApp, true);
-      }
+      window.telegramWebApp.setupHeader(window.Telegram.WebApp);
     }, 300);
-    
-    // Дополнительная проверка для главной страницы
-    setTimeout(() => {
-      if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
-        window.checkAndHideBackButtonOnMainPage();
-      }
-    }, 500);
   }
 });
 
-// Экспорт функции для принудительного обновления навигации
-window.updateTelegramNavigation = function() {
+// Экспорт функций для принудительного обновления
+window.updateTelegramHeader = function() {
   if (window.telegramWebApp && window.Telegram?.WebApp) {
-    window.telegramWebApp.setupNavigation(window.Telegram.WebApp, true);
-  }
-};
-
-// Экспорт функции для принудительного обновления кнопки "Назад"
-window.updateTelegramBackButton = function() {
-  if (window.telegramWebApp && window.Telegram?.WebApp) {
-    window.telegramWebApp.forceBackButtonUpdate(window.Telegram.WebApp);
-  }
-};
-
-// Экспорт функции для АГРЕССИВНОГО скрытия кнопки "Назад" на главной странице
-window.forceHideBackButton = function() {
-  if (window.telegramWebApp && window.Telegram?.WebApp) {
-    const tg = window.Telegram.WebApp;
-    
-    // Множественные попытки скрытия
-    for (let i = 0; i < 10; i++) {
-      setTimeout(() => {
-        tg.BackButton.hide();
-        tg.BackButton.offClick();
-      }, i * 50);
-    }
-  }
-};
-
-// Экспорт функции для проверки и скрытия кнопки при возврате на главную
-window.checkAndHideBackButtonOnMainPage = function() {
-  if (window.telegramWebApp && window.Telegram?.WebApp) {
-    const tg = window.Telegram.WebApp;
-    
-    if (window.telegramWebApp.isMainPage()) {
-      // Немедленно скрываем
-      tg.BackButton.hide();
-      tg.BackButton.offClick();
-      
-      // Множественные попытки скрытия
-      for (let i = 0; i < 15; i++) {
-        setTimeout(() => {
-          if (window.telegramWebApp.isMainPage()) {
-            tg.BackButton.hide();
-            tg.BackButton.offClick();
-          }
-        }, i * 30);
-      }
-    }
+    window.telegramWebApp.setupHeader(window.Telegram.WebApp);
   }
 };
 

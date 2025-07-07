@@ -753,33 +753,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем навигацию из бургер меню
   initMenuNavigation();
   
-  // Обновляем Telegram навигацию для главной страницы
+  // Обновляем Telegram хедер для главной страницы
   setTimeout(() => {
-    if (typeof window.updateTelegramNavigation === 'function') {
-      window.updateTelegramNavigation();
+    if (typeof window.updateTelegramHeader === 'function') {
+      window.updateTelegramHeader();
     }
   }, 500);
-  
-  // Агрессивно скрываем кнопку "Назад" на главной странице
-  setTimeout(() => {
-    if (typeof window.forceHideBackButton === 'function') {
-      window.forceHideBackButton();
-    }
-  }, 1000);
-  
-  // Дополнительная проверка и скрытие при возврате на главную
-  setTimeout(() => {
-    if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
-      window.checkAndHideBackButtonOnMainPage();
-    }
-  }, 1200);
-  
-  // Периодическая проверка каждые 3 секунды
-  setInterval(() => {
-    if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
-      window.checkAndHideBackButtonOnMainPage();
-    }
-  }, 3000);
   
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {

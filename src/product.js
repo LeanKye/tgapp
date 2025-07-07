@@ -659,10 +659,10 @@ document.addEventListener('DOMContentLoaded', () => {
       initLabelModal(); // Добавляем инициализацию модального окна
     }, 100);
     
-    // Обновляем Telegram навигацию для страницы товара
+    // Обновляем Telegram хедер для страницы товара
     setTimeout(() => {
-      if (typeof window.updateTelegramNavigation === 'function') {
-        window.updateTelegramNavigation();
+      if (typeof window.updateTelegramHeader === 'function') {
+        window.updateTelegramHeader();
       }
     }, 300);
   }

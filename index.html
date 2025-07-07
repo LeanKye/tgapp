@@ -187,19 +187,12 @@
         document.body.classList.add('loaded');
       }, 100);
       
-      // Дополнительная гарантия скрытия кнопки "Назад" на главной странице
+      // Дополнительная проверка хедера на главной странице
       setTimeout(() => {
-        if (typeof window.forceHideBackButton === 'function') {
-          window.forceHideBackButton();
+        if (typeof window.updateTelegramHeader === 'function') {
+          window.updateTelegramHeader();
         }
       }, 1500);
-      
-      // Проверка при возврате на главную страницу
-      setTimeout(() => {
-        if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
-          window.checkAndHideBackButtonOnMainPage();
-        }
-      }, 2000);
     });
   </script>
 </body>
