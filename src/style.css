@@ -2206,6 +2206,8 @@ body {
   width: 100vw !important;
   height: 100vh !important;
   background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 10000 !important;
   display: flex;
   align-items: flex-end;
@@ -2222,18 +2224,29 @@ body {
 }
 
 /* Принудительно исключаем модальное окно из bounce трансформации body */
-body.bounce-scrolling .modal-overlay,
-body.bounce-scrolling .modal-overlay * {
+body.bounce-scrolling .modal-overlay {
   transform: translateY(0px) translateZ(0) !important;
   -webkit-transform: translateY(0px) translateZ(0) !important;
 }
 
-/* Исключаем все элементы модального окна из bounce эффекта */
-.modal-overlay *,
-.modal-content *,
-.modal-header *,
-.modal-body *,
-.modal-footer * {
+/* Исключаем контент модального окна из bounce эффекта, но разрешаем анимацию */
+body.bounce-scrolling .modal-overlay.show .modal-content {
+  transform: translateY(0) translateZ(0) !important;
+  -webkit-transform: translateY(0) translateZ(0) !important;
+  animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.bounce-scrolling .modal-overlay.hide .modal-content {
+  animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Исключаем вложенные элементы модального окна из bounce эффекта */
+body.bounce-scrolling .modal-header,
+body.bounce-scrolling .modal-body,
+body.bounce-scrolling .modal-footer,
+body.bounce-scrolling .modal-header *,
+body.bounce-scrolling .modal-body *,
+body.bounce-scrolling .modal-footer * {
   transform: translateZ(0) !important;
   -webkit-transform: translateZ(0) !important;
 }
@@ -2241,6 +2254,17 @@ body.bounce-scrolling .modal-overlay * {
 .modal-overlay.show {
   opacity: 1;
   visibility: visible;
+  animation: modalOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.hide {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay.hide .modal-content {
+  animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-content {
@@ -2250,14 +2274,14 @@ body.bounce-scrolling .modal-overlay * {
   max-width: 100%;
   border-radius: 20px 20px 0 0;
   padding: 0;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
   position: relative;
-  /* Исключаем из bounce эффекта и устанавливаем правильную позицию */
-  transform: translateY(100%) translateZ(0) !important;
-  -webkit-transform: translateY(100%) translateZ(0) !important;
+  /* Позиция по умолчанию - спрятано снизу */
+  transform: translateY(100%) translateZ(0);
+  -webkit-transform: translateY(100%) translateZ(0);
   /* Убеждаемся что контент не смещается */
   margin: 0 !important;
   bottom: 0 !important;
@@ -2286,23 +2310,51 @@ body.bounce-scrolling .modal-overlay * {
 }
 
 .modal-overlay.show .modal-content {
-  transform: translateY(0) translateZ(0) !important;
-  -webkit-transform: translateY(0) translateZ(0) !important;
-  animation: modalBounce 0.35s ease-out;
+  transform: translateY(0) translateZ(0);
+  -webkit-transform: translateY(0) translateZ(0);
+  animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes modalBounce {
+@keyframes modalSlideUp {
   0% {
     transform: translateY(100%) translateZ(0);
     -webkit-transform: translateY(100%) translateZ(0);
+    opacity: 0;
   }
-  70% {
-    transform: translateY(-3px) translateZ(0);
-    -webkit-transform: translateY(-3px) translateZ(0);
+  50% {
+    opacity: 1;
   }
   100% {
     transform: translateY(0) translateZ(0);
     -webkit-transform: translateY(0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideDown {
+  0% {
+    transform: translateY(0) translateZ(0);
+    -webkit-transform: translateY(0) translateZ(0);
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(100%) translateZ(0);
+    -webkit-transform: translateY(100%) translateZ(0);
+    opacity: 0;
+  }
+}
+
+@keyframes modalOverlayFadeIn {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(2px);
   }
 }
 

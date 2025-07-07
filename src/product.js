@@ -426,16 +426,24 @@ function openLabelModal(labelText) {
   // Блокируем прокрутку страницы
   document.body.style.overflow = 'hidden';
   
-  // Показываем модальное окно
-  modal.classList.add('show');
+  // Показываем модальное окно с небольшой задержкой для плавности
+  setTimeout(() => {
+    modal.classList.add('show');
+  }, 10);
 }
 
 function closeLabelModal() {
   const modal = document.getElementById('label-modal');
+  
+  // Добавляем класс для анимации закрытия
+  modal.classList.add('hide');
   modal.classList.remove('show');
   
-  // Восстанавливаем прокрутку страницы
-  document.body.style.overflow = '';
+  // Восстанавливаем прокрутку страницы после анимации
+  setTimeout(() => {
+    document.body.style.overflow = '';
+    modal.classList.remove('hide');
+  }, 300);
 }
 
 function getLabelInfo(labelText) {
