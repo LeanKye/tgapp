@@ -184,19 +184,30 @@ input, textarea {
 @media (max-width: 1024px) and (hover: none) {
   body {
     will-change: transform;
+    /* Улучшаем рендеринг для плавных анимаций */
+    transform-style: preserve-3d;
   }
 
-  /* Обеспечиваем плавность bounce анимации */
+  /* Обеспечиваем максимальную плавность bounce анимации */
   body.bounce-scrolling {
     transform-origin: center center;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
+    /* Дополнительная оптимизация для плавности */
+    perspective: 1000px;
+    -webkit-perspective: 1000px;
+    /* Принудительное использование композитного слоя */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   /* Оптимизация производительности для bounce */
   @media (prefers-reduced-motion: no-preference) {
     body {
       transform: translateZ(0);
+      /* Дополнительная оптимизация GPU */
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
   }
 }

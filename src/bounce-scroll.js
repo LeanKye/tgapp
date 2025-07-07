@@ -4,8 +4,8 @@ class BounceScroll {
     this.isScrolling = false;
     this.scrollTimeout = null;
     this.lastScrollTop = 0;
-    this.velocityThreshold = 5; // Минимальная скорость для bounce
-    this.bounceDistance = 20; // Максимальное расстояние bounce в пикселях
+    this.velocityThreshold = 3; // Минимальная скорость для bounce (понижено для более чувствительного bounce)
+    this.bounceDistance = 150; // Максимальное расстояние bounce в пикселях (увеличено для более заметного эффекта)
     this.isAnimating = false;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
@@ -70,7 +70,14 @@ class BounceScroll {
 
     // Запускаем bounce если пользователь прокрутил до упора с достаточной скоростью
     if ((isAtTop || isAtBottom) && velocity > this.velocityThreshold && !this.isScrolling) {
+      // Добавляем небольшую задержку для предотвращения множественных bounce
+      this.isScrolling = true;
       this.triggerBounce(isAtTop ? 'top' : 'bottom', velocity);
+      
+      // Сбрасываем флаг через короткое время
+      setTimeout(() => {
+        this.isScrolling = false;
+      }, 100);
     }
   }
 
@@ -101,9 +108,9 @@ class BounceScroll {
 
     // Если пытаемся прокрутить за пределы
     if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
-      // Создаем эффект сопротивления
-      const resistance = Math.min(Math.abs(deltaY) / 100, 0.5);
-      if (resistance > 0.1) {
+      // Создаем более плавный эффект сопротивления
+      const resistance = Math.min(Math.abs(deltaY) / 80, 0.7); // Увеличиваем максимальное сопротивление
+      if (resistance > 0.05) { // Понижаем порог для более чувствительной реакции
         e.preventDefault();
         this.applyResistance(deltaY > 0 ? 'top' : 'bottom', resistance);
       }
@@ -120,9 +127,9 @@ class BounceScroll {
     const isAtTop = scrollTop <= 0;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
 
-    // Если была попытка прокрутки за пределы с высокой скоростью
-    if ((isAtTop || isAtBottom) && this.touchVelocity > 0.5) {
-      this.triggerBounce(isAtTop ? 'top' : 'bottom', this.touchVelocity * 20);
+    // Если была попытка прокрутки за пределы с достаточной скоростью
+    if ((isAtTop || isAtBottom) && this.touchVelocity > 0.3) { // Понижаем порог для более чувствительного bounce
+      this.triggerBounce(isAtTop ? 'top' : 'bottom', this.touchVelocity * 25); // Увеличиваем множитель для более выраженного эффекта
     }
 
     // Убираем эффект сопротивления
@@ -147,21 +154,24 @@ class BounceScroll {
     const velocity = Math.abs(deltaY);
 
     if ((isAtTop && deltaY < 0) || (isAtBottom && deltaY > 0)) {
-      if (velocity > 50) { // Пороговое значение для колеса мыши
+      if (velocity > 30) { // Понижаем пороговое значение для более чувствительного bounce
         e.preventDefault();
-        this.triggerBounce(deltaY < 0 ? 'top' : 'bottom', velocity / 10);
+        this.triggerBounce(deltaY < 0 ? 'top' : 'bottom', velocity / 8); // Увеличиваем чувствительность
       }
     }
   }
 
   applyResistance(direction, intensity) {
     const body = document.body;
+    
+    // Применяем более плавную кривую сопротивления
+    const smoothIntensity = Math.pow(intensity, 0.7); // Делаем кривую более плавной
     const translateY = direction === 'top' ? 
-      Math.min(intensity * this.bounceDistance, this.bounceDistance) : 
-      -Math.min(intensity * this.bounceDistance, this.bounceDistance);
+      Math.min(smoothIntensity * this.bounceDistance * 0.8, this.bounceDistance) : 
+      -Math.min(smoothIntensity * this.bounceDistance * 0.8, this.bounceDistance);
     
     body.classList.add('bounce-scrolling');
-    body.style.transition = 'transform 0.1s ease-out';
+    body.style.transition = 'transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Более плавный переход
     body.style.transform = `translateY(${translateY}px)`;
   }
 
@@ -174,34 +184,42 @@ class BounceScroll {
     // Добавляем класс для оптимизации
     body.classList.add('bounce-scrolling');
     
-    // Вычисляем силу bounce на основе скорости
-    const bounceIntensity = Math.min(velocity / 10, 1);
-    const maxBounce = this.bounceDistance * bounceIntensity;
+    // Вычисляем силу bounce на основе скорости с более плавной кривой
+    const bounceIntensity = Math.min(Math.pow(velocity / 8, 0.8), 1);
+    const maxBounce = this.bounceDistance * Math.max(bounceIntensity, 0.4); // Минимум 40% bounce
     
     const translateY = direction === 'top' ? maxBounce : -maxBounce;
     
-    // Фаза 1: Bounce
-    body.style.transition = 'transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    // Фаза 1: Bounce с более тягучей анимацией
+    body.style.transition = 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Более тягучая easing
     body.style.transform = `translateY(${translateY}px)`;
     
-    // Фаза 2: Возврат в исходное положение
+    // Фаза 2: Медленный возврат с затуханием
     setTimeout(() => {
-      body.style.transition = 'transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      body.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Более длинный и плавный возврат
       body.style.transform = 'translateY(0px)';
       
       // Финальная очистка
       setTimeout(() => {
         this.resetTransform();
         this.isAnimating = false;
-      }, 250);
-    }, 150);
+      }, 600); // Увеличено время для завершения анимации
+    }, 350); // Увеличено время bounce фазы
   }
 
   resetTransform() {
     const body = document.body;
-    body.style.transition = '';
-    body.style.transform = '';
-    body.classList.remove('bounce-scrolling');
+    
+    // Плавно убираем transform
+    body.style.transition = 'transform 0.2s ease-out';
+    body.style.transform = 'translateY(0px)';
+    
+    // Через небольшое время полностью очищаем стили
+    setTimeout(() => {
+      body.style.transition = '';
+      body.style.transform = '';
+      body.classList.remove('bounce-scrolling');
+    }, 200);
   }
 
   // Функция для включения/отключения bounce эффекта
