@@ -12,7 +12,7 @@ class TelegramWebApp {
     const search = window.location.search;
     
     // Главная страница - index.html или корень
-    if (pathname === '/' || pathname === '' || pathname.endsWith('/index.html')) {
+    if (pathname === '/' || pathname === '' || pathname.endsWith('/tgapp')) {
       return 'main';
     }
     
@@ -28,6 +28,34 @@ class TelegramWebApp {
     
     // По умолчанию считаем внутренней страницей
     return 'inner';
+  }
+
+  // Настройка хедера в зависимости от страницы
+  setupHeader() {
+    if (!this.tg) return;
+    
+    const pageType = this.getCurrentPageType();
+    
+    if (pageType === 'main') {
+      // Главная страница - скрываем кнопку "Назад" (показываем кнопку "Закрыть")
+      this.tg.BackButton.hide();
+      this.tg.BackButton.offClick();
+    } else {
+      // Все остальные страницы - показываем кнопку "Назад"
+      this.tg.BackButton.show();
+      this.tg.BackButton.offClick();
+      
+      // Настраиваем действие кнопки "Назад"
+      this.tg.BackButton.onClick(() => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/';
+        }
+      });
+    }
+    
+    this.currentPage = pageType;
   }
 
   // Проверка и обновление хедера при необходимости
