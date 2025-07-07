@@ -245,9 +245,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Отладочная информация
     const bounceScroll = window.bounceScroll;
     if (bounceScroll && bounceScroll.isMobile !== undefined) {
-      console.log('🎾 Native-style Bounce Scroll:', bounceScroll.isMobile ? 'включен (мобильное устройство)' : 'отключен (десктоп)');
+      // Bounce scroll активен
       if (bounceScroll.isMobile) {
-        console.log('📱 Режим: Real-time bounce как в Telegram/Яндекс.Маркет');
+        // Real-time bounce режим
       }
     }
   }

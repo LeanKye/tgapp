@@ -24,30 +24,24 @@ class TelegramWebApp {
     
     const result = isIndexPage && isNotProductPage && isNotCategoryPage;
     
-    console.log('🔍 Анализ страницы:', {
-      pathname,
-      search,
-      hash,
-      isIndexPage,
-      isNotProductPage,
-      isNotCategoryPage,
-      result,
-      fullUrl: window.location.href
-    });
-    
     return result;
   }
 
   // Принудительная проверка и обновление состояния кнопки "Назад"
   forceBackButtonUpdate(tg) {
-    console.log('🔧 Принудительное обновление состояния кнопки "Назад"');
+    const isMain = this.isMainPage();
     
-    if (this.isMainPage()) {
-      console.log('🏠 Принудительно скрываем кнопку "Назад" на главной странице');
-      tg.BackButton.hide();
-      tg.BackButton.offClick();
+    if (isMain) {
+      // Множественные попытки скрытия
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          if (this.isMainPage()) {
+            tg.BackButton.hide();
+            tg.BackButton.offClick();
+          }
+        }, i * 10);
+      }
     } else {
-      console.log('📄 Принудительно показываем кнопку "Назад" на внутренней странице');
       tg.BackButton.show();
     }
   }
@@ -68,19 +62,9 @@ class TelegramWebApp {
   // Основная логика обновления состояния навигации
   updateNavigationState(tg, force = false) {
     const isMain = this.isMainPage();
-    const currentUrl = window.location.href;
-    
-    console.log('🔄 Обновление навигации:', {
-      isMain,
-      lastState: this.lastPageState,
-      currentUrl,
-      force,
-      backButtonVisible: tg.BackButton.isVisible
-    });
     
     // Проверяем, нужно ли обновлять состояние
     if (!force && this.lastPageState === isMain) {
-      console.log('⏭️ Состояние не изменилось, пропускаем обновление');
       return;
     }
     
@@ -96,8 +80,6 @@ class TelegramWebApp {
   
   // Настройка навигации для главной страницы
   setupMainPageNavigation(tg) {
-    console.log('🏠 Настройка главной страницы');
-    
     // Принудительно скрываем кнопку "Назад"
     tg.BackButton.hide();
     tg.MainButton.hide();
@@ -109,7 +91,6 @@ class TelegramWebApp {
     setTimeout(() => {
       if (this.isMainPage()) {
         tg.BackButton.hide();
-        console.log('✅ Главная страница: кнопка "Назад" окончательно скрыта');
       }
     }, 50);
     
@@ -117,7 +98,6 @@ class TelegramWebApp {
     setTimeout(() => {
       if (this.isMainPage()) {
         tg.BackButton.hide();
-        console.log('✅ Главная страница: финальная проверка - кнопка "Назад" скрыта');
       }
     }, 200);
     
@@ -129,8 +109,6 @@ class TelegramWebApp {
   
   // Настройка навигации для внутренних страниц
   setupInnerPageNavigation(tg) {
-    console.log('📄 Настройка внутренней страницы');
-    
     // Скрываем главную кнопку и показываем кнопку "Назад"
     tg.MainButton.hide();
     tg.BackButton.show();
@@ -140,20 +118,14 @@ class TelegramWebApp {
     
     // Добавляем обработчик кнопки "Назад"
     tg.BackButton.onClick(() => {
-      console.log('⬅️ Нажата кнопка "Назад"');
-      
       // Проверяем, есть ли история для возврата
       if (window.history.length > 1) {
-        console.log('📚 Используем history.back()');
         window.history.back();
       } else {
-        console.log('🏠 Истории нет, переходим на главную');
         // Если истории нет, переходим на главную страницу
         window.location.href = '/index.html';
       }
     });
-    
-    console.log('✅ Внутренняя страница: кнопка "Назад" настроена');
   }
 
   init() {
@@ -173,9 +145,9 @@ class TelegramWebApp {
   setupTelegramWebApp() {
     const tg = window.Telegram.WebApp;
     
-    console.log('🚀 Инициализация Telegram WebApp SDK');
-    console.log('📱 Версия SDK:', tg.version);
-    console.log('🎨 Цветовая схема:', tg.colorScheme);
+    // КРИТИЧЕСКИ ВАЖНО: Сначала скрываем кнопку "Назад" до всех проверок
+    tg.BackButton.hide();
+    tg.BackButton.offClick();
     
     // Расширяем приложение на весь экран
     tg.expand();
@@ -191,10 +163,31 @@ class TelegramWebApp {
     // Настройка цветовой схемы
     tg.setHeaderColor('#000000');
     
+    // Еще раз принудительно скрываем кнопку "Назад" перед настройкой навигации
+    tg.BackButton.hide();
+    tg.BackButton.offClick();
+    
     // Первоначальная настройка навигации
     this.setupNavigation(tg, true);
     
-    // Дополнительная принудительная проверка кнопки "Назад" для главной страницы
+    // Агрессивная серия проверок для главной страницы
+    if (this.isMainPage()) {
+      // Немедленно
+      tg.BackButton.hide();
+      tg.BackButton.offClick();
+      
+      // Через разные интервалы
+      [50, 100, 200, 300, 500, 1000, 2000].forEach(delay => {
+        setTimeout(() => {
+          if (this.isMainPage()) {
+            tg.BackButton.hide();
+            tg.BackButton.offClick();
+          }
+        }, delay);
+      });
+    }
+    
+    // Дополнительная принудительная проверка кнопки "Назад"
     setTimeout(() => {
       this.forceBackButtonUpdate(tg);
     }, 100);
@@ -206,7 +199,6 @@ class TelegramWebApp {
     
     // Отслеживаем изменения в истории браузера
     window.addEventListener('popstate', (e) => {
-      console.log('📍 Событие popstate, обновляем навигацию');
       setTimeout(() => {
         this.setupNavigation(tg, true);
       }, 150);
@@ -232,6 +224,12 @@ class TelegramWebApp {
     // Отслеживаем события фокуса и загрузки
     window.addEventListener('focus', () => {
       this.setupNavigation(tg);
+      // Дополнительная проверка при возврате фокуса
+      if (this.isMainPage()) {
+        setTimeout(() => {
+          this.forceBackButtonUpdate(tg);
+        }, 100);
+      }
     });
 
     window.addEventListener('load', () => {
@@ -240,9 +238,17 @@ class TelegramWebApp {
       }, 200);
     });
     
+    // Отслеживаем изменения видимости страницы
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && this.isMainPage()) {
+        setTimeout(() => {
+          this.forceBackButtonUpdate(tg);
+        }, 100);
+      }
+    });
+    
     // Отслеживаем изменения URL через hashchange
     window.addEventListener('hashchange', () => {
-      console.log('🔗 Изменился hash, обновляем навигацию');
       this.setupNavigation(tg, true);
     });
 
@@ -251,6 +257,9 @@ class TelegramWebApp {
 
     // Настройки для улучшения UX
     this.setupUIBehavior();
+    
+    // Периодическая проверка состояния кнопки "Назад" для главной страницы
+    this.startPeriodicBackButtonCheck(tg);
   }
   
   // Перехват методов истории для отслеживания навигации
@@ -259,7 +268,6 @@ class TelegramWebApp {
     const originalReplaceState = history.replaceState;
     
     history.pushState = function(...args) {
-      console.log('📝 history.pushState вызван:', args[2]);
       originalPushState.apply(history, args);
       setTimeout(() => {
         this.setupNavigation(tg, true);
@@ -267,7 +275,6 @@ class TelegramWebApp {
     }.bind(this);
     
     history.replaceState = function(...args) {
-      console.log('🔄 history.replaceState вызван:', args[2]);
       originalReplaceState.apply(history, args);
       setTimeout(() => {
         this.setupNavigation(tg, true);
@@ -294,6 +301,25 @@ class TelegramWebApp {
       }
     });
   }
+  
+  // Периодическая проверка состояния кнопки "Назад"
+  startPeriodicBackButtonCheck(tg) {
+    // Проверяем каждые 2 секунды
+    setInterval(() => {
+      if (this.isMainPage() && tg.BackButton.isVisible) {
+        tg.BackButton.hide();
+        tg.BackButton.offClick();
+        
+        // Дополнительная агрессивная проверка
+        setTimeout(() => {
+          if (this.isMainPage() && tg.BackButton.isVisible) {
+            tg.BackButton.hide();
+            tg.BackButton.offClick();
+          }
+        }, 100);
+      }
+    }, 2000);
+  }
 }
 
 // Глобальная переменная для доступа к экземпляру
@@ -319,7 +345,6 @@ window.addEventListener('load', () => {
 // Экспорт функции для принудительного обновления навигации
 window.updateTelegramNavigation = function() {
   if (window.telegramWebApp && window.Telegram?.WebApp) {
-    console.log('🔄 Принудительное обновление навигации');
     window.telegramWebApp.setupNavigation(window.Telegram.WebApp, true);
   }
 };
@@ -327,7 +352,23 @@ window.updateTelegramNavigation = function() {
 // Экспорт функции для принудительного обновления кнопки "Назад"
 window.updateTelegramBackButton = function() {
   if (window.telegramWebApp && window.Telegram?.WebApp) {
-    console.log('🔄 Принудительное обновление кнопки "Назад"');
     window.telegramWebApp.forceBackButtonUpdate(window.Telegram.WebApp);
   }
 };
+
+// Экспорт функции для АГРЕССИВНОГО скрытия кнопки "Назад" на главной странице
+window.forceHideBackButton = function() {
+  if (window.telegramWebApp && window.Telegram?.WebApp) {
+    const tg = window.Telegram.WebApp;
+    
+    // Множественные попытки скрытия
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => {
+        tg.BackButton.hide();
+        tg.BackButton.offClick();
+      }, i * 50);
+    }
+  }
+};
+
+

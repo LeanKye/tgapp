@@ -760,6 +760,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 500);
   
+  // Агрессивно скрываем кнопку "Назад" на главной странице
+  setTimeout(() => {
+    if (typeof window.forceHideBackButton === 'function') {
+      window.forceHideBackButton();
+    }
+  }, 1000);
+  
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров

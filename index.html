@@ -186,6 +186,13 @@
         document.body.classList.remove('preload');
         document.body.classList.add('loaded');
       }, 100);
+      
+      // Дополнительная гарантия скрытия кнопки "Назад" на главной странице
+      setTimeout(() => {
+        if (typeof window.forceHideBackButton === 'function') {
+          window.forceHideBackButton();
+        }
+      }, 1500);
     });
   </script>
 </body>
