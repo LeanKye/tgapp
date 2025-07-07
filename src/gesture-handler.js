@@ -36,13 +36,19 @@ class GestureHandler {
   }
   
   showGestureInfo() {
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isTelegram = window.Telegram && window.Telegram.WebApp;
+    
     console.log(`
 🎯 Система жестов активирована!
 
 📱 Доступные жесты:
   • Свайп вправо → Возврат назад
   • Свайп влево → Вперед (если доступно)
-  • Edge swipe → Свайп с левого края экрана
+  • Edge swipe → Свайп с левого края экрана (${isIOS || isTelegram ? '50px' : '30px'} зона)
+
+${isIOS ? '🍎 iOS оптимизация активна - увеличенная чувствительность edge swipe' : ''}
+${isTelegram ? '🔗 Telegram WebApp интеграция активна' : ''}
 
 ⚙️ Управление:
   • enableGestures() - включить все жесты
@@ -117,10 +123,22 @@ class GestureHandler {
     }
     
     // Если начинаем от левого края - это потенциальный edge swipe
-    if (this.startZone && this.startZone.isLeftEdge && deltaX > 30) {
-      e.preventDefault();
-      e.stopPropagation();
-      this.showSwipeFeedback(deltaX, 'horizontal');
+    if (this.startZone && this.startZone.isLeftEdge) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isTelegram = window.Telegram && window.Telegram.WebApp;
+      const threshold = isIOS || isTelegram ? 20 : 30; // Меньший порог для начала фидбека
+      
+      if (deltaX > threshold) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.showSwipeFeedback(deltaX, 'horizontal');
+        
+        // Дополнительная защита от системных жестов на iOS
+        if (isIOS) {
+          document.body.style.touchAction = 'none';
+          document.body.style.overscrollBehavior = 'none';
+        }
+      }
     }
   }
 
@@ -147,7 +165,11 @@ class GestureHandler {
     // Обрабатываем жест, если он соответствует критериям
     if (deltaTime <= this.maxSwipeTime) {
       // Специальная обработка для edge swipe
-      if (this.startZone && this.startZone.isLeftEdge && deltaX > 50) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isTelegram = window.Telegram && window.Telegram.WebApp;
+      const edgeThreshold = isIOS || isTelegram ? 40 : 50; // Меньший порог для iOS/Telegram
+      
+      if (this.startZone && this.startZone.isLeftEdge && deltaX > edgeThreshold) {
         console.log('🔄 Edge swipe detected - возврат назад');
         this.handleSwipeRight();
       } else {
@@ -177,7 +199,11 @@ class GestureHandler {
   getStartZone(x, y) {
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const edgeThreshold = 20;
+    
+    // Увеличиваем зону edge для iOS и Telegram WebApp
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isTelegram = window.Telegram && window.Telegram.WebApp;
+    const edgeThreshold = isIOS || isTelegram ? 50 : 30;
     
     return {
       isLeftEdge: x <= edgeThreshold,
@@ -227,13 +253,37 @@ class GestureHandler {
   handleSwipeRight() {
     console.log('🔄 Свайп вправо - попытка вернуться назад');
     
+    // Специальная обработка для Telegram WebApp
+    const isTelegram = window.Telegram && window.Telegram.WebApp;
+    
+    if (isTelegram) {
+      // В Telegram WebApp используем Telegram API для навигации если доступно
+      try {
+        if (window.Telegram.WebApp.BackButton) {
+          this.showNavigationFeedback('назад');
+          window.Telegram.WebApp.BackButton.onClick(() => {
+            if (!this.isMainPage()) {
+              window.history.back();
+            } else {
+              window.location.href = window.location.origin + '/tgapp/';
+            }
+          });
+          return;
+        }
+      } catch (e) {
+        console.log('Telegram BackButton API недоступен, используем стандартную навигацию');
+      }
+    }
+    
     // Проверяем, можем ли вернуться назад
     if (window.history.length > 1 && !this.isMainPage()) {
       this.showNavigationFeedback('назад');
       window.history.back();
     } else {
       this.showNavigationFeedback('главная');
-      window.location.href = '/tgapp/';
+      // Более надёжный способ перехода на главную для разных окружений
+      const baseUrl = window.location.origin + window.location.pathname.replace(/\/[^\/]*$/, '');
+      window.location.href = baseUrl.endsWith('/tgapp') ? baseUrl + '/' : baseUrl + '/tgapp/';
     }
   }
 
@@ -273,8 +323,10 @@ class GestureHandler {
 
   // Настройка свайпа с края экрана
   setupEdgeSwipe() {
-    // Создаем более широкую зону для edge swipe на iOS
-    const edgeWidth = /iPad|iPhone|iPod/.test(navigator.userAgent) ? 40 : 20;
+    // Создаем более широкую зону для edge swipe на iOS и в Telegram WebApp
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isTelegram = window.Telegram && window.Telegram.WebApp;
+    const edgeWidth = isIOS || isTelegram ? 50 : 30; // Увеличили зону для лучшей работы
     
     let edgeSwipeArea = document.createElement('div');
     edgeSwipeArea.className = 'edge-swipe-area';
@@ -284,26 +336,35 @@ class GestureHandler {
       top: 0;
       width: ${edgeWidth}px;
       height: 100vh;
+      height: calc(var(--vh, 1vh) * 100);
       z-index: 9999;
       pointer-events: auto;
       background: transparent;
       touch-action: none;
       -webkit-touch-callout: none;
       -webkit-user-select: none;
+      user-select: none;
       overscroll-behavior: none;
+      -webkit-overflow-scrolling: auto;
+      ${isIOS || isTelegram ? 'transform: translateZ(0);' : ''}
+      ${isIOS || isTelegram ? '-webkit-transform: translateZ(0);' : ''}
     `;
     
     document.body.appendChild(edgeSwipeArea);
     
-    // Более агрессивная обработка для iOS
+    // Более агрессивная обработка для iOS и Telegram WebApp
     const handleEdgeTouch = (e) => {
       e.stopPropagation();
       e.preventDefault();
       
-      // Для iOS - принудительно обрабатываем жест
-      if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-        const touch = e.touches[0];
+      const touch = e.touches[0];
+      
+      // Для iOS и Telegram WebApp - принудительно обрабатываем жест
+      if (isIOS || isTelegram) {
         if (touch.clientX <= edgeWidth) {
+          // Дополнительная проверка для предотвращения системных жестов
+          document.body.style.touchAction = 'none';
+          document.body.style.overscrollBehavior = 'none';
           this.handleTouchStart(e);
         }
       } else {
@@ -325,7 +386,9 @@ class GestureHandler {
     // Добавляем визуальный индикатор для отладки (только в dev режиме)
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       edgeSwipeArea.style.background = 'rgba(255, 0, 0, 0.1)';
-      console.log(`Edge swipe area created: ${edgeWidth}px width`);
+      console.log(`🔄 Edge swipe area created: ${edgeWidth}px width (iOS: ${isIOS}, Telegram: ${isTelegram})`);
+    } else {
+      console.log(`🔄 Edge swipe активирован для навигации назад (зона: ${edgeWidth}px)`);
     }
   }
 

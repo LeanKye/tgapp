@@ -14,7 +14,7 @@
 * {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  touch-action: manipulation;
+  touch-action: none; /* Полностью отключаем системные жесты для всех элементов */
 }
 
 /* Полноэкранный режим и убираем bounce эффект на iOS */
@@ -111,15 +111,24 @@ input, textarea {
 /* Для элементов где нужен вертикальный скролл */
 .search-dropdown,
 .menu,
-.category-products-grid,
-.categories-grid {
-  touch-action: pan-y;
+.category-products-grid {
+  touch-action: pan-y !important; /* Разрешаем только вертикальные свайпы */
+  overscroll-behavior-x: none; /* Но предотвращаем горизонтальные системные жесты */
+  overscroll-behavior-y: auto;
 }
 
-/* Для горизонтального скролла */
+/* Для горизонтального скролла - переопределяем для слайдеров */
 .category-products-slider,
 .banner-slider {
-  touch-action: pan-x;
+  touch-action: pan-x !important; /* Разрешаем только горизонтальные свайпы в слайдерах */
+  overscroll-behavior-x: none; /* Но предотвращаем системные жесты */
+  overscroll-behavior-y: none;
+}
+
+/* Специальная защита для карточек внутри слайдеров */
+.category-products-slider .category-product-card,
+.banner-slider .banner-item {
+  touch-action: inherit; /* Наследуют от родительского слайдера */
 }
 
 /* Отключаем анимации при первой загрузке */
@@ -139,37 +148,6 @@ input, textarea {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
-
-/* Позволяем выделение текста в инпутах */
-input, textarea {
-  -webkit-user-select: text;
-  -khtml-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-  touch-action: manipulation;
-}
-
-/* Для элементов где нужен вертикальный скролл */
-.search-dropdown,
-.menu,
-.category-products-grid,
-.categories-grid {
-  touch-action: pan-y;
-}
-
-/* Для горизонтального скролла */
-.category-products-slider,
-.banner-slider {
-  touch-action: pan-x;
-}
-
-/* Отключаем анимации при первой загрузке */
-.preload * {
-  transition: none !important;
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
 }
 
 /* Специальная поддержка для Telegram WebApp */
@@ -210,6 +188,20 @@ input, textarea {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+}
+
+/* Дополнительная защита для всех основных контейнеров */
+.container,
+.header-container,
+.categories-grid,
+.banner-slider-container,
+.toggle-switches-container,
+.product-sub {
+  touch-action: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
 }
 
 /* Плавное переключение контента табов */
@@ -269,18 +261,6 @@ input, textarea {
     transform: none !important;
     transition: none !important;
   }
-}
-
-/* Предотвращаем контекстное меню */
-.category-product-card,
-.category-card,
-.banner-item {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 body {
@@ -2817,16 +2797,48 @@ html > .modal-overlay .modal-footer * {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    touch-action: none;
-    overscroll-behavior: none;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
     /* Предотвращаем системные жесты */
     -webkit-overflow-scrolling: auto;
   }
   
   /* Убираем системные жесты на краях экрана */
   .catalog, .product {
-    touch-action: none;
-    overscroll-behavior: none;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+  }
+  
+  /* Дополнительная защита для всех контейнеров на iOS */
+  .container,
+  .header-container,
+  .categories-grid,
+  .banner-slider-container,
+  .toggle-switches-container,
+  .product-sub,
+  .category-title {
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Исключения для слайдеров на iOS - разрешаем только горизонтальные жесты */
+  .category-products-slider,
+  .banner-slider {
+    touch-action: pan-x !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: none !important;
+  }
+  
+  /* Исключения для вертикального скролла на iOS */
+  .search-dropdown,
+  .menu,
+  .category-products-grid {
+    touch-action: pan-y !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: auto;
   }
   
   /* Специальная зона для edge swipe */
@@ -2849,8 +2861,32 @@ html > .modal-overlay .modal-footer * {
     -webkit-user-select: none !important;
     user-select: none !important;
   }
+  
+  /* Дополнительная защита для всех элементов в Telegram WebApp */
+  * {
+    -webkit-touch-callout: none !important;
+    overscroll-behavior: none !important;
+  }
+  
+  /* Исключения для слайдеров в Telegram WebApp */
+  .category-products-slider,
+  .banner-slider {
+    touch-action: pan-x !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: none !important;
+  }
+  
+  /* Исключения для вертикального скролла в Telegram WebApp */
+  .search-dropdown,
+  .menu,
+  .category-products-grid {
+    touch-action: pan-y !important;
+    overscroll-behavior-x: none !important;
+    overscroll-behavior-y: auto;
+  }
+  
+  /* Исключения для инпутов в Telegram WebApp */
+  input, textarea {
+    touch-action: manipulation !important;
+  }
 }
-
-
-
-
