@@ -266,10 +266,10 @@ class CategoryPage {
 document.addEventListener('DOMContentLoaded', () => {
   new CategoryPage();
   
-  // Обновляем Telegram навигацию для страницы категории
+  // Обновляем Telegram хедер для страницы категории
   setTimeout(() => {
-    if (typeof window.updateTelegramNavigation === 'function') {
-      window.updateTelegramNavigation();
+    if (typeof window.updateTelegramHeader === 'function') {
+      window.updateTelegramHeader();
     }
   }, 300);
 }); 
