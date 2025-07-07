@@ -4,7 +4,11 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000000">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -169,26 +173,17 @@
           </svg>
         </button>
       </div>
-      <div class="menu-item">Adobe</div>
-      <div class="menu-item">Нейросети</div>
-      <div class="menu-item">Игры</div>
-      <div class="menu-item">Подписки</div>
-      <div class="menu-item">Антивирусы</div>
+      <div class="menu-item" data-category="Adobe">Adobe</div>
+      <div class="menu-item" data-category="Нейросети">Нейросети</div>
+      <div class="menu-item" data-category="Игры">Игры</div>
+      <div class="menu-item" data-category="Подписки">Подписки</div>
+      <div class="menu-item" data-category="Антивирусы">Антивирусы</div>
     </div>
   </div>
-  <script type="module" src="/src/telegram-webapp.js"></script>
-  <script type="module" src="/src/bounce-scroll.js"></script>
+  
+  <!-- Общая инициализация приложения -->
+  <script type="module" src="/src/app.js"></script>
+  <!-- Специфичные скрипты для главной страницы -->
   <script type="module" src="/src/main.js"></script>
-  <script>
-    // Убираем preload класс и показываем контент после загрузки
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.body.classList.remove('preload');
-        document.body.classList.add('loaded');
-      }, 100);
-      
-
-    });
-  </script>
 </body>
 </html>

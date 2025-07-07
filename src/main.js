@@ -1,45 +1,6 @@
-import './style.css'
-import { getAllProducts, categoryData, formatPrice, formatPriceCard } from './products-data.js'
-
-const menuButton = document.getElementById('menu-button');
-const closeMenuButton = document.getElementById('close-menu-button')
-const menu = document.getElementById('menu')
-const menuOverlay = document.getElementById('menu-overlay')
-
-const toggleMenu = () => {
-  const isClosing = !menu.classList.contains('menu-closed');
-  
-  menu.classList.toggle('menu-closed');
-  menuOverlay.classList.toggle('menu-closed');
-  
-  // Управление прокруткой страницы
-  if (isClosing) {
-    // Закрываем меню - включаем прокрутку
-    document.body.style.overflow = '';
-  } else {
-    // Открываем меню - отключаем прокрутку
-    document.body.style.overflow = 'hidden';
-  }
-}
-
-const closeMenu = () => {
-  menu.classList.add('menu-closed');
-  menuOverlay.classList.add('menu-closed');
-  // Включаем прокрутку при закрытии
-  document.body.style.overflow = '';
-}
-
-menuButton.addEventListener('click', toggleMenu)
-closeMenuButton.addEventListener('click', toggleMenu)
-// Закрытие меню при клике на overlay
-menuOverlay.addEventListener('click', closeMenu)
-
-// Закрытие меню клавишей Escape
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !menu.classList.contains('menu-closed')) {
-    closeMenu();
-  }
-})
+// Главная страница - main.js
+import { getAllProducts, categoryData, formatPriceCard } from './products-data.js'
+import { initCommonComponents } from './common.js'
 
 // Функция для создания карточки товара
 function createProductCard(product) {
@@ -69,6 +30,8 @@ function createProductCard(product) {
 // Функция для рендеринга товаров в секции "Новинки"
 function renderNewProducts() {
   const container = document.querySelector('.category-products-slider');
+  if (!container) return;
+  
   const products = getAllProducts();
   
   // Очищаем контейнер
@@ -123,22 +86,12 @@ function createCategoryCard(category, index) {
   return card;
 }
 
-// Навигация из бургер меню
-function initMenuNavigation() {
-  const menuItems = document.querySelectorAll('.menu-item');
-  
-  menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const categoryName = item.textContent.trim();
-      window.location.href = `category.html?category=${encodeURIComponent(categoryName)}`;
-    });
-  });
-}
-
 // Функциональность баннер-слайдера
 class BannerSlider {
   constructor() {
     this.slider = document.getElementById('bannerSlider');
+    if (!this.slider) return;
+    
     this.originalBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
     this.totalOriginalBanners = this.originalBanners.length;
     this.currentIndex = 1; // Начинаем с 1, так как 0 будет клоном последнего элемента
@@ -503,246 +456,13 @@ class BannerSlider {
   }
 }
 
-// Функциональность поиска
-class SearchManager {
-  constructor() {
-    this.searchInput = document.getElementById('search-input');
-    this.searchDropdown = document.getElementById('search-dropdown');
-    this.products = getAllProducts();
-    this.selectedIndex = -1;
-    this.currentResults = [];
-    this.searchTimeout = null;
-    
-    this.init();
-  }
-
-  init() {
-    // Обработчик ввода в поисковую строку
-    this.searchInput.addEventListener('input', (e) => {
-      this.handleInput(e.target.value);
-    });
-
-    // Обработчик клавиш для навигации
-    this.searchInput.addEventListener('keydown', (e) => {
-      this.handleKeydown(e);
-    });
-
-    // Скрываем dropdown при клике вне его
-    document.addEventListener('click', (e) => {
-      if (!e.target.closest('.search-container')) {
-        this.hideDropdown();
-      }
-    });
-
-    // Показываем dropdown при фокусе, если есть текст
-    this.searchInput.addEventListener('focus', () => {
-      if (this.searchInput.value.trim()) {
-        this.handleInput(this.searchInput.value);
-      }
-    });
-  }
-
-  handleInput(query) {
-    // Очищаем предыдущий таймер
-    clearTimeout(this.searchTimeout);
-    
-    // Устанавливаем новый таймер для задержки поиска
-    this.searchTimeout = setTimeout(() => {
-      this.performSearch(query);
-    }, 200);
-  }
-
-  performSearch(query) {
-    const trimmedQuery = query.trim().toLowerCase();
-    
-    if (trimmedQuery.length === 0) {
-      this.hideDropdown();
-      return;
-    }
-
-    // Поиск по товарам
-    this.currentResults = this.products.filter(product => {
-      return product.title.toLowerCase().includes(trimmedQuery) ||
-             product.category.toLowerCase().includes(trimmedQuery);
-    });
-
-    this.selectedIndex = -1;
-    this.showResults();
-  }
-
-  showResults() {
-    if (this.currentResults.length === 0) {
-      this.showNoResults();
-      return;
-    }
-
-    this.searchDropdown.innerHTML = '';
-    
-    this.currentResults.forEach((product, index) => {
-      const suggestion = this.createSuggestion(product, index);
-      this.searchDropdown.appendChild(suggestion);
-    });
-
-    this.showDropdown();
-  }
-
-  createSuggestion(product, index) {
-    const suggestion = document.createElement('div');
-    suggestion.className = 'search-suggestion';
-    suggestion.dataset.index = index;
-    
-    suggestion.innerHTML = `
-      <img src="${product.images[0]}" alt="${product.title}" />
-      <div class="search-suggestion-content">
-        <div class="search-suggestion-title">${product.title}</div>
-        <div class="search-suggestion-category">${product.category}</div>
-      </div>
-      <div class="search-suggestion-price">${formatPriceCard(product.price)}</div>
-    `;
-
-    // Обработчик клика по предложению
-    suggestion.addEventListener('click', () => {
-      this.selectProduct(product);
-    });
-
-    return suggestion;
-  }
-
-  showNoResults() {
-    this.searchDropdown.innerHTML = '<div class="no-results">Товары не найдены</div>';
-    this.showDropdown();
-  }
-
-  selectProduct(product) {
-    // Очищаем поисковую строку
-    this.searchInput.value = '';
-    this.hideDropdown();
-    
-    // Переходим на страницу товара
-    window.location.href = `product.html?product=${product.id}`;
-  }
-
-  handleKeydown(e) {
-    if (this.currentResults.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        this.selectedIndex = Math.min(this.selectedIndex + 1, this.currentResults.length - 1);
-        this.updateSelection();
-        break;
-        
-      case 'ArrowUp':
-        e.preventDefault();
-        this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
-        this.updateSelection();
-        break;
-        
-      case 'Enter':
-        e.preventDefault();
-        if (this.selectedIndex >= 0) {
-          this.selectProduct(this.currentResults[this.selectedIndex]);
-        }
-        break;
-        
-      case 'Escape':
-        this.hideDropdown();
-        this.searchInput.blur();
-        break;
-    }
-  }
-
-  updateSelection() {
-    const suggestions = this.searchDropdown.querySelectorAll('.search-suggestion');
-    
-    suggestions.forEach((suggestion, index) => {
-      suggestion.classList.toggle('selected', index === this.selectedIndex);
-    });
-
-    // Прокручиваем к выбранному элементу
-    if (this.selectedIndex >= 0) {
-      const selectedSuggestion = suggestions[this.selectedIndex];
-      if (selectedSuggestion) {
-        selectedSuggestion.scrollIntoView({
-          block: 'nearest',
-          behavior: 'smooth'
-        });
-      }
-    }
-  }
-
-  showDropdown() {
-    this.searchDropdown.classList.add('show');
-  }
-
-  hideDropdown() {
-    this.searchDropdown.classList.remove('show');
-    this.selectedIndex = -1;
-  }
-}
-
-// Класс для управления переключателями на главной странице
-class ToggleSwitches {
-  constructor() {
-    this.switchesContainer = document.getElementById('ps-plus-switches');
-    if (!this.switchesContainer) return;
-    
-    this.slider = this.switchesContainer.querySelector('.toggle-switch-slider');
-    this.inputs = this.switchesContainer.querySelectorAll('input[type="radio"]');
-    
-    this.init();
-  }
-  
-  init() {
-    // Добавляем обработчики событий для всех переключателей
-    this.inputs.forEach((input, index) => {
-      input.addEventListener('change', () => {
-        if (input.checked) {
-          this.moveSlider(index);
-        }
-      });
-    });
-    
-    // Устанавливаем начальную позицию слайдера
-    const checkedInput = this.switchesContainer.querySelector('input[type="radio"]:checked');
-    if (checkedInput) {
-      const index = Array.from(this.inputs).indexOf(checkedInput);
-      this.moveSlider(index);
-    }
-    
-    // Обновляем позицию при изменении размера окна
-    window.addEventListener('resize', () => {
-      const checkedInput = this.switchesContainer.querySelector('input[type="radio"]:checked');
-      if (checkedInput) {
-        const index = Array.from(this.inputs).indexOf(checkedInput);
-        this.moveSlider(index);
-      }
-    });
-  }
-  
-  moveSlider(index) {
-    // Получаем реальные размеры для точного позиционирования
-    const containerWidth = this.switchesContainer.offsetWidth;
-    const padding = 6; // 3px с каждой стороны
-    const availableWidth = containerWidth - padding;
-    const buttonWidth = availableWidth / 3;
-    
-    // Рассчитываем позицию в пикселях относительно левого края контейнера
-    const translateXPx = index * buttonWidth;
-    
-    // Применяем плавную анимацию перекатывания
-    this.slider.style.transform = `translateX(${translateXPx}px)`;
-    
-    // Добавляем небольшую анимацию отскока через CSS
-    this.slider.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-  }
-}
-
-// Инициализация слайдера после загрузки DOM
+// Инициализация главной страницы
 document.addEventListener('DOMContentLoaded', () => {
+  // Инициализируем общие компоненты
+  initCommonComponents();
+  
+  // Инициализируем баннер-слайдер
   const slider = new BannerSlider();
-  const searchManager = new SearchManager();
-  const toggleSwitches = new ToggleSwitches();
   
   // Рендерим товары
   renderNewProducts();
@@ -750,16 +470,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Рендерим категории на главной странице
   renderCategories();
   
-  // Инициализируем навигацию из бургер меню
-  initMenuNavigation();
-  
-
-  
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров
     setTimeout(() => {
-      slider.centerActiveSlide();
+      if (slider && slider.centerActiveSlide) {
+        slider.centerActiveSlide();
+      }
     }, 100);
   });
 });
