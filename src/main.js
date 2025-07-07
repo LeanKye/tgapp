@@ -753,6 +753,13 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем навигацию из бургер меню
   initMenuNavigation();
   
+  // Обновляем Telegram навигацию для главной страницы
+  setTimeout(() => {
+    if (typeof window.updateTelegramNavigation === 'function') {
+      window.updateTelegramNavigation();
+    }
+  }, 500);
+  
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров

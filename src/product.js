@@ -506,17 +506,98 @@ function createModal() {
     </div>
   `;
   
-  // Вставляем модальное окно в начало body
-  document.body.insertAdjacentHTML('afterbegin', modalHTML);
+  // Создаем DOM элемент
+  const modalElement = document.createElement('div');
+  modalElement.innerHTML = modalHTML;
+  const modal = modalElement.firstElementChild;
   
-  // Форсируем позиционирование модального окна
-  const modal = document.getElementById('label-modal');
+  // Вставляем модальное окно в корень документа (не в body)
+  document.documentElement.appendChild(modal);
+  
+  // Определяем устройство для специфичных настроек
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isOldBrowser = !CSS.supports('display', 'flex');
+  const supportsVH = CSS.supports('height', '100vh');
+  
+  // Форсируем позиционирование модального окна относительно viewport
   modal.style.position = 'fixed';
   modal.style.top = '0';
   modal.style.left = '0';
   modal.style.right = '0';
   modal.style.bottom = '0';
   modal.style.zIndex = '10000';
+  modal.style.transform = 'none';
+  modal.style.webkitTransform = 'none';
+  modal.style.mozTransform = 'none';
+  modal.style.msTransform = 'none';
+  modal.style.margin = '0';
+  modal.style.padding = '0';
+  
+  // Устанавливаем размеры с учетом устройства
+  if (isIOS || isSafari || !supportsVH) {
+    // Для iOS, Safari и старых браузеров используем window.innerHeight
+    modal.style.width = window.innerWidth + 'px';
+    modal.style.height = window.innerHeight + 'px';
+    modal.style.webkitOverflowScrolling = 'touch';
+  } else {
+    // Для других устройств используем viewport units
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+  }
+  
+  // Фоллбэк для старых браузеров
+  if (isOldBrowser) {
+    modal.style.display = 'block';
+    modal.style.position = 'absolute';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.zIndex = '9999';
+  }
+  
+  // Принудительно отключаем все наследования трансформаций
+  if (CSS.supports('contain', 'layout')) {
+    modal.style.contain = 'layout style paint';
+  }
+  if (CSS.supports('isolation', 'isolate')) {
+    modal.style.isolation = 'isolate';
+  }
+  
+  // Дополнительные настройки для Android
+  if (isAndroid) {
+    modal.style.webkitBackfaceVisibility = 'hidden';
+    modal.style.backfaceVisibility = 'hidden';
+  }
+  
+  // Обработчик изменения ориентации для мобильных устройств
+  if (isIOS || isAndroid || !supportsVH) {
+    const updateModalSize = () => {
+      setTimeout(() => {
+        const currentWidth = window.innerWidth;
+        const currentHeight = window.innerHeight;
+        
+        // Проверяем, что размеры валидны
+        if (currentWidth > 0 && currentHeight > 0) {
+          modal.style.width = currentWidth + 'px';
+          modal.style.height = currentHeight + 'px';
+          
+          // Обновляем CSS переменную для viewport height
+          document.documentElement.style.setProperty('--vh', `${currentHeight * 0.01}px`);
+        }
+      }, 100);
+    };
+    
+    window.addEventListener('orientationchange', updateModalSize);
+    window.addEventListener('resize', updateModalSize);
+    
+    // Дополнительно слушаем события фокуса для работы с клавиатурой
+    window.addEventListener('focus', updateModalSize);
+    window.addEventListener('blur', updateModalSize);
+    
+    // Устанавливаем начальное значение для viewport height
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  }
 }
 
 // Инициализация модального окна
@@ -545,8 +626,26 @@ function initLabelModal() {
   });
 }
 
+// Глобальная функция для инициализации viewport height
+function initViewportHeight() {
+  const setVH = () => {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  };
+  
+  setVH();
+  
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(setVH, 100);
+  });
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
+  // Инициализируем viewport height для всех устройств
+  initViewportHeight();
+  
   const productId = getUrlParameter('product');
   const product = getProductById(productId);
   renderProduct(product);
@@ -559,6 +658,13 @@ document.addEventListener('DOMContentLoaded', () => {
       initCheckoutPanel();
       initLabelModal(); // Добавляем инициализацию модального окна
     }, 100);
+    
+    // Обновляем Telegram навигацию для страницы товара
+    setTimeout(() => {
+      if (typeof window.updateTelegramNavigation === 'function') {
+        window.updateTelegramNavigation();
+      }
+    }, 300);
   }
   
   // Если продукт не найден, перенаправляем на главную

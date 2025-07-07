@@ -263,4 +263,13 @@ class CategoryPage {
 }
 
 // Инициализируем страницу категории
-new CategoryPage(); 
+document.addEventListener('DOMContentLoaded', () => {
+  new CategoryPage();
+  
+  // Обновляем Telegram навигацию для страницы категории
+  setTimeout(() => {
+    if (typeof window.updateTelegramNavigation === 'function') {
+      window.updateTelegramNavigation();
+    }
+  }, 300);
+}); 

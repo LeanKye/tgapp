@@ -1200,6 +1200,7 @@ body {
 /* Адаптивные размеры текста для слайдера товаров на главной странице */
 .category-products-slider .category-product-title {
   font-size: clamp(14px, 2.5vw, 16px);
+  margin-bottom: -2px; /* Уменьшенный отступ до категории как в сетке */
 }
 
 .category-products-slider .category-product-category {
@@ -1241,6 +1242,11 @@ body {
 .category-product-price-old {
   font-size: clamp(11px, 2vw, 14px);
   color: #666666;
+}
+
+/* Уменьшенная разрядка для перечеркнутых цен в карточках товаров */
+.category-product-price-old .formatted-price {
+  letter-spacing: 0.05px; /* Еще более компактная разрядка для маленьких перечеркнутых цен */
 }
 
 .product-sub {
@@ -1555,11 +1561,14 @@ body {
 }
 
 .checkout-header #checkout-header-text {
-  cursor: pointer;
-  transition: opacity 0.2s ease;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   user-select: none;
+  cursor: pointer;
+  transition: opacity 0.2s ease;
+  /* Увеличиваем область нажатия только для текста */
+  padding: 8px 4px;
+  margin: -8px -4px;
 }
 
 .checkout-header #checkout-header-text:hover {
@@ -1570,6 +1579,8 @@ body {
   opacity: 0.6;
 }
 
+
+
 .checkout-arrow {
   transition: transform 0.3s ease, opacity 0.2s ease;
   display: flex;
@@ -1577,6 +1588,9 @@ body {
   justify-content: center;
   color: #ffffff;
   cursor: pointer;
+  /* Увеличиваем область нажатия только для стрелочки */
+  padding: 8px;
+  margin: -8px;
 }
 
 .checkout-arrow:hover {
@@ -1807,7 +1821,7 @@ body {
 
 /* Стили для форматирования цен как на Яндекс Маркете */
 .formatted-price {
-  letter-spacing: 0.2px; /* Уменьшенный отступ между разрядами как на Я.Маркете */
+  letter-spacing: 0.1px; /* Еще более уменьшенный отступ между разрядами */
 }
 
 .formatted-price .currency-separator {
@@ -2205,38 +2219,120 @@ body {
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
+  /* Фоллбэк для устройств без поддержки vh */
+  min-height: 100% !important;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
   z-index: 10000 !important;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  display: flex !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Полностью исключаем из bounce эффекта */
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
+  /* Полностью исключаем из всех трансформаций */
+  transform: none !important;
+  -webkit-transform: none !important;
   /* Полностью привязываем к viewport */
   margin: 0 !important;
   padding: 0 !important;
+  /* Отключаем наследование трансформаций от body */
+  contain: layout style paint;
+  isolation: isolate;
+  /* Дополнительная изоляция для полного отключения влияния body */
+  will-change: auto !important;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
+  /* Дополнительные свойства для iOS Safari */
+  -webkit-overflow-scrolling: touch;
+  overflow: hidden;
+}
+
+/* Специальные стили для iOS Safari */
+@supports (-webkit-appearance: none) {
+  .modal-overlay {
+    height: 100vh !important;
+    /* Используем env() для учета safe area */
+    height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Защита от виртуальной клавиатуры */
+@media (max-height: 500px) {
+  .modal-overlay {
+    height: 100vh !important;
+    /* Фиксируем высоту при появлении клавиатуры */
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+  }
+  
+  .modal-content {
+    max-height: 80vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* Специальные стили для модального окна в корне документа */
+html > .modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  /* Фоллбэк для старых браузеров */
+  width: 100% !important;
+  height: 100% !important;
+  transform: none !important;
+  -webkit-transform: none !important;
+  -moz-transform: none !important;
+  -ms-transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  contain: layout style paint;
+  isolation: isolate;
+}
+
+/* Фоллбэк для браузеров без поддержки contain */
+@supports not (contain: layout) {
+  html > .modal-overlay {
+    z-index: 2147483647 !important;
+  }
+}
+
+/* Дополнительные стили для Android */
+@media screen and (-webkit-device-pixel-ratio: 2),
+       screen and (-webkit-device-pixel-ratio: 3) {
+  .modal-overlay {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
 }
 
 /* Принудительно исключаем модальное окно из bounce трансформации body */
-body.bounce-scrolling .modal-overlay {
-  transform: translateY(0px) translateZ(0) !important;
-  -webkit-transform: translateY(0px) translateZ(0) !important;
+body.bounce-scrolling .modal-overlay,
+html > .modal-overlay {
+  transform: none !important;
+  -webkit-transform: none !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
 }
 
 /* Исключаем контент модального окна из bounce эффекта, но разрешаем анимацию */
-body.bounce-scrolling .modal-overlay.show .modal-content {
-  transform: translateY(0) translateZ(0) !important;
-  -webkit-transform: translateY(0) translateZ(0) !important;
+body.bounce-scrolling .modal-overlay.show .modal-content,
+html > .modal-overlay.show .modal-content {
   animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-body.bounce-scrolling .modal-overlay.hide .modal-content {
+body.bounce-scrolling .modal-overlay.hide .modal-content,
+html > .modal-overlay.hide .modal-content {
   animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -2246,9 +2342,15 @@ body.bounce-scrolling .modal-body,
 body.bounce-scrolling .modal-footer,
 body.bounce-scrolling .modal-header *,
 body.bounce-scrolling .modal-body *,
-body.bounce-scrolling .modal-footer * {
-  transform: translateZ(0) !important;
-  -webkit-transform: translateZ(0) !important;
+body.bounce-scrolling .modal-footer *,
+html > .modal-overlay .modal-header,
+html > .modal-overlay .modal-body,
+html > .modal-overlay .modal-footer,
+html > .modal-overlay .modal-header *,
+html > .modal-overlay .modal-body *,
+html > .modal-overlay .modal-footer * {
+  transform: none !important;
+  -webkit-transform: none !important;
 }
 
 .modal-overlay.show {
@@ -2280,8 +2382,8 @@ body.bounce-scrolling .modal-footer * {
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
   position: relative;
   /* Позиция по умолчанию - спрятано снизу */
-  transform: translateY(100%) translateZ(0);
-  -webkit-transform: translateY(100%) translateZ(0);
+  transform: translateY(100%);
+  -webkit-transform: translateY(100%);
   /* Убеждаемся что контент не смещается */
   margin: 0 !important;
   bottom: 0 !important;
@@ -2310,39 +2412,39 @@ body.bounce-scrolling .modal-footer * {
 }
 
 .modal-overlay.show .modal-content {
-  transform: translateY(0) translateZ(0);
-  -webkit-transform: translateY(0) translateZ(0);
+  transform: translateY(0);
+  -webkit-transform: translateY(0);
   animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes modalSlideUp {
   0% {
-    transform: translateY(100%) translateZ(0);
-    -webkit-transform: translateY(100%) translateZ(0);
+    transform: translateY(100%);
+    -webkit-transform: translateY(100%);
     opacity: 0;
   }
   50% {
     opacity: 1;
   }
   100% {
-    transform: translateY(0) translateZ(0);
-    -webkit-transform: translateY(0) translateZ(0);
+    transform: translateY(0);
+    -webkit-transform: translateY(0);
     opacity: 1;
   }
 }
 
 @keyframes modalSlideDown {
   0% {
-    transform: translateY(0) translateZ(0);
-    -webkit-transform: translateY(0) translateZ(0);
+    transform: translateY(0);
+    -webkit-transform: translateY(0);
     opacity: 1;
   }
   50% {
     opacity: 0.5;
   }
   100% {
-    transform: translateY(100%) translateZ(0);
-    -webkit-transform: translateY(100%) translateZ(0);
+    transform: translateY(100%);
+    -webkit-transform: translateY(100%);
     opacity: 0;
   }
 }
@@ -2590,6 +2692,61 @@ body.bounce-scrolling .modal-footer * {
   .modal-understand-btn {
     font-size: 15px;
     padding: 12px 18px;
+  }
+}
+
+/* Специальные стили для устройств в портретном режиме */
+@media (orientation: portrait) {
+  .modal-overlay {
+    height: 100vh !important;
+    height: calc(var(--vh, 1vh) * 100) !important;
+  }
+}
+
+/* Специальные стили для устройств в альбомном режиме */
+@media (orientation: landscape) {
+  .modal-overlay {
+    height: 100vh !important;
+    height: calc(var(--vh, 1vh) * 100) !important;
+  }
+  
+  .modal-content {
+    max-height: 90vh;
+  }
+}
+
+/* Фиксы для старых версий iOS Safari */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
+  .modal-overlay {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* Дополнительные стили для высоких экранов */
+@media (min-height: 800px) {
+  .modal-content {
+    max-height: 70vh;
+  }
+}
+
+/* Стили для очень маленьких экранов */
+@media (max-width: 320px) {
+  .modal-header {
+    padding: 16px 16px 12px 16px;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .modal-footer {
+    padding: 0 16px 16px 16px;
+  }
+  
+  .modal-understand-btn {
+    padding: 10px 16px;
+    font-size: 14px;
   }
 }
 
