@@ -1,11 +1,7 @@
 // Bounce эффект при прокрутке до упора
 class BounceScroll {
   constructor() {
-    this.isScrolling = false;
-    this.scrollTimeout = null;
-    this.lastScrollTop = 0;
-    this.velocityThreshold = 4; // Минимальная скорость для bounce (немного поднят из-за большого расстояния 150px)
-    this.bounceDistance = 150; // Максимальное расстояние bounce в пикселях (увеличено для более заметного эффекта)
+    this.maxBounceDistance = 100; // Максимальное расстояние bounce (как в нативных приложениях)
     this.isAnimating = false;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
@@ -14,6 +10,13 @@ class BounceScroll {
     
     // Отключаем bounce на десктопе или при reduced motion
     if (!this.isMobile || this.reducedMotion) return;
+    
+    // Переменные для real-time bounce
+    this.startScrollTop = 0;
+    this.startTouchY = 0;
+    this.currentBounceOffset = 0;
+    this.isInBounce = false;
+    this.touchStartTime = 0;
     
     this.init();
   }
@@ -45,7 +48,6 @@ class BounceScroll {
     window.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
     
     // Переменные для touch событий
-    this.touchStartY = 0;
     this.touchCurrentY = 0;
     this.isTouching = false;
     this.touchVelocity = 0;
@@ -53,31 +55,11 @@ class BounceScroll {
   }
 
   handleScroll(e) {
-    if (this.isAnimating || this.reducedMotion || !this.isMobile) {
-      if (this.isAnimating) e.preventDefault();
+    // Теперь bounce работает только через touch события
+    // Скролл нужен только для предотвращения конфликтов
+    if (this.isAnimating) {
+      e.preventDefault();
       return;
-    }
-
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const clientHeight = window.innerHeight;
-    const isAtTop = scrollTop <= 0;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-    // Определяем скорость прокрутки
-    const velocity = Math.abs(scrollTop - this.lastScrollTop);
-    this.lastScrollTop = scrollTop;
-
-    // Запускаем bounce если пользователь прокрутил до упора с достаточной скоростью
-    if ((isAtTop || isAtBottom) && velocity > this.velocityThreshold && !this.isScrolling) {
-      // Добавляем небольшую задержку для предотвращения множественных bounce
-      this.isScrolling = true;
-      this.triggerBounce(isAtTop ? 'top' : 'bottom', velocity);
-      
-      // Сбрасываем флаг через короткое время
-      setTimeout(() => {
-        this.isScrolling = false;
-      }, 100);
     }
   }
 
@@ -86,14 +68,25 @@ class BounceScroll {
     this.touchStartY = e.touches[0].clientY;
     this.touchCurrentY = this.touchStartY;
     this.lastTouchTime = Date.now();
+    this.touchStartTime = Date.now();
+    
+    // Запоминаем начальную позицию скролла
+    this.startScrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    this.startTouchY = this.touchStartY;
+    this.currentBounceOffset = 0;
+    
+    // Останавливаем любую текущую анимацию bounce
+    if (this.isAnimating) {
+      this.stopBounceAnimation();
+    }
   }
 
   handleTouchMove(e) {
-    if (!this.isTouching || this.isAnimating || this.reducedMotion || !this.isMobile) return;
+    if (!this.isTouching || this.reducedMotion || !this.isMobile) return;
 
     this.touchCurrentY = e.touches[0].clientY;
     const now = Date.now();
-    const deltaY = this.touchCurrentY - this.touchStartY;
+    const deltaY = this.touchCurrentY - this.startTouchY;
     const deltaTime = now - this.lastTouchTime;
     
     // Вычисляем скорость
@@ -106,14 +99,31 @@ class BounceScroll {
     const isAtTop = scrollTop <= 0;
     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
 
-    // Если пытаемся прокрутить за пределы
-    if ((isAtTop && deltaY > 0) || (isAtBottom && deltaY < 0)) {
-      // Создаем более плавный эффект сопротивления
-      const resistance = Math.min(Math.abs(deltaY) / 80, 0.7); // Увеличиваем максимальное сопротивление
-      if (resistance > 0.05) { // Понижаем порог для более чувствительной реакции
-        e.preventDefault();
-        this.applyResistance(deltaY > 0 ? 'top' : 'bottom', resistance);
-      }
+    // Проверяем направление движения
+    const isScrollingUp = deltaY > 0;
+    const isScrollingDown = deltaY < 0;
+
+    // Real-time bounce: если достигли границы и пытаемся прокрутить дальше
+    if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
+      e.preventDefault();
+      
+      // Входим в режим bounce
+      this.isInBounce = true;
+      
+      // Вычисляем смещение с учетом сопротивления (как в iOS/Android)
+      const rawOffset = Math.abs(deltaY);
+      
+      // Применяем резиновую функцию сопротивления (как в нативных приложениях)
+      const rubberBandOffset = this.rubberBandClamp(rawOffset, this.maxBounceDistance);
+      
+      // Применяем bounce offset
+      this.currentBounceOffset = isScrollingUp ? rubberBandOffset : -rubberBandOffset;
+      this.applyBounceTransform(this.currentBounceOffset);
+      
+    } else if (this.isInBounce) {
+      // Выходим из режима bounce если начали прокручивать обратно
+      this.isInBounce = false;
+      this.returnToNormal();
     }
   }
 
@@ -121,105 +131,95 @@ class BounceScroll {
     if (!this.isTouching || this.reducedMotion || !this.isMobile) return;
     
     this.isTouching = false;
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const clientHeight = window.innerHeight;
-    const isAtTop = scrollTop <= 0;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-    // Если была попытка прокрутки за пределы с достаточной скоростью
-    if ((isAtTop || isAtBottom) && this.touchVelocity > 0.3) { // Понижаем порог для более чувствительного bounce
-      this.triggerBounce(isAtTop ? 'top' : 'bottom', this.touchVelocity * 25); // Увеличиваем множитель для более выраженного эффекта
+    
+    // Если мы в режиме bounce, плавно возвращаемся в исходное положение
+    if (this.isInBounce || Math.abs(this.currentBounceOffset) > 0) {
+      this.returnToNormal();
     }
-
-    // Убираем эффект сопротивления
-    this.resetTransform();
+    
+    this.isInBounce = false;
   }
 
   handleWheel(e) {
-    // На десктопе полностью отключаем bounce эффект
+    // На десктопе bounce отключен, на мобильных bounce работает только через touch
     if (!this.isMobile || this.isAnimating || this.reducedMotion) {
       if (this.isAnimating) e.preventDefault();
       return;
     }
-
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const clientHeight = window.innerHeight;
-    const isAtTop = scrollTop <= 0;
-    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1;
-
-    // Проверяем направление прокрутки колеса
-    const deltaY = e.deltaY;
-    const velocity = Math.abs(deltaY);
-
-    if ((isAtTop && deltaY < 0) || (isAtBottom && deltaY > 0)) {
-      if (velocity > 30) { // Понижаем пороговое значение для более чувствительного bounce
-        e.preventDefault();
-        this.triggerBounce(deltaY < 0 ? 'top' : 'bottom', velocity / 8); // Увеличиваем чувствительность
-      }
+    
+    // Предотвращаем wheel события во время touch bounce
+    if (this.isInBounce) {
+      e.preventDefault();
     }
   }
 
-  applyResistance(direction, intensity) {
-    const body = document.body;
-    
-    // Применяем очень плавную кривую сопротивления для большого расстояния
-    const smoothIntensity = Math.pow(intensity, 0.8); // Делаем кривую еще более плавной для 150px
-    const translateY = direction === 'top' ? 
-      Math.min(smoothIntensity * this.bounceDistance * 0.6, this.bounceDistance) : 
-      -Math.min(smoothIntensity * this.bounceDistance * 0.6, this.bounceDistance); // Уменьшаем множитель
-    
-    body.classList.add('bounce-scrolling');
-    body.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Более плавный переход для большого расстояния
-    body.style.transform = `translateY(${translateY}px)`;
+  // Функция резинового сопротивления как в iOS (rubber band effect)
+  rubberBandClamp(offset, maxDistance) {
+    // Используем функцию сопротивления как в UIScrollView (iOS)
+    // f(x) = (1.0 - (1.0 / ((x * c / d) + 1.0))) * d
+    // где c - коэффициент сопротивления, d - максимальная дистанция
+    const c = 0.55; // Коэффициент сопротивления (0.55 как в iOS)
+    const result = (1.0 - (1.0 / ((offset * c / maxDistance) + 1.0))) * maxDistance;
+    return Math.min(result, maxDistance);
   }
 
-  triggerBounce(direction, velocity) {
-    if (this.isAnimating || this.reducedMotion || !this.isMobile) return;
+  // Применяем bounce трансформацию к body
+  applyBounceTransform(offset) {
+    const body = document.body;
+    body.classList.add('bounce-scrolling');
+    
+    // Убираем transition для real-time эффекта
+    body.style.transition = 'none';
+    body.style.transform = `translateY(${offset}px)`;
+  }
+
+  // Плавно возвращаемся в нормальное состояние
+  returnToNormal() {
+    if (this.isAnimating) return;
     
     this.isAnimating = true;
     const body = document.body;
     
-    // Добавляем класс для оптимизации
-    body.classList.add('bounce-scrolling');
+    // Плавный возврат с затуханием (как в нативных приложениях)
+    body.style.transition = 'transform 0.45s cubic-bezier(0.165, 0.84, 0.44, 1)'; // Easing как в iOS
+    body.style.transform = 'translateY(0px)';
     
-    // Вычисляем силу bounce на основе скорости с более плавной кривой
-    const bounceIntensity = Math.min(Math.pow(velocity / 8, 0.8), 1);
-    const maxBounce = this.bounceDistance * Math.max(bounceIntensity, 0.4); // Минимум 40% bounce
-    
-    const translateY = direction === 'top' ? maxBounce : -maxBounce;
-    
-    // Фаза 1: Bounce с более тягучей анимацией
-    body.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Более тягучая easing
-    body.style.transform = `translateY(${translateY}px)`;
-    
-    // Фаза 2: Очень медленный и плавный возврат
+    // Очистка после завершения анимации
     setTimeout(() => {
-      body.style.transition = 'transform 1.2s cubic-bezier(0.23, 1, 0.32, 1)'; // Очень длинный и супер-плавный возврат
-      body.style.transform = 'translateY(0px)';
-      
-      // Финальная очистка
-      setTimeout(() => {
-        this.resetTransform();
-        this.isAnimating = false;
-      }, 1200); // Увеличено время для завершения анимации
-    }, 400); // Увеличено время bounce фазы
+      this.resetTransform();
+      this.isAnimating = false;
+      this.currentBounceOffset = 0;
+    }, 450);
+  }
+
+  // Останавливаем текущую анимацию bounce
+  stopBounceAnimation() {
+    const body = document.body;
+    
+    // Получаем текущую позицию трансформации
+    const computedStyle = window.getComputedStyle(body);
+    const matrix = computedStyle.transform;
+    
+    if (matrix && matrix !== 'none') {
+      const values = matrix.match(/matrix.*\((.+)\)/);
+      if (values) {
+        const matrixValues = values[1].split(', ');
+        this.currentBounceOffset = parseFloat(matrixValues[5]) || 0;
+      }
+    }
+    
+    // Убираем transition и фиксируем текущую позицию
+    body.style.transition = 'none';
+    body.style.transform = `translateY(${this.currentBounceOffset}px)`;
+    
+    this.isAnimating = false;
   }
 
   resetTransform() {
     const body = document.body;
-    
-    // Плавно убираем transform
-    body.style.transition = 'transform 0.3s ease-out';
-    body.style.transform = 'translateY(0px)';
-    
-    // Через небольшое время полностью очищаем стили
-    setTimeout(() => {
-      body.style.transition = '';
-      body.style.transform = '';
-      body.classList.remove('bounce-scrolling');
-    }, 300);
+    body.style.transition = '';
+    body.style.transform = '';
+    body.classList.remove('bounce-scrolling');
   }
 
   // Функция для включения/отключения bounce эффекта
@@ -245,7 +245,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Отладочная информация
     const bounceScroll = window.bounceScroll;
     if (bounceScroll && bounceScroll.isMobile !== undefined) {
-      console.log('🎾 Bounce Scroll:', bounceScroll.isMobile ? 'включен (мобильное устройство)' : 'отключен (десктоп)');
+      console.log('🎾 Native-style Bounce Scroll:', bounceScroll.isMobile ? 'включен (мобильное устройство)' : 'отключен (десктоп)');
+      if (bounceScroll.isMobile) {
+        console.log('📱 Режим: Real-time bounce как в Telegram/Яндекс.Маркет');
+      }
     }
   }
 });
