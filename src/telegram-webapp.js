@@ -25,18 +25,17 @@ class TelegramWebApp {
 
   // Настройка кнопки "Назад"
   setupBackButton(tg) {
+    // Очищаем предыдущие обработчики
+    tg.BackButton.offClick();
+    
     if (this.isMainPath()) {
       // На главной странице - скрываем кнопку "Назад"
       tg.BackButton.hide();
-      tg.BackButton.offClick();
     } else {
       // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.show();
-      tg.BackButton.onClick(() => {
-        window.history.back();
-      });
       
-      // Добавляем обработчик для возврата
+      // Добавляем один обработчик для возврата
       tg.BackButton.onClick(() => {
         if (window.history.length > 1) {
           window.history.back();
@@ -71,12 +70,31 @@ class TelegramWebApp {
     // Настройка кнопки "Назад"
     this.setupBackButton(tg);
 
-    // Отслеживание навигации
+    // Отслеживание навигации (popstate срабатывает при history.back())
     window.addEventListener('popstate', () => {
+      // Используем setTimeout чтобы дать время браузеру обновить URL
       setTimeout(() => {
         this.setupBackButton(tg);
-      }, 100);
+      }, 50);
     });
+
+    // Отслеживание изменений в URL (для случаев с pushState)
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+    
+    history.pushState = function() {
+      originalPushState.apply(history, arguments);
+      setTimeout(() => {
+        window.telegramWebApp.setupBackButton(tg);
+      }, 50);
+    };
+    
+    history.replaceState = function() {
+      originalReplaceState.apply(history, arguments);
+      setTimeout(() => {
+        window.telegramWebApp.setupBackButton(tg);
+      }, 50);
+    };
 
     // Настройки UI
     this.setupUIBehavior();
