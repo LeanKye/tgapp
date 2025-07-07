@@ -10,7 +10,7 @@ class TelegramWebApp {
     const search = window.location.search;
     
     // Главная страница - это только корень или index.html без параметров
-    return (pathname === '/' || pathname === '/index.html' || pathname.endsWith('/index.html')) && 
+    return (pathname === '/' || pathname === '/tgapp' || pathname.endsWith('/tgapp')) && 
            !search.includes('product=') && 
            !search.includes('category=');
   }
