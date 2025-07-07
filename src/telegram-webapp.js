@@ -1,19 +1,27 @@
 // Telegram Web App с управлением кнопкой "Назад"
 class TelegramWebApp {
   constructor() {
+    this.isIOSMacOS = this.detectIOSMacOS();
     this.init();
   }
 
-  // Определение iOS/MacOS устройств
-  isIOSorMacOS() {
+  // Более точное определение iOS/MacOS устройств
+  detectIOSMacOS() {
     const userAgent = navigator.userAgent.toLowerCase();
     const platform = navigator.platform.toLowerCase();
     
+    // Проверка на iOS
     const isIOS = /iphone|ipad|ipod/.test(userAgent) || 
                   (platform.includes('mac') && 'ontouchend' in document);
+    
+    // Проверка на MacOS
     const isMacOS = platform.includes('mac') && !('ontouchend' in document);
     
-    return isIOS || isMacOS;
+    // Дополнительные проверки
+    const isAppleWebKit = /webkit/.test(userAgent) && /apple/.test(userAgent);
+    const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
+    
+    return isIOS || isMacOS || (isAppleWebKit && isSafari);
   }
 
   // Определение главной страницы
@@ -35,37 +43,69 @@ class TelegramWebApp {
     return isMainPath && hasNoParams;
   }
 
+  // Принудительное скрытие кнопки для iOS/MacOS
+  forceHideBackButton(tg) {
+    // Множественные попытки скрытия
+    const hideAttempts = [0, 50, 100, 200, 300, 500, 800, 1000];
+    
+    hideAttempts.forEach(delay => {
+      setTimeout(() => {
+        try {
+          tg.BackButton.hide();
+          tg.BackButton.offClick();
+          
+          // Дополнительное принудительное скрытие
+          if (tg.BackButton.isVisible) {
+            tg.BackButton.hide();
+          }
+        } catch (error) {
+          console.log('Ошибка при скрытии кнопки:', error);
+        }
+      }, delay);
+    });
+
+    // Постоянная проверка и скрытие
+    const intervalId = setInterval(() => {
+      if (this.isMainPath()) {
+        try {
+          if (tg.BackButton.isVisible) {
+            tg.BackButton.hide();
+          }
+        } catch (error) {
+          console.log('Ошибка в интервале:', error);
+        }
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 100);
+
+    // Очистка интервала через 5 секунд
+    setTimeout(() => {
+      clearInterval(intervalId);
+    }, 5000);
+  }
+
   // Настройка кнопки "Назад" для iOS/MacOS
   setupBackButtonIOS(tg) {
     if (this.isMainPath()) {
-      // На главной странице - агрессивно скрываем кнопку "Назад"
-      tg.BackButton.hide();
-      tg.BackButton.offClick();
-      
-      // Дополнительные попытки скрытия с задержками
-      setTimeout(() => {
-        tg.BackButton.hide();
-      }, 100);
-      
-      setTimeout(() => {
-        tg.BackButton.hide();
-      }, 300);
-      
-      setTimeout(() => {
-        tg.BackButton.hide();
-      }, 500);
+      // На главной странице - принудительно скрываем кнопку "Назад"
+      this.forceHideBackButton(tg);
     } else {
       // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.offClick(); // Очищаем предыдущие обработчики
-      tg.BackButton.show();
       
-      tg.BackButton.onClick(() => {
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          window.location.href = '/';
-        }
-      });
+      // Показываем кнопку с задержкой
+      setTimeout(() => {
+        tg.BackButton.show();
+        
+        tg.BackButton.onClick(() => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = '/';
+          }
+        });
+      }, 100);
     }
   }
 
@@ -95,7 +135,7 @@ class TelegramWebApp {
 
   // Универсальная настройка кнопки "Назад"
   setupBackButton(tg) {
-    if (this.isIOSorMacOS()) {
+    if (this.isIOSMacOS) {
       this.setupBackButtonIOS(tg);
     } else {
       this.setupBackButtonDefault(tg);
@@ -128,16 +168,37 @@ class TelegramWebApp {
 
     // Отслеживание навигации с учетом платформы
     window.addEventListener('popstate', () => {
-      if (this.isIOSorMacOS()) {
+      if (this.isIOSMacOS) {
         setTimeout(() => {
           this.setupBackButton(tg);
-        }, 200);
+        }, 300);
       } else {
         setTimeout(() => {
           this.setupBackButton(tg);
         }, 100);
       }
     });
+
+    // Дополнительное отслеживание для iOS/MacOS
+    if (this.isIOSMacOS) {
+      // Отслеживание изменений в истории
+      const originalPushState = history.pushState;
+      const originalReplaceState = history.replaceState;
+      
+      history.pushState = function(...args) {
+        originalPushState.apply(history, args);
+        setTimeout(() => {
+          window.telegramWebApp.setupBackButton(tg);
+        }, 200);
+      };
+      
+      history.replaceState = function(...args) {
+        originalReplaceState.apply(history, args);
+        setTimeout(() => {
+          window.telegramWebApp.setupBackButton(tg);
+        }, 200);
+      };
+    }
 
     // Настройки UI
     this.setupUIBehavior();
