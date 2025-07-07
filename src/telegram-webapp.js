@@ -27,7 +27,6 @@ class TelegramWebApp {
   setupBackButton(tg) {
     if (this.isMainPage()) {
       // На главной странице - скрываем кнопку "Назад"
-      tg.BackButton.offClick();
     } else {
       // На всех остальных страницах - показываем кнопку "Назад"
       tg.BackButton.show();
