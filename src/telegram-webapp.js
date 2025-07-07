@@ -2,6 +2,7 @@
 class TelegramWebApp {
   constructor() {
     this.isIOSMacOS = this.detectIOSMacOS();
+    this.lastPath = window.location.pathname + window.location.search;
     this.init();
   }
 
@@ -41,6 +42,52 @@ class TelegramWebApp {
     const hasNoParams = !search.includes('product=') && !search.includes('category=');
     
     return isMainPath && hasNoParams;
+  }
+
+  // Проверка нужно ли обновлять главную страницу
+  shouldRefreshMainPage() {
+    const currentPath = window.location.pathname + window.location.search;
+    const wasOnSubPage = !this.isMainPathFromUrl(this.lastPath);
+    const nowOnMainPage = this.isMainPath();
+    
+    return wasOnSubPage && nowOnMainPage;
+  }
+
+  // Определение главной страницы по URL
+  isMainPathFromUrl(url) {
+    const urlObj = new URL(url, window.location.origin);
+    const pathname = urlObj.pathname;
+    const search = urlObj.search;
+    
+    const isMainPath = pathname === '/' || 
+                      pathname === '/tgapp/' || 
+                      pathname === '/tgapp' ||
+                      pathname === '/index.html' ||
+                      pathname === '/tgapp/index.html' ||
+                      pathname.endsWith('/tgapp') ||
+                      pathname.endsWith('/tgapp/');
+    
+    const hasNoParams = !search.includes('product=') && !search.includes('category=');
+    
+    return isMainPath && hasNoParams;
+  }
+
+  // Принудительное обновление главной страницы для iOS/MacOS
+  forceRefreshMainPage() {
+    if (this.isIOSMacOS && this.shouldRefreshMainPage()) {
+      // Проверяем, не была ли страница уже обновлена недавно
+      const lastRefresh = sessionStorage.getItem('lastMainPageRefresh');
+      const now = Date.now();
+      
+      if (!lastRefresh || (now - parseInt(lastRefresh)) > 2000) {
+        sessionStorage.setItem('lastMainPageRefresh', now.toString());
+        setTimeout(() => {
+          window.location.reload();
+        }, 100);
+        return true;
+      }
+    }
+    return false;
   }
 
   // Принудительное скрытие кнопки для iOS/MacOS
@@ -142,6 +189,20 @@ class TelegramWebApp {
     }
   }
 
+  // Обработка навигации
+  handleNavigation(tg) {
+    // Проверяем нужно ли обновить главную страницу
+    if (this.forceRefreshMainPage()) {
+      return; // Страница будет обновлена, не продолжаем
+    }
+
+    // Обновляем состояние кнопки
+    this.setupBackButton(tg);
+    
+    // Обновляем последний путь
+    this.lastPath = window.location.pathname + window.location.search;
+  }
+
   init() {
     // Ждем загрузки Telegram WebApp SDK
     if (window.Telegram?.WebApp) {
@@ -169,22 +230,10 @@ class TelegramWebApp {
     // Отслеживание навигации с учетом платформы
     window.addEventListener('popstate', () => {
       if (this.isIOSMacOS) {
-        // Для iOS - множественные проверки с разными задержками
+        // Для iOS - проверяем нужно ли обновить главную страницу
         setTimeout(() => {
-          this.setupBackButton(tg);
+          this.handleNavigation(tg);
         }, 50);
-        
-        setTimeout(() => {
-          this.setupBackButton(tg);
-        }, 150);
-        
-        setTimeout(() => {
-          this.setupBackButton(tg);
-        }, 300);
-        
-        setTimeout(() => {
-          this.setupBackButton(tg);
-        }, 500);
       } else {
         setTimeout(() => {
           this.setupBackButton(tg);
@@ -201,14 +250,14 @@ class TelegramWebApp {
       history.pushState = function(...args) {
         originalPushState.apply(history, args);
         setTimeout(() => {
-          window.telegramWebApp.setupBackButton(tg);
+          window.telegramWebApp.handleNavigation(tg);
         }, 200);
       };
       
       history.replaceState = function(...args) {
         originalReplaceState.apply(history, args);
         setTimeout(() => {
-          window.telegramWebApp.setupBackButton(tg);
+          window.telegramWebApp.handleNavigation(tg);
         }, 200);
       };
 
@@ -218,7 +267,7 @@ class TelegramWebApp {
         if (currentURL !== window.location.href) {
           currentURL = window.location.href;
           setTimeout(() => {
-            this.setupBackButton(tg);
+            this.handleNavigation(tg);
           }, 100);
         }
       }, 100);
@@ -226,7 +275,7 @@ class TelegramWebApp {
       // Отслеживание focus события для надежности
       window.addEventListener('focus', () => {
         setTimeout(() => {
-          this.setupBackButton(tg);
+          this.handleNavigation(tg);
         }, 200);
       });
 
@@ -234,7 +283,7 @@ class TelegramWebApp {
       document.addEventListener('visibilitychange', () => {
         if (!document.hidden) {
           setTimeout(() => {
-            this.setupBackButton(tg);
+            this.handleNavigation(tg);
           }, 300);
         }
       });
