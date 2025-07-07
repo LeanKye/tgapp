@@ -187,12 +187,19 @@
         document.body.classList.add('loaded');
       }, 100);
       
-      // Обновляем Telegram хедер на главной странице
+      // Дополнительная гарантия скрытия кнопки "Назад" на главной странице
       setTimeout(() => {
-        if (typeof window.updateTelegramHeader === 'function') {
-          window.updateTelegramHeader();
+        if (typeof window.forceHideBackButton === 'function') {
+          window.forceHideBackButton();
         }
       }, 1500);
+      
+      // Проверка при возврате на главную страницу
+      setTimeout(() => {
+        if (typeof window.checkAndHideBackButtonOnMainPage === 'function') {
+          window.checkAndHideBackButtonOnMainPage();
+        }
+      }, 2000);
     });
   </script>
 </body>
