@@ -1,7 +1,7 @@
 // Улучшенный Bounce эффект с инерционным скроллингом
 class BounceScroll {
   constructor() {
-    this.maxBounceDistance = 120; // Максимальное расстояние bounce
+    this.maxBounceDistance = 220; // Максимальное расстояние bounce
     this.isAnimating = false;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
