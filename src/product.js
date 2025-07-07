@@ -404,6 +404,11 @@ function initSwiper() {
 
 // Функции для работы с модальным окном лейблов
 function openLabelModal(labelText) {
+  // Убеждаемся, что модальное окно создано
+  if (!document.getElementById('label-modal')) {
+    createModal();
+  }
+  
   const modal = document.getElementById('label-modal');
   const modalTitle = document.getElementById('modal-title');
   const modalDescription = document.getElementById('modal-description');
@@ -418,11 +423,11 @@ function openLabelModal(labelText) {
   modalIcon.textContent = labelInfo.icon;
   modalIcon.className = `modal-icon ${labelInfo.iconClass}`;
   
-  // Показываем модальное окно
-  modal.classList.add('show');
-  
   // Блокируем прокрутку страницы
   document.body.style.overflow = 'hidden';
+  
+  // Показываем модальное окно
+  modal.classList.add('show');
 }
 
 function closeLabelModal() {
@@ -463,8 +468,54 @@ function getLabelInfo(labelText) {
   };
 }
 
+// Создание модального окна
+function createModal() {
+  // Проверяем, не создано ли уже модальное окно
+  if (document.getElementById('label-modal')) {
+    return;
+  }
+  
+  const modalHTML = `
+    <div id="label-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title-container">
+            <div id="modal-icon" class="modal-icon">
+              ⚡
+            </div>
+            <h3 id="modal-title">Информация</h3>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p id="modal-description">Загрузка информации...</p>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-understand" class="modal-understand-btn">
+            Понятно
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Вставляем модальное окно в начало body
+  document.body.insertAdjacentHTML('afterbegin', modalHTML);
+  
+  // Форсируем позиционирование модального окна
+  const modal = document.getElementById('label-modal');
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.right = '0';
+  modal.style.bottom = '0';
+  modal.style.zIndex = '10000';
+}
+
 // Инициализация модального окна
 function initLabelModal() {
+  // Создаем модальное окно динамически
+  createModal();
+  
   const modal = document.getElementById('label-modal');
   const understandBtn = document.getElementById('modal-understand');
   
