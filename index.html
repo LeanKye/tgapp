@@ -194,12 +194,26 @@
         }
       }, 500);
       
+      // Принудительная настройка главной страницы
+      setTimeout(() => {
+        if (typeof window.forceMainPageHeader === 'function') {
+          window.forceMainPageHeader();
+        }
+      }, 700);
+      
       // Еще одна проверка через большую задержку
       setTimeout(() => {
         if (typeof window.updateTelegramHeader === 'function') {
           window.updateTelegramHeader();
         }
       }, 1500);
+      
+      // Финальная принудительная проверка
+      setTimeout(() => {
+        if (typeof window.forceMainPageHeader === 'function') {
+          window.forceMainPageHeader();
+        }
+      }, 2000);
     });
   </script>
 </body>

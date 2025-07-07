@@ -767,6 +767,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 500);
   
+  // Принудительная настройка главной страницы
+  setTimeout(() => {
+    if (typeof window.forceMainPageHeader === 'function') {
+      window.forceMainPageHeader();
+    }
+  }, 200);
+  
+  // Еще одна принудительная проверка
+  setTimeout(() => {
+    if (typeof window.forceMainPageHeader === 'function') {
+      window.forceMainPageHeader();
+    }
+  }, 800);
+  
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров

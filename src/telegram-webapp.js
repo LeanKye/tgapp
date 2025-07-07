@@ -89,9 +89,25 @@ class TelegramWebApp {
     
     // Отслеживание навигации
     window.addEventListener('popstate', () => {
+      // Немедленная проверка
+      this.setupHeader(tg);
+      
+      // Дополнительные проверки через разные интервалы
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 50);
+      
       setTimeout(() => {
         this.setupHeader(tg);
       }, 100);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 200);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 500);
     });
     
     // Отслеживание изменений URL
@@ -100,35 +116,99 @@ class TelegramWebApp {
     
     history.pushState = (...args) => {
       originalPushState.apply(history, args);
+      // Немедленная проверка
+      this.setupHeader(tg);
+      
+      // Дополнительные проверки
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 50);
+      
       setTimeout(() => {
         this.setupHeader(tg);
       }, 100);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 200);
     };
     
     history.replaceState = (...args) => {
       originalReplaceState.apply(history, args);
+      // Немедленная проверка
+      this.setupHeader(tg);
+      
+      // Дополнительные проверки
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 50);
+      
       setTimeout(() => {
         this.setupHeader(tg);
       }, 100);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 200);
     };
     
     // Отслеживание фокуса
     window.addEventListener('focus', () => {
+      // Немедленная проверка
+      this.setupHeader(tg);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 50);
+      
       setTimeout(() => {
         this.setupHeader(tg);
       }, 100);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 200);
     });
     
     // Отслеживание видимости
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
+        // Немедленная проверка
+        this.setupHeader(tg);
+        
+        setTimeout(() => {
+          this.setupHeader(tg);
+        }, 50);
+        
         setTimeout(() => {
           this.setupHeader(tg);
         }, 100);
+        
+        setTimeout(() => {
+          this.setupHeader(tg);
+        }, 200);
       }
     });
     
+    // Отслеживание изменений hash
+    window.addEventListener('hashchange', () => {
+      // Немедленная проверка
+      this.setupHeader(tg);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 50);
+      
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 100);
+    });
+    
     // Дополнительные проверки через интервалы
+    setTimeout(() => {
+      this.setupHeader(tg);
+    }, 300);
+    
     setTimeout(() => {
       this.setupHeader(tg);
     }, 500);
@@ -137,10 +217,26 @@ class TelegramWebApp {
       this.setupHeader(tg);
     }, 1000);
     
-    // Периодическая проверка каждые 3 секунды
+    // Более частая периодическая проверка в первые секунды
     setInterval(() => {
       this.setupHeader(tg);
-    }, 3000);
+    }, 1000);
+    
+    // Отслеживание изменений в DOM для SPA навигации
+    const observer = new MutationObserver(() => {
+      this.setupHeader(tg);
+      
+      // Дополнительная проверка через короткую задержку
+      setTimeout(() => {
+        this.setupHeader(tg);
+      }, 100);
+    });
+    
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: false
+    });
 
     // Настройки UI
     this.setupUIBehavior();
@@ -178,9 +274,38 @@ document.addEventListener('DOMContentLoaded', () => {
 // Дополнительная инициализация при полной загрузке
 window.addEventListener('load', () => {
   if (window.telegramWebApp && window.Telegram?.WebApp) {
+    // Немедленная проверка
+    window.telegramWebApp.setupHeader(window.Telegram.WebApp);
+    
+    setTimeout(() => {
+      window.telegramWebApp.setupHeader(window.Telegram.WebApp);
+    }, 100);
+    
     setTimeout(() => {
       window.telegramWebApp.setupHeader(window.Telegram.WebApp);
     }, 300);
+    
+    // Принудительная настройка для главной страницы
+    if (typeof window.forceMainPageHeader === 'function') {
+      window.forceMainPageHeader();
+    }
+  }
+});
+
+// Отслеживание pageshow события (когда страница показывается из кэша)
+window.addEventListener('pageshow', () => {
+  if (window.telegramWebApp && window.Telegram?.WebApp) {
+    // Немедленная проверка
+    window.telegramWebApp.setupHeader(window.Telegram.WebApp);
+    
+    setTimeout(() => {
+      window.telegramWebApp.setupHeader(window.Telegram.WebApp);
+    }, 100);
+    
+    // Принудительная настройка для главной страницы
+    if (typeof window.forceMainPageHeader === 'function') {
+      window.forceMainPageHeader();
+    }
   }
 });
 
@@ -188,6 +313,25 @@ window.addEventListener('load', () => {
 window.updateTelegramHeader = function() {
   if (window.telegramWebApp && window.Telegram?.WebApp) {
     window.telegramWebApp.setupHeader(window.Telegram.WebApp);
+  }
+};
+
+// Принудительная настройка для главной страницы
+window.forceMainPageHeader = function() {
+  if (window.telegramWebApp && window.Telegram?.WebApp) {
+    const tg = window.Telegram.WebApp;
+    
+    // Множественные попытки настройки главной страницы
+    for (let i = 0; i < 10; i++) {
+      setTimeout(() => {
+        if (window.telegramWebApp.isMainPage()) {
+          tg.BackButton.hide();
+          tg.BackButton.offClick();
+          tg.enableClosingConfirmation();
+          tg.MainButton.hide();
+        }
+      }, i * 50);
+    }
   }
 };
 
