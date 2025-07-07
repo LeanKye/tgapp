@@ -206,13 +206,46 @@ function updateTabs(product) {
       // Добавляем активный класс к текущему табу
       tab.classList.add('tab-selected');
       
-      // Обновляем содержимое
-      if (index === 0) {
-        tabsContent.innerHTML = product.description;
-      } else if (index === 1) {
-        tabsContent.innerHTML = product.systemRequirements;
-      }
+      // Плавно обновляем содержимое без "подпрыгивания"
+      smoothUpdateTabContent(tabsContent, index === 0 ? product.description : product.systemRequirements);
     });
+  });
+}
+
+// Функция для плавного обновления контента табов
+function smoothUpdateTabContent(container, newContent) {
+  // Сохраняем текущую высоту
+  const currentHeight = container.offsetHeight;
+  container.style.height = currentHeight + 'px';
+  container.style.overflow = 'hidden';
+  container.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+  
+  // Создаем временный элемент для измерения новой высоты
+  const tempDiv = document.createElement('div');
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.visibility = 'hidden';
+  tempDiv.style.width = container.offsetWidth + 'px';
+  tempDiv.style.padding = getComputedStyle(container).padding;
+  tempDiv.style.fontSize = getComputedStyle(container).fontSize;
+  tempDiv.style.lineHeight = getComputedStyle(container).lineHeight;
+  tempDiv.innerHTML = newContent;
+  
+  // Добавляем в DOM для измерения
+  container.parentNode.appendChild(tempDiv);
+  const newHeight = tempDiv.offsetHeight;
+  container.parentNode.removeChild(tempDiv);
+  
+  // Запускаем анимацию к новой высоте
+  requestAnimationFrame(() => {
+    container.style.height = newHeight + 'px';
+    
+    // После завершения анимации обновляем контент и убираем ограничения
+    setTimeout(() => {
+      container.innerHTML = newContent;
+      container.style.height = '';
+      container.style.overflow = '';
+      container.style.transition = '';
+    }, 300);
   });
 }
 
@@ -433,10 +466,10 @@ function getLabelInfo(labelText) {
 // Инициализация модального окна
 function initLabelModal() {
   const modal = document.getElementById('label-modal');
-  const closeBtn = document.getElementById('modal-close');
+  const understandBtn = document.getElementById('modal-understand');
   
-  // Обработчик для кнопки закрытия
-  closeBtn.addEventListener('click', closeLabelModal);
+  // Обработчик для кнопки "Понятно"
+  understandBtn.addEventListener('click', closeLabelModal);
   
   // Обработчик для клика по фону модального окна
   modal.addEventListener('click', (e) => {

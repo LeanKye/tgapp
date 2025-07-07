@@ -175,6 +175,54 @@ input, textarea {
   overscroll-behavior: none;
 }
 
+/* Плавное переключение контента табов */
+.tabs-content {
+  will-change: height;
+}
+
+/* Bounce scroll эффект - только для мобильных устройств */
+@media (max-width: 1024px) and (hover: none) {
+  body {
+    will-change: transform;
+  }
+
+  /* Обеспечиваем плавность bounce анимации */
+  body.bounce-scrolling {
+    transform-origin: center center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  /* Оптимизация производительности для bounce */
+  @media (prefers-reduced-motion: no-preference) {
+    body {
+      transform: translateZ(0);
+    }
+  }
+}
+
+/* Отключаем bounce для пользователей с настройкой reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Принудительно отключаем bounce на десктопе */
+@media (min-width: 1025px), (hover: hover) {
+  body {
+    transform: none !important;
+    transition: none !important;
+    will-change: auto;
+  }
+  
+  body.bounce-scrolling {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* Предотвращаем контекстное меню */
 .category-product-card,
 .category-card,
@@ -2141,15 +2189,14 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.6);
   z-index: 1000;
   display: flex;
   align-items: flex-end;
   justify-content: center;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-overlay.show {
@@ -2165,7 +2212,7 @@ body {
   border-radius: 20px 20px 0 0;
   padding: 0;
   transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
@@ -2196,7 +2243,7 @@ body {
 
 .modal-overlay.show .modal-content {
   transform: translateY(0);
-  animation: modalBounce 0.6s ease-out;
+  animation: modalBounce 0.35s ease-out;
 }
 
 @keyframes modalBounce {
@@ -2204,7 +2251,7 @@ body {
     transform: translateY(100%);
   }
   70% {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
   }
   100% {
     transform: translateY(0);
@@ -2213,7 +2260,7 @@ body {
 
 .modal-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding: 24px 24px 16px 24px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -2319,35 +2366,49 @@ body {
   transition: color 0.3s ease;
 }
 
-.modal-close-btn {
-  background: rgba(255, 255, 255, 0.1);
+/* Кнопка "Понятно" внизу модального окна */
+.modal-footer {
+  padding: 0 24px 24px 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 24px;
+  right: 24px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.modal-understand-btn {
+  width: 100%;
+  background-color: #29A5FF;
   border: none;
-  padding: 10px;
+  padding: 14px 20px;
   cursor: pointer;
-  color: #999999;
+  color: white;
   border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
   transition: all 0.2s ease;
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 16px rgba(41, 165, 255, 0.3);
   opacity: 0;
-  transform: translateX(10px);
-  animation: slideInRight 0.5s ease-out 0.4s forwards;
+  transform: translateY(10px);
+  animation: fadeInUp 0.5s ease-out 0.3s forwards;
 }
 
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.modal-understand-btn:hover {
+  background-color: #1E90FF;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(41, 165, 255, 0.4);
 }
 
-.modal-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  transform: scale(1.05);
+.modal-understand-btn:active {
+  transform: translateY(0px);
+  box-shadow: 0 2px 12px rgba(41, 165, 255, 0.2);
 }
 
 .modal-body {
@@ -2403,6 +2464,15 @@ body {
     right: 20px;
   }
   
+  .modal-footer {
+    padding: 0 20px 20px 20px;
+  }
+  
+  .modal-footer::before {
+    left: 20px;
+    right: 20px;
+  }
+  
   .modal-header h3 {
     font-size: 18px;
   }
@@ -2415,6 +2485,11 @@ body {
     width: 28px;
     height: 28px;
     font-size: 16px;
+  }
+  
+  .modal-understand-btn {
+    font-size: 15px;
+    padding: 12px 18px;
   }
 }
 
