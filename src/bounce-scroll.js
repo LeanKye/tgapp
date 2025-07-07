@@ -4,7 +4,7 @@ class BounceScroll {
     this.isScrolling = false;
     this.scrollTimeout = null;
     this.lastScrollTop = 0;
-    this.velocityThreshold = 3; // Минимальная скорость для bounce (понижено для более чувствительного bounce)
+    this.velocityThreshold = 4; // Минимальная скорость для bounce (немного поднят из-за большого расстояния 150px)
     this.bounceDistance = 150; // Максимальное расстояние bounce в пикселях (увеличено для более заметного эффекта)
     this.isAnimating = false;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -164,14 +164,14 @@ class BounceScroll {
   applyResistance(direction, intensity) {
     const body = document.body;
     
-    // Применяем более плавную кривую сопротивления
-    const smoothIntensity = Math.pow(intensity, 0.7); // Делаем кривую более плавной
+    // Применяем очень плавную кривую сопротивления для большого расстояния
+    const smoothIntensity = Math.pow(intensity, 0.8); // Делаем кривую еще более плавной для 150px
     const translateY = direction === 'top' ? 
-      Math.min(smoothIntensity * this.bounceDistance * 0.8, this.bounceDistance) : 
-      -Math.min(smoothIntensity * this.bounceDistance * 0.8, this.bounceDistance);
+      Math.min(smoothIntensity * this.bounceDistance * 0.6, this.bounceDistance) : 
+      -Math.min(smoothIntensity * this.bounceDistance * 0.6, this.bounceDistance); // Уменьшаем множитель
     
     body.classList.add('bounce-scrolling');
-    body.style.transition = 'transform 0.2s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Более плавный переход
+    body.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Более плавный переход для большого расстояния
     body.style.transform = `translateY(${translateY}px)`;
   }
 
@@ -191,27 +191,27 @@ class BounceScroll {
     const translateY = direction === 'top' ? maxBounce : -maxBounce;
     
     // Фаза 1: Bounce с более тягучей анимацией
-    body.style.transition = 'transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Более тягучая easing
+    body.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; // Более тягучая easing
     body.style.transform = `translateY(${translateY}px)`;
     
-    // Фаза 2: Медленный возврат с затуханием
+    // Фаза 2: Очень медленный и плавный возврат
     setTimeout(() => {
-      body.style.transition = 'transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1)'; // Более длинный и плавный возврат
+      body.style.transition = 'transform 1.2s cubic-bezier(0.23, 1, 0.32, 1)'; // Очень длинный и супер-плавный возврат
       body.style.transform = 'translateY(0px)';
       
       // Финальная очистка
       setTimeout(() => {
         this.resetTransform();
         this.isAnimating = false;
-      }, 600); // Увеличено время для завершения анимации
-    }, 350); // Увеличено время bounce фазы
+      }, 1200); // Увеличено время для завершения анимации
+    }, 400); // Увеличено время bounce фазы
   }
 
   resetTransform() {
     const body = document.body;
     
     // Плавно убираем transform
-    body.style.transition = 'transform 0.2s ease-out';
+    body.style.transition = 'transform 0.3s ease-out';
     body.style.transform = 'translateY(0px)';
     
     // Через небольшое время полностью очищаем стили
@@ -219,7 +219,7 @@ class BounceScroll {
       body.style.transition = '';
       body.style.transform = '';
       body.classList.remove('bounce-scrolling');
-    }, 200);
+    }, 300);
   }
 
   // Функция для включения/отключения bounce эффекта
