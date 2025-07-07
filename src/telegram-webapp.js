@@ -4,41 +4,7 @@ class TelegramWebApp {
     this.init();
   }
 
-  // Отладочная функция для показа информации
-  showDebugInfo(message) {
-    // Создаем элемент для отладки если его нет
-    let debugElement = document.getElementById('telegram-debug');
-    if (!debugElement) {
-      debugElement = document.createElement('div');
-      debugElement.id = 'telegram-debug';
-      debugElement.style.cssText = `
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-size: 12px;
-        z-index: 9999;
-        max-width: 300px;
-        white-space: pre-wrap;
-      `;
-      document.body.appendChild(debugElement);
-    }
-    
-    const timestamp = new Date().toLocaleTimeString();
-    debugElement.innerHTML = `[${timestamp}] ${message}`;
-    
-    // Автоматически скрываем через 10 секунд
-    setTimeout(() => {
-      if (debugElement) {
-        debugElement.remove();
-      }
-    }, 10000);
-  }
-
-  // Определение главной страницы (упрощенная версия)
+  // Определение главной страницы
   isMainPath() {
     const pathname = window.location.pathname;
     const search = window.location.search;
@@ -46,15 +12,7 @@ class TelegramWebApp {
     // Упрощенная логика - главная страница это любая без параметров продукта или категории
     const hasNoParams = !search.includes('product=') && !search.includes('category=');
     
-    // Считаем главной любую страницу без параметров товаров/категорий
-    const isMain = hasNoParams;
-    
-    this.showDebugInfo(`URL: ${pathname}${search}
-Параметры: ${search || 'нет'}
-Главная: ${isMain ? 'ДА' : 'НЕТ'}
-hasNoParams: ${hasNoParams}`);
-    
-    return isMain;
+    return hasNoParams;
   }
 
   // Настройка кнопки "Назад"
@@ -67,22 +25,16 @@ hasNoParams: ${hasNoParams}`);
     if (isMain) {
       // На главной странице - скрываем кнопку "Назад" и показываем кнопку "Закрыть"
       tg.BackButton.hide();
-      this.showDebugInfo('Главная страница: скрыта кнопка "Назад"');
-      
-      // Проверяем доступность CloseButton
       this.setupCloseButton(tg);
-      
     } else {
       // На внутренних страницах - скрываем кнопку "Закрыть" и показываем кнопку "Назад"
       this.hideCloseButton(tg);
       
       // Показываем кнопку "Назад" и делаем её активной
       tg.BackButton.show();
-      this.showDebugInfo('Внутренняя страница: кнопка "Назад" активна');
       
       // Добавляем обработчик для возврата
       tg.BackButton.onClick(() => {
-        this.showDebugInfo('Клик по кнопке "Назад" - возврат назад');
         if (window.history.length > 1) {
           window.history.back();
         } else {
@@ -112,7 +64,6 @@ hasNoParams: ${hasNoParams}`);
     closeButtonVariants.forEach(variant => {
       if (tg[variant] && typeof tg[variant] === 'object') {
         closeButton = tg[variant];
-        this.showDebugInfo(`Найдена кнопка: tg.${variant}`);
       }
     });
     
@@ -120,7 +71,6 @@ hasNoParams: ${hasNoParams}`);
       // Если нашли кнопку "Закрыть"
       try {
         closeButton.show();
-        this.showDebugInfo('Кнопка "Закрыть" показана');
         
         // Очищаем предыдущие обработчики
         if (closeButton.offClick) {
@@ -130,22 +80,20 @@ hasNoParams: ${hasNoParams}`);
         // Добавляем обработчик для закрытия приложения
         if (closeButton.onClick) {
           closeButton.onClick(() => {
-            this.showDebugInfo('Клик по кнопке "Закрыть"');
             if (tg.close) {
               tg.close();
             } else {
-              // Альтернативные способы закрытия
               window.close();
             }
           });
         }
         
       } catch (e) {
-        this.showDebugInfo(`Ошибка настройки кнопки "Закрыть": ${e.message}`);
+        // Если ошибка, пробуем альтернативные методы
+        this.tryAlternativeCloseMethods(tg);
       }
     } else {
       // Если кнопки "Закрыть" нет, попробуем альтернативные методы
-      this.showDebugInfo('Кнопка "Закрыть" не найдена, пробуем альтернативы');
       this.tryAlternativeCloseMethods(tg);
     }
   }
@@ -168,13 +116,12 @@ hasNoParams: ${hasNoParams}`);
         try {
           if (tg[variant].hide) {
             tg[variant].hide();
-            this.showDebugInfo(`Скрыта кнопка: tg.${variant}`);
           }
           if (tg[variant].offClick) {
             tg[variant].offClick();
           }
         } catch (e) {
-          this.showDebugInfo(`Ошибка скрытия ${variant}: ${e.message}`);
+          // Игнорируем ошибки
         }
       }
     });
@@ -188,17 +135,15 @@ hasNoParams: ${hasNoParams}`);
         tg.MainButton.setText('Закрыть');
         tg.MainButton.show();
         tg.MainButton.onClick(() => {
-          this.showDebugInfo('Клик по MainButton "Закрыть"');
           if (tg.close) {
             tg.close();
           } else {
             window.close();
           }
         });
-        this.showDebugInfo('MainButton настроена как кнопка "Закрыть"');
         return;
       } catch (e) {
-        this.showDebugInfo(`Ошибка настройки MainButton: ${e.message}`);
+        // Продолжаем к следующему методу
       }
     }
     
@@ -208,22 +153,17 @@ hasNoParams: ${hasNoParams}`);
         tg.SecondaryButton.setText('Закрыть');
         tg.SecondaryButton.show();
         tg.SecondaryButton.onClick(() => {
-          this.showDebugInfo('Клик по SecondaryButton "Закрыть"');
           if (tg.close) {
             tg.close();
           } else {
             window.close();
           }
         });
-        this.showDebugInfo('SecondaryButton настроена как кнопка "Закрыть"');
         return;
       } catch (e) {
-        this.showDebugInfo(`Ошибка настройки SecondaryButton: ${e.message}`);
+        // Игнорируем ошибку
       }
     }
-    
-    // Попытка 3: Просто использовать метод close() на главной странице
-    this.showDebugInfo('Кнопки "Закрыть" не найдены, используем только tg.close()');
   }
 
   init() {
@@ -250,23 +190,20 @@ hasNoParams: ${hasNoParams}`);
     // Настройка кнопки "Назад"
     this.setupBackButton(tg);
 
-    // Отслеживание навигации (popstate срабатывает при history.back())
+    // Отслеживание навигации
     window.addEventListener('popstate', () => {
-      // Используем setTimeout чтобы дать время браузеру обновить URL
       setTimeout(() => {
-        this.showDebugInfo('Событие: popstate');
         this.setupBackButton(tg);
       }, 50);
     });
 
-    // Отслеживание изменений в URL (для случаев с pushState)
+    // Отслеживание изменений в URL
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
     
     history.pushState = function() {
       originalPushState.apply(history, arguments);
       setTimeout(() => {
-        window.telegramWebApp.showDebugInfo('Событие: pushState');
         window.telegramWebApp.setupBackButton(tg);
       }, 50);
     };
@@ -274,12 +211,11 @@ hasNoParams: ${hasNoParams}`);
     history.replaceState = function() {
       originalReplaceState.apply(history, arguments);
       setTimeout(() => {
-        window.telegramWebApp.showDebugInfo('Событие: replaceState');
         window.telegramWebApp.setupBackButton(tg);
       }, 50);
     };
 
-    // Дополнительная проверка каждые 2 секунды (для отладки)
+    // Периодическая проверка
     setInterval(() => {
       this.setupBackButton(tg);
     }, 2000);
