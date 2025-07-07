@@ -265,6 +265,11 @@ class CategoryPage {
 // Инициализируем страницу категории
 document.addEventListener('DOMContentLoaded', () => {
   new CategoryPage();
-  
 
+  // Обновляем кнопку "Назад" для страницы категории
+  setTimeout(() => {
+    if (typeof window.updateTelegramBackButton === 'function') {
+      window.updateTelegramBackButton();
+    }
+  }, 300);
 }); 

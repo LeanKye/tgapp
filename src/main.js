@@ -750,11 +750,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Рендерим категории на главной странице
   renderCategories();
   
-  // Инициализируем навигацию из бургер меню
+    // Инициализируем навигацию из бургер меню
   initMenuNavigation();
-  
 
-  
+  // Обновляем кнопку "Назад" для главной страницы
+  setTimeout(() => {
+    if (typeof window.updateTelegramBackButton === 'function') {
+      window.updateTelegramBackButton();
+    }
+  }, 300);
+
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
     // Добавляем небольшую задержку для корректного пересчета размеров
