@@ -335,11 +335,16 @@ body {
   position: relative;
   z-index: 2;
   margin-inline: 16px;
+  /* Предотвращаем выход элементов за границы контейнера */
+  overflow: hidden;
 }
 
 /* Убираем отступы только у контейнеров внутри catalog (Категории и Новинки) */
 .catalog > .container {
   margin-inline: 0;
+  /* Дополнительная изоляция для контейнеров слайдеров */
+  overflow: hidden;
+  position: relative;
 }
 
 /* Специальные стили для контейнера с баннерами */
@@ -764,6 +769,13 @@ body {
 
 .menu-closed {
   transform: translateX(100%);
+  /* Принудительно скрываем закрытое меню */
+  visibility: hidden;
+  pointer-events: none;
+  /* Дополнительная изоляция */
+  contain: layout style paint;
+  /* Полное скрытие за пределами видимой области */
+  clip-path: inset(0 0 0 100%);
 }
 
 /* Темный фон за меню */
@@ -1817,6 +1829,11 @@ body {
   -ms-overflow-style: none; /* Internet Explorer 10+ */
   position: relative;
   z-index: 1; /* Ниже меню (menu z-index: 1000) */
+  /* Полная изоляция от других элементов */
+  isolation: isolate;
+  contain: layout style paint;
+  /* Принудительно скрываем все что выходит за границы */
+  clip-path: inset(0 0 0 0);
 }
 
 .category-products-slider::-webkit-scrollbar {
