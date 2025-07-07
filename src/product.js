@@ -1,5 +1,5 @@
+import './style.css'
 import { getProductById, formatPrice, formatPriceSimple } from './products-data.js'
-import { initCommonComponents, Utils, ModalManager } from './common.js'
 import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs'
 
 // Функция для получения параметров URL
@@ -16,7 +16,7 @@ function renderProduct(product) {
   }
 
   // Обновляем заголовок страницы
-  Utils.setPageTitle(product.title);
+  document.title = product.title;
 
   // Обновляем слайдер изображений
   const swiperWrapper = document.querySelector('.swiper-wrapper');
@@ -402,11 +402,48 @@ function initSwiper() {
   });
 }
 
-// Функция для открытия модального окна с информацией о лейбле
+// Функции для работы с модальным окном лейблов
 function openLabelModal(labelText) {
+  // Убеждаемся, что модальное окно создано
+  if (!document.getElementById('label-modal')) {
+    createModal();
+  }
+  
+  const modal = document.getElementById('label-modal');
+  const modalTitle = document.getElementById('modal-title');
+  const modalDescription = document.getElementById('modal-description');
+  const modalIcon = document.getElementById('modal-icon');
+  
+  // Устанавливаем заголовок и описание в зависимости от типа лейбла
   const labelInfo = getLabelInfo(labelText);
-  const modalManager = new ModalManager();
-  modalManager.showModal(labelInfo.type, labelInfo.title, labelInfo.description);
+  modalTitle.textContent = labelInfo.title;
+  modalDescription.textContent = labelInfo.description;
+  
+  // Устанавливаем иконку и класс
+  modalIcon.textContent = labelInfo.icon;
+  modalIcon.className = `modal-icon ${labelInfo.iconClass}`;
+  
+  // Блокируем прокрутку страницы
+  document.body.style.overflow = 'hidden';
+  
+  // Показываем модальное окно с небольшой задержкой для плавности
+  setTimeout(() => {
+    modal.classList.add('show');
+  }, 10);
+}
+
+function closeLabelModal() {
+  const modal = document.getElementById('label-modal');
+  
+  // Добавляем класс для анимации закрытия
+  modal.classList.add('hide');
+  modal.classList.remove('show');
+  
+  // Восстанавливаем прокрутку страницы после анимации
+  setTimeout(() => {
+    document.body.style.overflow = '';
+    modal.classList.remove('hide');
+  }, 300);
 }
 
 function getLabelInfo(labelText) {
@@ -414,49 +451,221 @@ function getLabelInfo(labelText) {
     'Гарантия': {
       title: 'Гарантия',
       description: 'Мы предоставляем гарантию на все цифровые товары. В случае возникновения проблем с работоспособностью продукта, мы бесплатно заменим его или вернем деньги. Гарантия действует в течение 30 дней с момента покупки.',
-      type: 'guarantee'
+      icon: '🛡️',
+      iconClass: 'guarantee'
     },
     'Лицензия': {
       title: 'Лицензия',
       description: 'Все продукты поставляются с официальными лицензиями от производителя. Вы получаете полностью легальный и активированный продукт с возможностью получения обновлений и технической поддержки.',
-      type: 'license'
+      icon: '📜',
+      iconClass: 'license'
     },
     'Нужен VPN': {
       title: 'Требуется VPN',
       description: 'Для активации и использования данного продукта может потребоваться VPN-соединение. Это связано с региональными ограничениями производителя. Мы рекомендуем использовать надежные VPN-сервисы для обеспечения стабильной работы.',
-      type: 'vpn'
+      icon: '🌐',
+      iconClass: 'vpn'
     }
   };
   
   return labelInfoMap[labelText] || {
     title: 'Информация',
     description: 'Информация о данном лейбле недоступна.',
-    type: 'guarantee'
+    icon: '⚡',
+    iconClass: 'guarantee'
   };
 }
 
-// Инициализация страницы товара
-document.addEventListener('DOMContentLoaded', () => {
-  // Инициализируем общие компоненты
-  initCommonComponents();
-  
-  // Получаем ID товара из URL
-  const productId = Utils.getUrlParameter('product');
-  
-  if (!productId) {
-    document.querySelector('.product').innerHTML = '<div class="container">Товар не указан</div>';
+// Создание модального окна
+function createModal() {
+  // Проверяем, не создано ли уже модальное окно
+  if (document.getElementById('label-modal')) {
     return;
   }
   
-  // Загружаем данные товара
+  const modalHTML = `
+    <div id="label-modal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title-container">
+            <div id="modal-icon" class="modal-icon">
+              ⚡
+            </div>
+            <h3 id="modal-title">Информация</h3>
+          </div>
+        </div>
+        <div class="modal-body">
+          <p id="modal-description">Загрузка информации...</p>
+        </div>
+        <div class="modal-footer">
+          <button id="modal-understand" class="modal-understand-btn">
+            Понятно
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Создаем DOM элемент
+  const modalElement = document.createElement('div');
+  modalElement.innerHTML = modalHTML;
+  const modal = modalElement.firstElementChild;
+  
+  // Вставляем модальное окно в корень документа (не в body)
+  document.documentElement.appendChild(modal);
+  
+  // Определяем устройство для специфичных настроек
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isAndroid = /Android/.test(navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  const isOldBrowser = !CSS.supports('display', 'flex');
+  const supportsVH = CSS.supports('height', '100vh');
+  
+  // Форсируем позиционирование модального окна относительно viewport
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.right = '0';
+  modal.style.bottom = '0';
+  modal.style.zIndex = '10000';
+  modal.style.transform = 'none';
+  modal.style.webkitTransform = 'none';
+  modal.style.mozTransform = 'none';
+  modal.style.msTransform = 'none';
+  modal.style.margin = '0';
+  modal.style.padding = '0';
+  
+  // Устанавливаем размеры с учетом устройства
+  if (isIOS || isSafari || !supportsVH) {
+    // Для iOS, Safari и старых браузеров используем window.innerHeight
+    modal.style.width = window.innerWidth + 'px';
+    modal.style.height = window.innerHeight + 'px';
+    modal.style.webkitOverflowScrolling = 'touch';
+  } else {
+    // Для других устройств используем viewport units
+    modal.style.width = '100vw';
+    modal.style.height = '100vh';
+  }
+  
+  // Фоллбэк для старых браузеров
+  if (isOldBrowser) {
+    modal.style.display = 'block';
+    modal.style.position = 'absolute';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.zIndex = '9999';
+  }
+  
+  // Принудительно отключаем все наследования трансформаций
+  if (CSS.supports('contain', 'layout')) {
+    modal.style.contain = 'layout style paint';
+  }
+  if (CSS.supports('isolation', 'isolate')) {
+    modal.style.isolation = 'isolate';
+  }
+  
+  // Дополнительные настройки для Android
+  if (isAndroid) {
+    modal.style.webkitBackfaceVisibility = 'hidden';
+    modal.style.backfaceVisibility = 'hidden';
+  }
+  
+  // Обработчик изменения ориентации для мобильных устройств
+  if (isIOS || isAndroid || !supportsVH) {
+    const updateModalSize = () => {
+      setTimeout(() => {
+        const currentWidth = window.innerWidth;
+        const currentHeight = window.innerHeight;
+        
+        // Проверяем, что размеры валидны
+        if (currentWidth > 0 && currentHeight > 0) {
+          modal.style.width = currentWidth + 'px';
+          modal.style.height = currentHeight + 'px';
+          
+          // Обновляем CSS переменную для viewport height
+          document.documentElement.style.setProperty('--vh', `${currentHeight * 0.01}px`);
+        }
+      }, 100);
+    };
+    
+    window.addEventListener('orientationchange', updateModalSize);
+    window.addEventListener('resize', updateModalSize);
+    
+    // Дополнительно слушаем события фокуса для работы с клавиатурой
+    window.addEventListener('focus', updateModalSize);
+    window.addEventListener('blur', updateModalSize);
+    
+    // Устанавливаем начальное значение для viewport height
+    document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`);
+  }
+}
+
+// Инициализация модального окна
+function initLabelModal() {
+  // Создаем модальное окно динамически
+  createModal();
+  
+  const modal = document.getElementById('label-modal');
+  const understandBtn = document.getElementById('modal-understand');
+  
+  // Обработчик для кнопки "Понятно"
+  understandBtn.addEventListener('click', closeLabelModal);
+  
+  // Обработчик для клика по фону модального окна
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeLabelModal();
+    }
+  });
+  
+  // Обработчик для клавиши Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('show')) {
+      closeLabelModal();
+    }
+  });
+}
+
+// Глобальная функция для инициализации viewport height
+function initViewportHeight() {
+  const setVH = () => {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  };
+  
+  setVH();
+  
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(setVH, 100);
+  });
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+  // Инициализируем viewport height для всех устройств
+  initViewportHeight();
+  
+  const productId = getUrlParameter('product');
   const product = getProductById(productId);
   renderProduct(product);
   
-  // Инициализируем Swiper после рендеринга
-  setTimeout(() => {
-    initSwiper();
-  }, 100);
+  // Инициализируем компоненты после отрисовки продукта
+  if (product) {
+    // Небольшая задержка чтобы DOM успел обновиться
+    setTimeout(() => {
+      initSwiper();
+      initCheckoutPanel();
+      initLabelModal(); // Добавляем инициализацию модального окна
+    }, 100);
+    
+
+  }
   
-  // Инициализируем панель оформления
-  initCheckoutPanel();
+  // Если продукт не найден, перенаправляем на главную
+  if (!product) {
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 2000);
+  }
 });
