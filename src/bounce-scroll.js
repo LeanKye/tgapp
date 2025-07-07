@@ -1,7 +1,7 @@
 // Bounce эффект при прокрутке до упора
 class BounceScroll {
   constructor() {
-    this.maxBounceDistance = 100; // Максимальное расстояние bounce (как в нативных приложениях)
+    this.maxBounceDistance = 150; // Максимальное расстояние bounce (как в нативных приложениях)
     this.isAnimating = false;
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     
@@ -158,7 +158,7 @@ class BounceScroll {
     // Используем функцию сопротивления как в UIScrollView (iOS)
     // f(x) = (1.0 - (1.0 / ((x * c / d) + 1.0))) * d
     // где c - коэффициент сопротивления, d - максимальная дистанция
-    const c = 0.55; // Коэффициент сопротивления (0.55 как в iOS)
+    const c = 0.3; // Коэффициент сопротивления (0.55 как в iOS)
     const result = (1.0 - (1.0 / ((offset * c / maxDistance) + 1.0))) * maxDistance;
     return Math.min(result, maxDistance);
   }
