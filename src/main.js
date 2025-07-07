@@ -79,6 +79,11 @@ function renderNewProducts() {
     const card = createProductCard(product);
     container.appendChild(card);
   });
+  
+  // Принудительно сбрасываем позицию прокрутки в начало
+  setTimeout(() => {
+    container.scrollLeft = 0;
+  }, 0);
 }
 
 // Функция для рендеринга категорий
@@ -753,7 +758,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализируем навигацию из бургер меню
   initMenuNavigation();
 
-
+  // Дополнительная проверка позиции слайдера товаров после полной загрузки
+  setTimeout(() => {
+    const productsSlider = document.querySelector('.category-products-slider');
+    if (productsSlider) {
+      productsSlider.scrollLeft = 0;
+    }
+  }, 100);
 
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
