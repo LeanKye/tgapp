@@ -65,22 +65,18 @@ hasNoParams: ${hasNoParams}`);
     const isMain = this.isMainPath();
     
     if (isMain) {
-      // На главной странице - не скрываем кнопку, а делаем её неактивной
-      tg.BackButton.show(); // Показываем кнопку
-      this.showDebugInfo('Главная страница: кнопка "Назад" отключена');
+      // На главной странице - скрываем кнопку "Назад" и показываем кнопку "Закрыть"
+      tg.BackButton.hide();
+      this.showDebugInfo('Главная страница: скрыта кнопка "Назад"');
       
-      // Добавляем пустой обработчик - кнопка не будет ничего делать
-      tg.BackButton.onClick(() => {
-        this.showDebugInfo('Клик по кнопке "Назад" заблокирован на главной странице');
-        // Ничего не делаем - блокируем действие
-        return false;
-      });
-      
-      // Дополнительно пытаемся заблокировать нативные действия
-      this.blockNativeBackButton();
+      // Проверяем доступность CloseButton
+      this.setupCloseButton(tg);
       
     } else {
-      // На всех остальных страницах - показываем кнопку "Назад" и делаем её активной
+      // На внутренних страницах - скрываем кнопку "Закрыть" и показываем кнопку "Назад"
+      this.hideCloseButton(tg);
+      
+      // Показываем кнопку "Назад" и делаем её активной
       tg.BackButton.show();
       this.showDebugInfo('Внутренняя страница: кнопка "Назад" активна');
       
@@ -96,64 +92,138 @@ hasNoParams: ${hasNoParams}`);
     }
   }
 
-  // Блокировка нативных действий кнопки "Назад"
-  blockNativeBackButton() {
-    // Блокируем стандартные события браузера
-    const blockBackNavigation = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      this.showDebugInfo('Заблокировано нативное действие "Назад"');
-      return false;
-    };
+  // Настройка кнопки "Закрыть"
+  setupCloseButton(tg) {
+    // Проверяем различные возможные названия для кнопки "Закрыть"
+    const closeButtonVariants = [
+      'CloseButton',
+      'closeButton', 
+      'Close',
+      'close',
+      'ExitButton',
+      'exitButton',
+      'DismissButton',
+      'dismissButton'
+    ];
     
-    // Блокируем различные события
-    window.addEventListener('popstate', blockBackNavigation, { capture: true });
-    window.addEventListener('beforeunload', blockBackNavigation, { capture: true });
-    window.addEventListener('unload', blockBackNavigation, { capture: true });
+    let closeButton = null;
     
-    // Блокируем клавиши
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' || e.key === 'Backspace') {
-        e.preventDefault();
-        this.showDebugInfo('Заблокирована клавиша: ' + e.key);
-        return false;
-      }
-    }, { capture: true });
-    
-    // Попытка заблокировать через историю
-    history.pushState(null, null, location.href);
-    window.addEventListener('popstate', (e) => {
-      if (this.isMainPath()) {
-        history.pushState(null, null, location.href);
-        this.showDebugInfo('Заблокирован возврат через историю');
+    // Ищем кнопку "Закрыть" в API
+    closeButtonVariants.forEach(variant => {
+      if (tg[variant] && typeof tg[variant] === 'object') {
+        closeButton = tg[variant];
+        this.showDebugInfo(`Найдена кнопка: tg.${variant}`);
       }
     });
     
-    // Дополнительная блокировка через Telegram API
-    try {
-      const tg = window.Telegram.WebApp;
-      
-      // Попытка переопределить методы
-      if (tg.close) {
-        const originalClose = tg.close;
-        tg.close = () => {
-          this.showDebugInfo('Заблокирован tg.close()');
-          return false;
-        };
+    if (closeButton) {
+      // Если нашли кнопку "Закрыть"
+      try {
+        closeButton.show();
+        this.showDebugInfo('Кнопка "Закрыть" показана');
+        
+        // Очищаем предыдущие обработчики
+        if (closeButton.offClick) {
+          closeButton.offClick();
+        }
+        
+        // Добавляем обработчик для закрытия приложения
+        if (closeButton.onClick) {
+          closeButton.onClick(() => {
+            this.showDebugInfo('Клик по кнопке "Закрыть"');
+            if (tg.close) {
+              tg.close();
+            } else {
+              // Альтернативные способы закрытия
+              window.close();
+            }
+          });
+        }
+        
+      } catch (e) {
+        this.showDebugInfo(`Ошибка настройки кнопки "Закрыть": ${e.message}`);
       }
-      
-      // Попытка блокировать через события Telegram
-      if (tg.onEvent) {
-        tg.onEvent('backButtonClicked', () => {
-          this.showDebugInfo('Заблокировано событие backButtonClicked');
-          return false;
-        });
-      }
-      
-    } catch (e) {
-      this.showDebugInfo(`Ошибка блокировки Telegram API: ${e.message}`);
+    } else {
+      // Если кнопки "Закрыть" нет, попробуем альтернативные методы
+      this.showDebugInfo('Кнопка "Закрыть" не найдена, пробуем альтернативы');
+      this.tryAlternativeCloseMethods(tg);
     }
+  }
+
+  // Скрытие кнопки "Закрыть"
+  hideCloseButton(tg) {
+    const closeButtonVariants = [
+      'CloseButton',
+      'closeButton', 
+      'Close',
+      'close',
+      'ExitButton',
+      'exitButton',
+      'DismissButton',
+      'dismissButton'
+    ];
+    
+    closeButtonVariants.forEach(variant => {
+      if (tg[variant] && typeof tg[variant] === 'object') {
+        try {
+          if (tg[variant].hide) {
+            tg[variant].hide();
+            this.showDebugInfo(`Скрыта кнопка: tg.${variant}`);
+          }
+          if (tg[variant].offClick) {
+            tg[variant].offClick();
+          }
+        } catch (e) {
+          this.showDebugInfo(`Ошибка скрытия ${variant}: ${e.message}`);
+        }
+      }
+    });
+  }
+
+  // Альтернативные методы создания кнопки "Закрыть"
+  tryAlternativeCloseMethods(tg) {
+    // Попытка 1: Использовать MainButton как кнопку "Закрыть"
+    if (tg.MainButton) {
+      try {
+        tg.MainButton.setText('Закрыть');
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+          this.showDebugInfo('Клик по MainButton "Закрыть"');
+          if (tg.close) {
+            tg.close();
+          } else {
+            window.close();
+          }
+        });
+        this.showDebugInfo('MainButton настроена как кнопка "Закрыть"');
+        return;
+      } catch (e) {
+        this.showDebugInfo(`Ошибка настройки MainButton: ${e.message}`);
+      }
+    }
+    
+    // Попытка 2: Создать кнопку "Закрыть" через SecondaryButton
+    if (tg.SecondaryButton) {
+      try {
+        tg.SecondaryButton.setText('Закрыть');
+        tg.SecondaryButton.show();
+        tg.SecondaryButton.onClick(() => {
+          this.showDebugInfo('Клик по SecondaryButton "Закрыть"');
+          if (tg.close) {
+            tg.close();
+          } else {
+            window.close();
+          }
+        });
+        this.showDebugInfo('SecondaryButton настроена как кнопка "Закрыть"');
+        return;
+      } catch (e) {
+        this.showDebugInfo(`Ошибка настройки SecondaryButton: ${e.message}`);
+      }
+    }
+    
+    // Попытка 3: Просто использовать метод close() на главной странице
+    this.showDebugInfo('Кнопки "Закрыть" не найдены, используем только tg.close()');
   }
 
   init() {
