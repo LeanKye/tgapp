@@ -753,33 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем навигацию из бургер меню
   initMenuNavigation();
   
-  // Обновляем Telegram хедер для главной страницы
-  setTimeout(() => {
-    if (typeof window.updateTelegramHeader === 'function') {
-      window.updateTelegramHeader();
-    }
-  }, 100);
-  
-  // Дополнительная проверка
-  setTimeout(() => {
-    if (typeof window.updateTelegramHeader === 'function') {
-      window.updateTelegramHeader();
-    }
-  }, 500);
-  
-  // Принудительная настройка главной страницы
-  setTimeout(() => {
-    if (typeof window.forceMainPageHeader === 'function') {
-      window.forceMainPageHeader();
-    }
-  }, 200);
-  
-  // Еще одна принудительная проверка
-  setTimeout(() => {
-    if (typeof window.forceMainPageHeader === 'function') {
-      window.forceMainPageHeader();
-    }
-  }, 800);
+
   
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
