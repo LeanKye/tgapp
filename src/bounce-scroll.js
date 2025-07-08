@@ -49,9 +49,6 @@ class BounceScroll {
       @media (max-width: 1024px) and (hover: none) {
         body {
           will-change: scroll-position;
-          transform-style: preserve-3d;
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
         }
         
         /* Оптимизация для плавности */
