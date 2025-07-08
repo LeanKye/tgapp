@@ -2386,23 +2386,25 @@ body:has(.product)::before {
 
 /* Модальное окно для информации о лейблах */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  z-index: 10000;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
+  z-index: 10000 !important;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.25s ease, visibility 0.25s ease;
+  /* Полная изоляция от родительских элементов */
+  transform: none !important;
+  -webkit-transform: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* Специальные стили для мобильных устройств */
@@ -2451,19 +2453,23 @@ body:has(.product)::before {
 .modal-content {
   background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  width: 100%;
-  max-width: 100%;
+  width: 100% !important;
+  max-width: 100% !important;
   border-radius: 20px 20px 0 0;
   padding: 0;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   max-height: 80vh;
   overflow-y: auto;
   box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
-  position: relative;
+  /* Абсолютное позиционирование внизу экрана */
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
   /* Позиция по умолчанию - спрятано снизу */
   transform: translateY(100%);
   -webkit-transform: translateY(100%);
-  /* Убеждаемся что контент не смещается */
+  /* Принудительно убираем любые внешние отступы */
   margin: 0 !important;
 }
 
@@ -2472,8 +2478,11 @@ body:has(.product)::before {
   .modal-content {
     max-height: 80dvh;
     max-height: calc(var(--vh, 1vh) * 80);
-    /* Убеждаемся что контент помещается на экране */
-    min-height: auto;
+    /* Принудительно позиционируем внизу */
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     width: 100vw;
     border-radius: 20px 20px 0 0;
   }
@@ -2484,6 +2493,9 @@ body:has(.product)::before {
   .modal-content {
     max-height: 80dvh;
     max-height: calc(var(--vh, 1vh) * 80);
+    /* Принудительно позиционируем внизу */
+    position: absolute !important;
+    bottom: 0 !important;
     /* Учитываем safe area снизу */
     padding-bottom: env(safe-area-inset-bottom);
     box-sizing: border-box;
@@ -2761,6 +2773,11 @@ body:has(.product)::before {
     max-height: 80dvh;
     max-height: calc(var(--vh, 1vh) * 80);
     width: 100vw;
+    /* Принудительно позиционируем внизу */
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
   
   .modal-header {
@@ -2821,6 +2838,11 @@ body:has(.product)::before {
     max-height: calc(var(--vh, 1vh) * 90);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+    /* Принудительно позиционируем внизу */
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
 }
 
@@ -2829,6 +2851,11 @@ body:has(.product)::before {
   .modal-content {
     max-height: 70dvh;
     max-height: calc(var(--vh, 1vh) * 70);
+    /* Принудительно позиционируем внизу */
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
 }
 
@@ -2843,6 +2870,11 @@ body:has(.product)::before {
     max-height: 85dvh;
     max-height: calc(var(--vh, 1vh) * 85);
     width: 100vw;
+    /* Принудительно позиционируем внизу */
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
   }
   
   .modal-header {

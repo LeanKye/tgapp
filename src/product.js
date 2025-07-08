@@ -555,6 +555,32 @@ function createModal() {
   
   // Создаем DOM элемент и добавляем в body
   document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Принудительно применяем стили к модальному окну
+  const modal = document.getElementById('label-modal');
+  const modalContent = modal.querySelector('.modal-content');
+  
+  // Принудительно устанавливаем стили для модального окна
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.right = '0';
+  modal.style.bottom = '0';
+  modal.style.width = '100vw';
+  modal.style.height = '100vh';
+  modal.style.zIndex = '10000';
+  modal.style.transform = 'none';
+  modal.style.webkitTransform = 'none';
+  modal.style.margin = '0';
+  modal.style.padding = '0';
+  
+  // Принудительно устанавливаем стили для контента
+  modalContent.style.position = 'absolute';
+  modalContent.style.bottom = '0';
+  modalContent.style.left = '0';
+  modalContent.style.right = '0';
+  modalContent.style.width = '100%';
+  modalContent.style.margin = '0';
 }
 
 // Инициализация модального окна
