@@ -541,62 +541,78 @@ function initModal() {
   });
 }
 
-// Функция для принудительной фиксации кнопки на мобильных устройствах
-function fixButtonPositionOnMobile() {
-  const button = document.querySelector('.add-to-cart');
-  if (!button) return;
-  
-  // Проверяем, если это мобильное устройство
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
-  if (isMobile || isTouch) {
-    // Принудительно устанавливаем стили для мобильных
-    button.style.position = 'fixed';
-    button.style.bottom = '16px';
-    button.style.left = '16px';
-    button.style.right = '16px';
-    button.style.zIndex = '10000';
-    button.style.width = 'calc(100% - 32px)';
-    button.style.transform = 'translateZ(0)';
-    button.style.webkitTransform = 'translateZ(0)';
-    button.style.willChange = 'transform';
-    
-    // Дополнительная проверка для маленьких экранов
-    if (window.innerWidth <= 375) {
-      button.style.left = '12px';
-      button.style.right = '12px';
-      button.style.width = 'calc(100% - 24px)';
-      button.style.bottom = '12px';
-    }
-  }
-}
-
 // === FIXED BUTTON MOBILE COMPATIBILITY ================================
 /**
- * Проверяем, корректно ли работает position: fixed в текущем WebView.
- * В некоторых iOS WebView при наличии transform у предков fixed «отвязывается».
- * Если fixed работает – добавляем класс .fixed-ok к <body>, иначе убираем.
+ * Проверяем, корректно ли ведёт себя position:fixed при прокрутке.
+ * Алгоритм: помещаем пробный элемент, запоминаем координату, прокручиваем
+ * страницу на 20px, проверяем координату повторно. Если изменилась –
+ * позиционирование "fixed" сломано (элемент прокручивается вместе со
+ * страницей, как absolute).
  */
-function testFixedSupport() {
+function reliableFixedCheck() {
   const probe = document.createElement('div');
   probe.style.position = 'fixed';
   probe.style.top = '0';
+  probe.style.width = '1px';
+  probe.style.height = '1px';
+  probe.style.zIndex = '-1';
   document.body.appendChild(probe);
-  const supported = probe.getBoundingClientRect().top === 0;
+
+  const initialTop = probe.getBoundingClientRect().top;
+
+  // Если страница не прокручена, временно прокрутим на 20 px
+  const initialScroll = window.scrollY || window.pageYOffset;
+  window.scrollTo(0, initialScroll + 20);
+
+  const afterScrollTop = probe.getBoundingClientRect().top;
+
+  // Возвращаем скролл назад
+  window.scrollTo(0, initialScroll);
+
   document.body.removeChild(probe);
 
-  if (supported) {
+  return initialTop === afterScrollTop;
+}
+
+/** Применяет абсолютное позиционирование к кнопке и синхронизирует её */
+function activateAbsoluteFollow(button) {
+  function updatePos() {
+    const offset = 16;
+    const safe = 0; // env(safe-area-inset-bottom) не доступен из JS надёжно
+    const y = window.scrollY + window.innerHeight - button.offsetHeight - offset - safe;
+    button.style.position = 'absolute';
+    button.style.top = y + 'px';
+    button.style.left = '16px';
+    button.style.right = '16px';
+  }
+  updatePos();
+  window.addEventListener('scroll', updatePos, { passive: true });
+  window.addEventListener('resize', updatePos);
+  window.addEventListener('orientationchange', () => setTimeout(updatePos, 100));
+}
+
+function ensureBuyButtonMobileBehaviour() {
+  const button = document.querySelector('.add-to-cart');
+  if (!button) return;
+
+  const fixedWorks = reliableFixedCheck();
+  if (fixedWorks) {
     document.body.classList.add('fixed-ok');
+    // Убеждаемся, что кнопка действительно fixed
+    button.style.position = 'fixed';
   } else {
     document.body.classList.remove('fixed-ok');
+    activateAbsoluteFollow(button);
   }
 }
 
-// Проверяем после загрузки, резайза и смены ориентации
-document.addEventListener('DOMContentLoaded', testFixedSupport);
-window.addEventListener('resize', testFixedSupport);
-window.addEventListener('orientationchange', () => setTimeout(testFixedSupport, 100));
+// Запуск после загрузки и при изменениях
+['DOMContentLoaded', 'resize', 'orientationchange'].forEach(evt => {
+  window.addEventListener(evt, () => {
+    // Небольшой таймаут, чтобы не дёргать при каждом кадре
+    setTimeout(ensureBuyButtonMobileBehaviour, 50);
+  });
+});
 // === /FIXED BUTTON MOBILE COMPATIBILITY ===============================
 
 // Инициализация при загрузке страницы
@@ -612,8 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
       initSwiper();
       initCheckoutPanel();
       initModal();
-      // Фиксируем кнопку для мобильных устройств
-      fixButtonPositionOnMobile();
     }, 100);
   }
   
@@ -623,16 +637,4 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/';
     }, 2000);
   }
-});
-
-// Дополнительная проверка при изменении размера окна
-window.addEventListener('resize', () => {
-  fixButtonPositionOnMobile();
-});
-
-// Дополнительная проверка при изменении ориентации
-window.addEventListener('orientationchange', () => {
-  setTimeout(() => {
-    fixButtonPositionOnMobile();
-  }, 100);
 });
