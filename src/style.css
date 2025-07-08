@@ -312,7 +312,7 @@ body:has(.product)::before {
   border-radius: 16px;
   padding: 16px;
   position: relative;
-  z-index: 2;
+  z-index: 1;
   margin-inline: 16px;
   /* Предотвращаем выход элементов за границы контейнера */
   overflow: hidden;
@@ -553,10 +553,12 @@ body:has(.product)::before {
   padding: 16px;
   margin-bottom: 0px;
   position: relative;
-  z-index: 2;
+  z-index: 10002;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* Убеждаемся что header не блокирует dropdown */
+  overflow: visible;
 }
 
 .logo {
@@ -582,6 +584,9 @@ body:has(.product)::before {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Убеждаемся что каталог не блокирует dropdown */
+  position: relative;
+  z-index: 1;
 }
 
 .catalog > h1 {
@@ -602,6 +607,9 @@ body:has(.product)::before {
   position: relative;
   flex: 1;
   min-width: 0;
+  z-index: 99998;
+  /* Создаем новый stacking context */
+  isolation: isolate;
 }
 
 .input-container {
@@ -686,8 +694,17 @@ body:has(.product)::before {
   margin-top: 4px;
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 99999;
   display: none;
+  /* Убеждаемся что dropdown полностью непрозрачный */
+  opacity: 1;
+  /* Добавляем тень для лучшей видимости */
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  /* Создаем новый stacking context */
+  isolation: isolate;
+  /* Принудительно размещаем поверх всех элементов */
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .search-dropdown.show {
@@ -2364,7 +2381,6 @@ body.modal-open {
   height: 100vh;
   position: fixed;
   width: 100%;
-  top: 0;
   left: 0;
 }
 

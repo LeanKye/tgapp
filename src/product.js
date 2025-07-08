@@ -499,8 +499,12 @@ function openModal(labelText) {
   title.textContent = labelInfo.title;
   text.textContent = labelInfo.description;
 
+  // Сохраняем текущую позицию скролла
+  const scrollY = window.scrollY;
+  
   // Блокируем прокрутку страницы и фиксируем позицию
   document.body.classList.add('modal-open');
+  document.body.style.top = `-${scrollY}px`;
 
   // Показываем модальное окно
   modal.classList.add('show');
@@ -510,8 +514,17 @@ function closeModal() {
   const modal = document.getElementById('label-modal');
   if (!modal) return;
 
+  // Получаем сохраненную позицию скролла
+  const scrollY = document.body.style.top;
+  
   // Убираем блокировку прокрутки и фиксацию позиции
   document.body.classList.remove('modal-open');
+  document.body.style.top = '';
+
+  // Восстанавливаем позицию скролла
+  if (scrollY) {
+    window.scrollTo(0, parseInt(scrollY || '0') * -1);
+  }
 
   // Скрываем модальное окно
   modal.classList.remove('show');
