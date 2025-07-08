@@ -140,99 +140,92 @@ function initMenuNavigation() {
   });
 }
 
-// Функциональность баннер-слайдера
+// Функциональность баннер-слайдера с виртуальной циклической прокруткой
 class BannerSlider {
   constructor() {
     this.slider = document.getElementById('bannerSlider');
     this.bannerData = bannerData;
     this.totalOriginalBanners = this.bannerData.length;
-    this.currentIndex = 1; // Начинаем с 1, так как 0 будет клоном последнего элемента
+    
+    // Виртуальная циклическая прокрутка - расширяем данные для бесконечности
+    this.extendedData = this.createExtendedData();
+    this.totalExtendedBanners = this.extendedData.length;
+    
+    // Начинаем с середины расширенного массива
+    this.startIndex = this.totalOriginalBanners;
+    this.currentIndex = this.startIndex;
+    
     this.gap = 0;
     this.isTransitioning = false;
+    
     // Touch/swipe переменные
     this.touchStartX = 0;
     this.touchEndX = 0;
     this.touchStartY = 0;
     this.touchEndY = 0;
-    this.minSwipeDistance = 50; // Минимальное расстояние для срабатывания свайпа
+    this.minSwipeDistance = 50;
     this.isSwipeInProgress = false;
     this.isMouseDown = false;
+    
     // Автопрокрутка переменные
     this.autoSlideInterval = null;
-    this.autoSlideDelay = 5000; // 5 секунд
-    this.pauseDuration = 10000; // 10 секунд паузы при взаимодействии
+    this.autoSlideDelay = 5000;
+    this.pauseDuration = 10000;
     this.pauseTimer = null;
+    
     this.init();
   }
 
+  // Создаем расширенный массив данных для виртуальной циклической прокрутки
+  createExtendedData() {
+    // Создаем массив: [данные, данные, данные] - 3 копии для плавной прокрутки
+    return [
+      ...this.bannerData,
+      ...this.bannerData,
+      ...this.bannerData
+    ];
+  }
+
   init() {
-    // Сначала рендерим баннеры из данных
+    // Рендерим баннеры из расширенных данных
     this.renderBanners();
     
-    // Затем создаем циклические клоны
-    this.createCyclicClones();
-    
-    // Получаем обновленный список всех баннеров (включая клоны)
+    // Получаем все баннеры
     this.allBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
     
-    // Устанавливаем начальное позиционирование
-    this.setActiveWithoutTransition(this.currentIndex);
+    // Устанавливаем начальное позиционирование без анимации
+    this.setPositionWithoutTransition(this.currentIndex);
     
-    // Добавляем обработчики событий только для оригинальных баннеров
-    this.originalBanners.forEach((banner, index) => {
-      banner.addEventListener('click', () => {
-        this.handleBannerClick(index);
-        this.setActive(index + 1, true); // +1 потому что первый клон сдвигает индексы, true - пользовательское взаимодействие
-      });
-    });
+    // Добавляем обработчики событий
+    this.addEventListeners();
 
-    // Добавляем обработчики кликов для клонированных баннеров
-    this.allBanners.forEach((banner, index) => {
-      if (banner.dataset.isClone === 'true') {
-        banner.addEventListener('click', () => {
-          // Для клонов определяем оригинальный индекс
-          const originalIndex = this.getOriginalIndexFromClone(index);
-          if (originalIndex !== -1) {
-            this.handleBannerClick(originalIndex);
-            this.setActive(index, true);
-          }
-        });
-      }
-    });
-
-    // Автоматическое переключение каждые 5 секунд
+    // Автоматическое переключение
     this.startAutoSlide();
     
-    // Слушаем окончание транзишена для обработки циклических переходов
-    this.slider.addEventListener('transitionend', (e) => {
-      this.handleTransitionEnd(e);
-    });
-
     // Добавляем поддержку touch/swipe жестов
     this.initTouchEvents();
   }
 
-  // Рендеринг баннеров из данных
+  // Рендеринг баннеров из расширенных данных
   renderBanners() {
-    // Очищаем слайдер
     this.slider.innerHTML = '';
     
-    // Создаем баннеры из данных
-    this.bannerData.forEach((banner, index) => {
+    this.extendedData.forEach((banner, index) => {
       const bannerElement = this.createBannerElement(banner, index);
       this.slider.appendChild(bannerElement);
     });
-    
-    // Сохраняем список оригинальных баннеров
-    this.originalBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
   }
 
   // Создание элемента баннера
   createBannerElement(banner, index) {
     const bannerItem = document.createElement('div');
-    bannerItem.className = `banner-item ${banner.active ? 'active' : ''}`;
+    bannerItem.className = 'banner-item';
     bannerItem.dataset.bannerId = banner.id;
-    bannerItem.dataset.bannerIndex = index;
+    bannerItem.dataset.extendedIndex = index;
+    
+    // Определяем оригинальный индекс для активации
+    const originalIndex = index % this.totalOriginalBanners;
+    bannerItem.dataset.originalIndex = originalIndex;
     
     // Устанавливаем градиент как фон
     bannerItem.style.background = banner.gradient;
@@ -247,12 +240,29 @@ class BannerSlider {
     return bannerItem;
   }
 
+  // Добавление обработчиков событий
+  addEventListeners() {
+    this.allBanners.forEach((banner, index) => {
+      banner.addEventListener('click', () => {
+        const isActive = banner.classList.contains('active');
+        const originalIndex = parseInt(banner.dataset.originalIndex);
+        
+        if (isActive) {
+          // Если баннер уже активен - переходим на страницу
+          this.handleBannerClick(originalIndex);
+        } else {
+          // Если баннер неактивен - активируем его
+          this.setActive(index, true);
+        }
+      });
+    });
+  }
+
   // Обработка клика по баннеру
-  handleBannerClick(index) {
-    const banner = this.bannerData[index];
+  handleBannerClick(originalIndex) {
+    const banner = this.bannerData[originalIndex];
     if (!banner) return;
     
-    // Выполняем действие баннера
     switch (banner.action) {
       case 'category':
         window.location.href = `category.html?category=${encodeURIComponent(banner.actionParams.category)}`;
@@ -268,112 +278,73 @@ class BannerSlider {
     }
   }
 
-  // Получение оригинального индекса для клонированного баннера
-  getOriginalIndexFromClone(cloneIndex) {
-    // Первый элемент (индекс 0) - это клон последнего баннера
-    if (cloneIndex === 0) {
-      return this.totalOriginalBanners - 1;
-    }
-    
-    // Последний элемент - это клон первого баннера
-    if (cloneIndex === this.allBanners.length - 1) {
-      return 0;
-    }
-    
-    // Для остальных элементов вычисляем индекс (учитываем, что первый клон сдвигает индексы)
-    return cloneIndex - 1;
-  }
-
-  createCyclicClones() {
-    // Клонируем последний элемент и вставляем в начало
-    const lastClone = this.originalBanners[this.totalOriginalBanners - 1].cloneNode(true);
-    lastClone.classList.remove('active');
-    lastClone.dataset.isClone = 'true';
-    this.slider.insertBefore(lastClone, this.slider.firstChild);
-    
-    // Клонируем первый элемент и добавляем в конец
-    const firstClone = this.originalBanners[0].cloneNode(true);
-    firstClone.classList.remove('active');
-    firstClone.dataset.isClone = 'true';
-    this.slider.appendChild(firstClone);
-  }
-
+  // Установка активного баннера с анимацией
   setActive(index, isUserInteraction = false) {
     if (this.isTransitioning) return;
     
-    // Проверяем, что индекс находится в допустимых границах
-    if (index < 0 || index >= this.allBanners.length) {
-      return;
-    }
+    // Нормализуем индекс
+    if (index < 0) index = 0;
+    if (index >= this.totalExtendedBanners) index = this.totalExtendedBanners - 1;
     
-    // Если это тот же индекс, что уже активен, не делаем ничего
-    if (index === this.currentIndex) {
-      return;
-    }
+    if (index === this.currentIndex) return;
     
     this.isTransitioning = true;
     
-    // Если это взаимодействие пользователя, приостанавливаем автопрокрутку
     if (isUserInteraction) {
       this.pauseAutoSlide();
     }
     
-    // Убираем активный класс у всех баннеров
-    this.allBanners.forEach(banner => {
-      banner.classList.remove('active');
-    });
-
-    // Добавляем активный класс выбранному баннеру
-    this.allBanners[index].classList.add('active');
+    // Обновляем активные классы
+    this.updateActiveClasses(index);
+    
+    // Анимируем переход
+    this.animateToPosition(index);
+    
     this.currentIndex = index;
     
-    // Центрируем активный баннер
-    this.centerActiveSlide();
+    // Проверяем необходимость "перемотки" после завершения анимации
+    setTimeout(() => {
+      this.checkAndRewind();
+      this.isTransitioning = false;
+    }, 350); // Немного больше времени анимации
   }
 
-  setActiveWithoutTransition(index) {
-    // Временно отключаем транзишн
+  // Установка позиции без анимации
+  setPositionWithoutTransition(index) {
     this.slider.style.transition = 'none';
-    
-    this.allBanners.forEach(banner => {
-      banner.classList.remove('active');
-    });
-    
-    this.allBanners[index].classList.add('active');
+    this.updateActiveClasses(index);
+    this.updateSliderPosition(index);
     this.currentIndex = index;
-    this.centerActiveSlide();
     
-    // Возвращаем транзишн после следующего кадра рендеринга
+    // Возвращаем анимацию
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        this.slider.style.transition = 'transform 0.3s ease';
-        this.isTransitioning = false;
-      });
+      this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
     });
   }
 
-  // Получение текущей ширины баннера
-  getBannerWidth() {
-    if (this.allBanners && this.allBanners.length > 0) {
-      return this.allBanners[0].offsetWidth;
-    }
-    // Fallback значения в зависимости от размера экрана
-    const screenWidth = window.innerWidth;
-    if (screenWidth <= 375) return Math.min(screenWidth - 60, 300);
-    if (screenWidth <= 768) return Math.min(screenWidth - 70, 400);
-    if (screenWidth >= 1024) return 400;
-    return Math.min(screenWidth - 80, 350);
+  // Обновление активных классов
+  updateActiveClasses(activeIndex) {
+    this.allBanners.forEach((banner, index) => {
+      banner.classList.toggle('active', index === activeIndex);
+    });
   }
 
-  centerActiveSlide() {
+  // Анимация перехода к позиции
+  animateToPosition(index) {
+    this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    this.updateSliderPosition(index);
+  }
+
+  // Обновление позиции слайдера
+  updateSliderPosition(index) {
     const containerWidth = this.slider.parentElement.offsetWidth;
     const bannerWidth = this.getBannerWidth();
     
-    // Базовое смещение для центрирования первого элемента
+    // Базовое смещение для центрирования
     const baseCenterOffset = (containerWidth - bannerWidth) / 2;
     
     // Смещение для текущего активного элемента
-    const activeSlideOffset = this.currentIndex * (bannerWidth + this.gap);
+    const activeSlideOffset = index * (bannerWidth + this.gap);
     
     // Итоговое смещение
     const finalOffset = baseCenterOffset - activeSlideOffset;
@@ -381,45 +352,42 @@ class BannerSlider {
     this.slider.style.transform = `translateX(${finalOffset}px)`;
   }
 
-  handleTransitionEnd(e) {
-    // Убеждаемся, что событие произошло именно на слайдере, а не на дочерних элементах
-    if (e && e.target !== this.slider) return;
+  // Проверка и "перемотка" для бесконечности
+  checkAndRewind() {
+    const needsRewind = this.currentIndex <= this.totalOriginalBanners * 0.5 || 
+                       this.currentIndex >= this.totalOriginalBanners * 2.5;
     
-    // Дополнительная защита от множественных вызовов
-    if (!this.isTransitioning) return;
-    
-    this.isTransitioning = false;
-    
-    // Если мы на первом клоне (индекс 0), перепрыгиваем на последний оригинальный
-    if (this.currentIndex === 0) {
-      this.setActiveWithoutTransition(this.totalOriginalBanners);
-    }
-    // Если мы на последнем клоне, перепрыгиваем на первый оригинальный
-    else if (this.currentIndex === this.totalOriginalBanners + 1) {
-      this.setActiveWithoutTransition(1);
+    if (needsRewind) {
+      // Вычисляем эквивалентную позицию в средней секции
+      const originalIndex = this.currentIndex % this.totalOriginalBanners;
+      const newIndex = this.startIndex + originalIndex;
+      
+      // Мгновенно перемещаемся в среднюю секцию
+      this.setPositionWithoutTransition(newIndex);
     }
   }
 
+  // Получение ширины баннера
+  getBannerWidth() {
+    if (this.allBanners && this.allBanners.length > 0) {
+      return this.allBanners[0].offsetWidth;
+    }
+    
+    const screenWidth = window.innerWidth;
+    if (screenWidth <= 375) return Math.min(screenWidth - 60, 300);
+    if (screenWidth <= 768) return Math.min(screenWidth - 70, 400);
+    if (screenWidth >= 1024) return 400;
+    return Math.min(screenWidth - 80, 350);
+  }
+
+  // Следующий слайд
   nextSlide(isUserInteraction = false) {
-    let nextIndex = this.currentIndex + 1;
-    
-    // Если достигли конца всех слайдов (включая клоны), начинаем сначала
-    if (nextIndex >= this.allBanners.length) {
-      nextIndex = 0;
-    }
-    
-    this.setActive(nextIndex, isUserInteraction);
+    this.setActive(this.currentIndex + 1, isUserInteraction);
   }
 
+  // Предыдущий слайд
   prevSlide(isUserInteraction = false) {
-    let prevIndex = this.currentIndex - 1;
-    
-    // Если ушли в начало (меньше 0), переходим к последнему слайду
-    if (prevIndex < 0) {
-      prevIndex = this.allBanners.length - 1;
-    }
-    
-    this.setActive(prevIndex, isUserInteraction);
+    this.setActive(this.currentIndex - 1, isUserInteraction);
   }
 
   // Инициализация touch событий
@@ -438,27 +406,24 @@ class BannerSlider {
       this.handleSwipe();
     }, { passive: true });
 
-    // Дополнительно добавляем touch события на каждый баннер
+    // Touch события на баннерах
     this.allBanners.forEach(banner => {
       banner.addEventListener('touchstart', (e) => {
         this.touchStartX = e.touches[0].clientX;
         this.touchStartY = e.touches[0].clientY;
         this.isSwipeInProgress = false;
-        // Не останавливаем propagation, чтобы события работали
       }, { passive: true });
 
       banner.addEventListener('touchend', (e) => {
         this.touchEndX = e.changedTouches[0].clientX;
         this.touchEndY = e.changedTouches[0].clientY;
         
-        // Определяем, был ли это свайп
         const swipeDistanceX = Math.abs(this.touchStartX - this.touchEndX);
         const swipeDistanceY = Math.abs(this.touchStartY - this.touchEndY);
         const isHorizontalSwipe = swipeDistanceX > swipeDistanceY && swipeDistanceX > this.minSwipeDistance;
         
         if (isHorizontalSwipe) {
           this.isSwipeInProgress = true;
-          // Предотвращаем клики на короткое время после свайпа
           setTimeout(() => {
             this.isSwipeInProgress = false;
           }, 100);
@@ -467,7 +432,6 @@ class BannerSlider {
         this.handleSwipe();
       }, { passive: true });
 
-      // Предотвращаем стандартное поведение только для четко горизонтальных свайпов
       banner.addEventListener('touchmove', (e) => {
         if (!this.touchStartX || !this.touchStartY) return;
         
@@ -475,14 +439,11 @@ class BannerSlider {
         const deltaX = Math.abs(touch.clientX - this.touchStartX);
         const deltaY = Math.abs(touch.clientY - this.touchStartY);
         
-        // Предотвращаем поведение только если это явно горизонтальный жест
-        // и есть достаточное смещение
         if (deltaX > deltaY && deltaX > 20 && deltaY < 10) {
           e.preventDefault();
         }
       }, { passive: false });
 
-      // Предотвращаем случайные клики во время свайпа
       banner.addEventListener('click', (e) => {
         if (this.isSwipeInProgress) {
           e.preventDefault();
@@ -491,37 +452,17 @@ class BannerSlider {
       }, { capture: true });
     });
 
-    // Mouse события для тестирования на десктопе
+    // Mouse события для десктопа
     container.addEventListener('mousedown', (e) => {
       this.touchStartX = e.clientX;
       this.isMouseDown = true;
-      container.addEventListener('mousemove', this.handleMouseMove.bind(this));
     });
 
     container.addEventListener('mouseup', (e) => {
       this.touchEndX = e.clientX;
       this.isMouseDown = false;
-      container.removeEventListener('mousemove', this.handleMouseMove.bind(this));
       this.handleSwipe();
     });
-
-    // Mouse события на баннерах
-    this.allBanners.forEach(banner => {
-      banner.addEventListener('mousedown', (e) => {
-        this.touchStartX = e.clientX;
-        this.isMouseDown = true;
-      });
-
-      banner.addEventListener('mouseup', (e) => {
-        this.touchEndX = e.clientX;
-        this.isMouseDown = false;
-        this.handleSwipe();
-      });
-    });
-  }
-
-  handleMouseMove(e) {
-    e.preventDefault();
   }
 
   // Обработка свайпа
@@ -531,21 +472,17 @@ class BannerSlider {
     const swipeDistanceX = this.touchStartX - this.touchEndX;
     const swipeDistanceY = this.touchStartY - this.touchEndY;
     
-    // Проверяем, что это действительно горизонтальный свайп
     const isHorizontalSwipe = Math.abs(swipeDistanceX) > Math.abs(swipeDistanceY);
     
-    // Если свайп достаточно длинный и горизонтальный
     if (isHorizontalSwipe && Math.abs(swipeDistanceX) > this.minSwipeDistance) {
       if (swipeDistanceX > 0) {
-        // Свайп влево - следующий слайд
-        this.nextSlide(true); // true - пользовательское взаимодействие
+        this.nextSlide(true);
       } else {
-        // Свайп вправо - предыдущий слайд
-        this.prevSlide(true); // true - пользовательское взаимодействие
+        this.prevSlide(true);
       }
     }
     
-    // Сбрасываем координаты после обработки
+    // Сбрасываем координаты
     this.touchStartX = null;
     this.touchEndX = null;
     this.touchStartY = null;
@@ -554,15 +491,13 @@ class BannerSlider {
 
   // Запуск автопрокрутки
   startAutoSlide() {
-    // Очищаем предыдущий интервал, если он есть
     if (this.autoSlideInterval) {
       clearInterval(this.autoSlideInterval);
     }
     
     this.autoSlideInterval = setInterval(() => {
-      // Проверяем, что не находимся в процессе переключения
       if (!this.isTransitioning) {
-        this.nextSlide(false); // false - автоматическое переключение
+        this.nextSlide(false);
       }
     }, this.autoSlideDelay);
   }
@@ -577,18 +512,20 @@ class BannerSlider {
 
   // Приостановка автопрокрутки при взаимодействии пользователя
   pauseAutoSlide() {
-    // Останавливаем текущую автопрокрутку
     this.stopAutoSlide();
     
-    // Очищаем предыдущий таймер паузы, если он есть
     if (this.pauseTimer) {
       clearTimeout(this.pauseTimer);
     }
     
-    // Возобновляем автопрокрутку через 10 секунд
     this.pauseTimer = setTimeout(() => {
       this.startAutoSlide();
     }, this.pauseDuration);
+  }
+
+  // Обновление позиции при изменении размера экрана
+  updateOnResize() {
+    this.updateSliderPosition(this.currentIndex);
   }
 
   // Очистка ресурсов при уничтожении
@@ -860,9 +797,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
-    // Добавляем небольшую задержку для корректного пересчета размеров
     setTimeout(() => {
-      slider.centerActiveSlide();
+      slider.updateOnResize();
     }, 100);
   });
 });
