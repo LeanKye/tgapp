@@ -29,9 +29,6 @@ class TelegramWebApp {
     this.tg.expand();
     this.tg.disableVerticalSwipes();
     this.tg.setHeaderColor('#000000');
-    
-    // Добавляем класс для идентификации Telegram WebApp
-    document.body.classList.add('tg-webapp');
 
     // Настройки UI
     this.setupUIBehavior();
@@ -84,38 +81,8 @@ class TelegramWebApp {
       // На главной странице скрываем все кнопки
       this.tg.BackButton.hide();
       this.tg.MainButton.hide();
-    } else if (this.currentPage === "product") {
-      // На странице товара показываем кнопку "Купить"
-      this.tg.BackButton.show();
-      
-      // Настраиваем MainButton как кнопку "Купить"
-      this.tg.MainButton.text = "Купить";
-      this.tg.MainButton.color = "#29A5FF";
-      this.tg.MainButton.textColor = "#FFFFFF";
-      this.tg.MainButton.show();
-      this.tg.MainButton.enable();
-      
-      // Скрываем HTML кнопку на мобильных устройствах
-      const htmlButton = document.querySelector('.add-to-cart');
-      if (htmlButton && this.isMobileDevice()) {
-        htmlButton.style.display = 'none';
-      }
-      
-      // Удаляем предыдущие обработчики
-      this.tg.BackButton.offClick();
-      this.tg.MainButton.offClick();
-      
-      // Обработчик для кнопки "Назад"
-      this.tg.BackButton.onClick(() => {
-        window.location.href = './';
-      });
-      
-      // Обработчик для кнопки "Купить"
-      this.tg.MainButton.onClick(() => {
-        this.handlePurchase();
-      });
     } else {
-      // На остальных страницах показываем только кнопку "Назад"
+      // На остальных страницах показываем кнопку "Назад"
       this.tg.MainButton.hide();
       this.tg.BackButton.show();
       
@@ -124,38 +91,6 @@ class TelegramWebApp {
       this.tg.BackButton.onClick(() => {
         window.location.href = './';
       });
-    }
-  }
-  
-  // Проверка мобильного устройства
-  isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           ('ontouchstart' in window) ||
-           (navigator.maxTouchPoints > 0);
-  }
-  
-  // Обработчик покупки
-  handlePurchase() {
-    // Здесь будет логика покупки
-    // Пока просто показываем уведомление
-    this.tg.showPopup({
-      title: 'Покупка',
-      message: 'Функция покупки будет доступна в ближайшее время',
-      buttons: [{type: 'ok', text: 'Понятно'}]
-    });
-  }
-  
-  // Метод для скрытия MainButton при открытии модального окна
-  hideMainButton() {
-    if (this.tg && this.currentPage === "product") {
-      this.tg.MainButton.hide();
-    }
-  }
-  
-  // Метод для показа MainButton при закрытии модального окна
-  showMainButton() {
-    if (this.tg && this.currentPage === "product" && !document.body.classList.contains('modal-open')) {
-      this.tg.MainButton.show();
     }
   }
 }

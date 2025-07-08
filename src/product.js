@@ -504,11 +504,6 @@ function openModal(labelText) {
 
   // Показываем модальное окно
   modal.classList.add('show');
-  
-  // Скрываем Telegram MainButton при открытии модального окна
-  if (window.telegramWebApp) {
-    window.telegramWebApp.hideMainButton();
-  }
 }
 
 function closeModal() {
@@ -520,11 +515,6 @@ function closeModal() {
 
   // Скрываем модальное окно
   modal.classList.remove('show');
-  
-  // Показываем Telegram MainButton при закрытии модального окна
-  if (window.telegramWebApp) {
-    window.telegramWebApp.showMainButton();
-  }
 }
 
 function initModal() {
@@ -551,49 +541,26 @@ function initModal() {
   });
 }
 
-
-
-  // Функция обработчик покупки
-  function handlePurchaseClick() {
-    // Если есть Telegram WebApp, используем его popup
-    if (window.Telegram?.WebApp) {
-      window.Telegram.WebApp.showPopup({
-        title: 'Покупка',
-        message: 'Функция покупки будет доступна в ближайшее время',
-        buttons: [{type: 'ok', text: 'Понятно'}]
-      });
-    } else {
-      // Иначе показываем обычный alert
-      alert('Функция покупки будет доступна в ближайшее время');
-    }
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+  const productId = getUrlParameter('product');
+  const product = getProductById(productId);
+  renderProduct(product);
+  
+  // Инициализируем компоненты после отрисовки продукта
+  if (product) {
+    // Небольшая задержка чтобы DOM успел обновиться
+    setTimeout(() => {
+      initSwiper();
+      initCheckoutPanel();
+      initModal();
+    }, 100);
   }
-
-  // Инициализация при загрузке страницы
-  document.addEventListener('DOMContentLoaded', () => {
-    const productId = getUrlParameter('product');
-    const product = getProductById(productId);
-    renderProduct(product);
-    
-    // Инициализируем компоненты после отрисовки продукта
-    if (product) {
-      // Небольшая задержка чтобы DOM успел обновиться
-      setTimeout(() => {
-        initSwiper();
-        initCheckoutPanel();
-        initModal();
-        
-        // Добавляем обработчик для HTML кнопки (на случай если нет Telegram WebApp)
-        const addToCartButton = document.querySelector('.add-to-cart');
-        if (addToCartButton) {
-          addToCartButton.addEventListener('click', handlePurchaseClick);
-        }
-      }, 100);
-    }
-    
-    // Если продукт не найден, перенаправляем на главную
-    if (!product) {
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-    }
-  });
+  
+  // Если продукт не найден, перенаправляем на главную
+  if (!product) {
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 2000);
+  }
+});

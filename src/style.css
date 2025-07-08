@@ -159,7 +159,7 @@ body {
 @supports (padding-top: env(safe-area-inset-top)) {
   /* Растягиваем body на всю высоту включая безопасные зоны */
   body {
-
+    padding-top: env(safe-area-inset-top);
     min-height: 100vh;
     /* Компенсируем padding чтобы контент начинался с нужного места */
     box-sizing: border-box;
@@ -441,12 +441,6 @@ body:has(.product)::before {
   /* Добавляем плавные переходы */
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   cursor: pointer;
-  /* Усиливаем фиксацию для мобильных устройств */
-  position: fixed !important;
-  /* Дополнительные правила для WebView */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: transform;
 }
 
 @media (hover: hover) {
@@ -2064,10 +2058,6 @@ body:has(.product)::before {
     width: calc(100% - 24px);
     font-size: 16px;
     height: 44px;
-    /* Дополнительная фиксация для маленьких экранов */
-    position: fixed !important;
-    bottom: 12px !important;
-    z-index: 10000 !important;
   }
   
   .product {
@@ -2154,10 +2144,6 @@ body:has(.product)::before {
 @media (max-width: 768px) {
   .add-to-cart {
     font-size: 17px;
-    /* Дополнительная фиксация для планшетов */
-    position: fixed !important;
-    bottom: 16px !important;
-    z-index: 10000 !important;
   }
   
   /* Адаптивные стили для кнопок периода на планшетах */
@@ -2487,45 +2473,6 @@ body.modal-open {
   width: 100%;
   top: 0;
   left: 0;
-}
-
-/* Скрываем кнопку "Купить" при открытом модальном окне */
-body.modal-open .add-to-cart {
-  display: none;
-}
-
-/* Специальные правила для мобильных устройств и WebView */
-@media (max-width: 1024px) and (hover: none) {
-  .add-to-cart {
-    /* Усиливаем фиксацию для мобильных устройств */
-    position: fixed !important;
-    z-index: 10000 !important;
-    /* Обеспечиваем правильную отрисовку в WebView */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    /* Дополнительные правила для smooth scrolling */
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-  }
-}
-
-/* Дополнительные правила для Telegram WebApp */
-@supports (-webkit-touch-callout: none) {
-  .add-to-cart {
-    /* iOS WebView специфичные правила */
-    position: fixed !important;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    z-index: 10000 !important;
-  }
-}
-
-/* Скрываем HTML кнопку в Telegram WebApp на мобильных если есть MainButton */
-@media (max-width: 768px) {
-  body.tg-webapp .add-to-cart {
-    display: none !important;
-  }
 }
 
 .modal-content {
