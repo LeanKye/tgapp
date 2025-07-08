@@ -541,6 +541,37 @@ function initModal() {
   });
 }
 
+// Функция для принудительной фиксации кнопки на мобильных устройствах
+function fixButtonPositionOnMobile() {
+  const button = document.querySelector('.add-to-cart');
+  if (!button) return;
+  
+  // Проверяем, если это мобильное устройство
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  
+  if (isMobile || isTouch) {
+    // Принудительно устанавливаем стили для мобильных
+    button.style.position = 'fixed';
+    button.style.bottom = '16px';
+    button.style.left = '16px';
+    button.style.right = '16px';
+    button.style.zIndex = '10000';
+    button.style.width = 'calc(100% - 32px)';
+    button.style.transform = 'translateZ(0)';
+    button.style.webkitTransform = 'translateZ(0)';
+    button.style.willChange = 'transform';
+    
+    // Дополнительная проверка для маленьких экранов
+    if (window.innerWidth <= 375) {
+      button.style.left = '12px';
+      button.style.right = '12px';
+      button.style.width = 'calc(100% - 24px)';
+      button.style.bottom = '12px';
+    }
+  }
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   const productId = getUrlParameter('product');
@@ -554,6 +585,8 @@ document.addEventListener('DOMContentLoaded', () => {
       initSwiper();
       initCheckoutPanel();
       initModal();
+      // Фиксируем кнопку для мобильных устройств
+      fixButtonPositionOnMobile();
     }, 100);
   }
   
@@ -563,4 +596,16 @@ document.addEventListener('DOMContentLoaded', () => {
       window.location.href = '/';
     }, 2000);
   }
+});
+
+// Дополнительная проверка при изменении размера окна
+window.addEventListener('resize', () => {
+  fixButtonPositionOnMobile();
+});
+
+// Дополнительная проверка при изменении ориентации
+window.addEventListener('orientationchange', () => {
+  setTimeout(() => {
+    fixButtonPositionOnMobile();
+  }, 100);
 });
