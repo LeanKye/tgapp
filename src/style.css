@@ -159,7 +159,7 @@ body {
 @supports (padding-top: env(safe-area-inset-top)) {
   /* Растягиваем body на всю высоту включая безопасные зоны */
   body {
-    padding-top: env(safe-area-inset-top);
+
     min-height: 100vh;
     /* Компенсируем padding чтобы контент начинался с нужного места */
     box-sizing: border-box;
@@ -2521,6 +2521,13 @@ body.modal-open .add-to-cart {
   }
 }
 
+/* Скрываем HTML кнопку в Telegram WebApp на мобильных если есть MainButton */
+@media (max-width: 768px) {
+  body.tg-webapp .add-to-cart {
+    display: none !important;
+  }
+}
+
 .modal-content {
   position: absolute;
   bottom: 0;
@@ -2688,38 +2695,6 @@ body.modal-open .add-to-cart {
     font-size: 14px;
   }
 }
-
-/* === FIXED BUTTON MOBILE COMPATIBILITY ================================== */
-
-/* 1. Убираем transform у body на мобильных, т.к. он ломает position: fixed в iOS Safari / WebView */
-@media (max-width: 1024px) and (hover: none) {
-  body {
-    transform: none !important;
-  }
-}
-
-/* Телеграм WebApp на iOS также использует -webkit-touch-callout */
-@supports (-webkit-touch-callout: none) {
-  body {
-    transform: none !important;
-  }
-}
-
-/* 2. На мобильных убираем transform у самой кнопки, чтобы не создавать новый контекст */
-@media (max-width: 768px) {
-  .add-to-cart {
-    -webkit-transform: none !important;
-            transform: none !important;
-  }
-}
-
-/* 3. Fallback: если position:fixed не поддерживается (определяется JS), работаем через sticky */
-body:not(.fixed-ok) .add-to-cart {
-  position: sticky !important;
-  bottom: 0 !important;
-}
-
-/* === /FIXED BUTTON MOBILE COMPATIBILITY ================================= */
 
 
 

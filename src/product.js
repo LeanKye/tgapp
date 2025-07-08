@@ -504,6 +504,11 @@ function openModal(labelText) {
 
   // Показываем модальное окно
   modal.classList.add('show');
+  
+  // Скрываем Telegram MainButton при открытии модального окна
+  if (window.telegramWebApp) {
+    window.telegramWebApp.hideMainButton();
+  }
 }
 
 function closeModal() {
@@ -515,6 +520,11 @@ function closeModal() {
 
   // Скрываем модальное окно
   modal.classList.remove('show');
+  
+  // Показываем Telegram MainButton при закрытии модального окна
+  if (window.telegramWebApp) {
+    window.telegramWebApp.showMainButton();
+  }
 }
 
 function initModal() {
@@ -541,105 +551,49 @@ function initModal() {
   });
 }
 
-// === FIXED BUTTON MOBILE COMPATIBILITY ================================
-/**
- * Проверяем, корректно ли ведёт себя position:fixed при прокрутке.
- * Алгоритм: помещаем пробный элемент, запоминаем координату, прокручиваем
- * страницу на 20px, проверяем координату повторно. Если изменилась –
- * позиционирование "fixed" сломано (элемент прокручивается вместе со
- * страницей, как absolute).
- */
-function reliableFixedCheck() {
-  const probe = document.createElement('div');
-  probe.style.position = 'fixed';
-  probe.style.top = '0';
-  probe.style.width = '1px';
-  probe.style.height = '1px';
-  probe.style.zIndex = '-1';
-  document.body.appendChild(probe);
 
-  const initialTop = probe.getBoundingClientRect().top;
 
-  // Если страница не прокручена, временно прокрутим на 20 px
-  const initialScroll = window.scrollY || window.pageYOffset;
-  window.scrollTo(0, initialScroll + 20);
-
-  const afterScrollTop = probe.getBoundingClientRect().top;
-
-  // Возвращаем скролл назад
-  window.scrollTo(0, initialScroll);
-
-  document.body.removeChild(probe);
-
-  return initialTop === afterScrollTop;
-}
-
-/** Применяет абсолютное позиционирование к кнопке и синхронизирует её */
-function activateAbsoluteFollow(button) {
-  function updatePos() {
-    const offset = 16;
-    // Пытаемся получить вычисленное значение margin-bottom,
-    // которое в CSS задано как env(safe-area-inset-bottom)
-    let safe = 0;
-    const mb = parseFloat(window.getComputedStyle(button).marginBottom);
-    if (!isNaN(mb)) safe = mb;
-
-    const y = window.scrollY + window.innerHeight - button.offsetHeight - offset - safe;
-    button.style.position = 'absolute';
-    button.style.top = y + 'px';
-    button.style.left = '16px';
-    button.style.right = '16px';
+  // Функция обработчик покупки
+  function handlePurchaseClick() {
+    // Если есть Telegram WebApp, используем его popup
+    if (window.Telegram?.WebApp) {
+      window.Telegram.WebApp.showPopup({
+        title: 'Покупка',
+        message: 'Функция покупки будет доступна в ближайшее время',
+        buttons: [{type: 'ok', text: 'Понятно'}]
+      });
+    } else {
+      // Иначе показываем обычный alert
+      alert('Функция покупки будет доступна в ближайшее время');
+    }
   }
-  updatePos();
-  window.addEventListener('scroll', updatePos, { passive: true });
-  window.addEventListener('resize', updatePos);
-  window.addEventListener('orientationchange', () => setTimeout(updatePos, 100));
-}
 
-function ensureBuyButtonMobileBehaviour() {
-  const button = document.querySelector('.add-to-cart');
-  if (!button) return;
-
-  const fixedWorks = reliableFixedCheck();
-  if (fixedWorks) {
-    document.body.classList.add('fixed-ok');
-    // Убеждаемся, что кнопка действительно fixed
-    button.style.position = 'fixed';
-  } else {
-    document.body.classList.remove('fixed-ok');
-    activateAbsoluteFollow(button);
-  }
-}
-
-// Запуск после загрузки и при изменениях
-['DOMContentLoaded', 'resize', 'orientationchange'].forEach(evt => {
-  window.addEventListener(evt, () => {
-    // Небольшой таймаут, чтобы не дёргать при каждом кадре
-    setTimeout(ensureBuyButtonMobileBehaviour, 50);
+  // Инициализация при загрузке страницы
+  document.addEventListener('DOMContentLoaded', () => {
+    const productId = getUrlParameter('product');
+    const product = getProductById(productId);
+    renderProduct(product);
+    
+    // Инициализируем компоненты после отрисовки продукта
+    if (product) {
+      // Небольшая задержка чтобы DOM успел обновиться
+      setTimeout(() => {
+        initSwiper();
+        initCheckoutPanel();
+        initModal();
+        
+        // Добавляем обработчик для HTML кнопки (на случай если нет Telegram WebApp)
+        const addToCartButton = document.querySelector('.add-to-cart');
+        if (addToCartButton) {
+          addToCartButton.addEventListener('click', handlePurchaseClick);
+        }
+      }, 100);
+    }
+    
+    // Если продукт не найден, перенаправляем на главную
+    if (!product) {
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    }
   });
-});
-// === /FIXED BUTTON MOBILE COMPATIBILITY ===============================
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-  const productId = getUrlParameter('product');
-  const product = getProductById(productId);
-  renderProduct(product);
-  
-  // Инициализируем компоненты после отрисовки продукта
-  if (product) {
-    // Небольшая задержка чтобы DOM успел обновиться
-    setTimeout(() => {
-      initSwiper();
-      initCheckoutPanel();
-      initModal();
-    }, 100);
-  }
-  
-  // Если продукт не найден, перенаправляем на главную
-  if (!product) {
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 2000);
-  }
-});
