@@ -578,7 +578,12 @@ function reliableFixedCheck() {
 function activateAbsoluteFollow(button) {
   function updatePos() {
     const offset = 16;
-    const safe = 0; // env(safe-area-inset-bottom) не доступен из JS надёжно
+    // Пытаемся получить вычисленное значение margin-bottom,
+    // которое в CSS задано как env(safe-area-inset-bottom)
+    let safe = 0;
+    const mb = parseFloat(window.getComputedStyle(button).marginBottom);
+    if (!isNaN(mb)) safe = mb;
+
     const y = window.scrollY + window.innerHeight - button.offsetHeight - offset - safe;
     button.style.position = 'absolute';
     button.style.top = y + 'px';
