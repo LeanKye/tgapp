@@ -1426,7 +1426,6 @@ body:has(.product)::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -1445,19 +1444,9 @@ body:has(.product)::before {
   transition: all 0.3s ease, opacity 0.2s ease, transform 0.2s ease;
 }
 
-.banner-item:not(.active):hover {
-  opacity: 0.85;
-  transform: scale(0.95);
-  cursor: pointer;
-}
-
 .banner-item:not(.active) .banner-content {
   opacity: 0.8;
   transition: opacity 0.2s ease;
-}
-
-.banner-item:not(.active):hover .banner-content {
-  opacity: 0.9;
 }
 
 .banner-item.active {
@@ -1465,12 +1454,28 @@ body:has(.product)::before {
   transform: scale(1);
   z-index: 2;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
 }
 
-.banner-item.active:hover {
-  transform: scale(1.02);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+/* Hover эффекты только для устройств с курсором (не мобильные) */
+@media (hover: hover) {
+  .banner-item:not(.active):hover {
+    opacity: 0.85;
+    transform: scale(0.95);
+    cursor: pointer;
+  }
+
+  .banner-item:not(.active):hover .banner-content {
+    opacity: 0.9;
+  }
+
+  .banner-item.active {
+    cursor: pointer;
+  }
+
+  .banner-item.active:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+  }
 }
 
 .banner-item.active .banner-content {
