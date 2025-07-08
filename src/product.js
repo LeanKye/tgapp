@@ -448,47 +448,21 @@ function openLabelModal(labelText) {
   modalIcon.textContent = labelInfo.icon;
   modalIcon.className = `modal-icon ${labelInfo.iconClass}`;
   
-  // Сохраняем текущую позицию скролла
-  const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-  
-  // Блокируем прокрутку страницы более агрессивно
+  // Блокируем прокрутку страницы
   document.body.style.overflow = 'hidden';
-  document.body.style.position = 'fixed';
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.width = '100%';
   
-  // Сохраняем позицию скролла для восстановления
-  modal.dataset.scrollY = scrollY;
-  
-  // Показываем модальное окно с небольшой задержкой для плавности
-  setTimeout(() => {
-    modal.classList.add('show');
-  }, 5);
+  // Показываем модальное окно
+  modal.classList.add('show');
 }
 
 function closeLabelModal() {
   const modal = document.getElementById('label-modal');
   
-  // Добавляем класс для анимации закрытия
-  modal.classList.add('hide');
+  // Скрываем модальное окно
   modal.classList.remove('show');
   
-  // Восстанавливаем прокрутку страницы после анимации
-  setTimeout(() => {
-    // Восстанавливаем позицию скролла
-    const scrollY = modal.dataset.scrollY || '0';
-    
-    // Восстанавливаем стили body
-    document.body.style.overflow = '';
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    
-    // Восстанавливаем позицию скролла
-    window.scrollTo(0, parseInt(scrollY));
-    
-    modal.classList.remove('hide');
-  }, 100);
+  // Восстанавливаем прокрутку страницы
+  document.body.style.overflow = '';
 }
 
 function getLabelInfo(labelText) {
@@ -551,46 +525,8 @@ function createModal() {
     </div>
   `;
   
-  // Создаем DOM элемент
-  const modalElement = document.createElement('div');
-  modalElement.innerHTML = modalHTML;
-  const modal = modalElement.firstElementChild;
-  
-  // Вставляем модальное окно в корень документа для максимальной изоляции
-  document.documentElement.appendChild(modal);
-  
-  // Применяем агрессивные стили позиционирования
-  modal.style.position = 'fixed';
-  modal.style.top = '0';
-  modal.style.left = '0';
-  modal.style.right = '0';
-  modal.style.bottom = '0';
-  modal.style.width = '100vw';
-  modal.style.height = '100vh';
-  modal.style.height = 'calc(var(--vh, 1vh) * 100)';
-  modal.style.zIndex = '2147483647'; // Максимальный z-index
-  modal.style.transform = 'none';
-  modal.style.webkitTransform = 'none';
-  modal.style.margin = '0';
-  modal.style.padding = '0';
-  
-  // Устанавливаем viewport height для мобильных устройств
-  const setVH = () => {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-    
-    // Обновляем высоту модального окна при изменении viewport
-    modal.style.height = `calc(${vh * 100}px)`;
-  };
-  
-  // Обработчики изменения размера экрана
-  window.addEventListener('resize', setVH);
-  window.addEventListener('orientationchange', () => {
-    setTimeout(setVH, 100);
-  });
-  
-  // Устанавливаем начальное значение
-  setVH();
+  // Создаем DOM элемент и добавляем в body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
 // Инициализация модального окна
@@ -635,13 +571,6 @@ function initViewportHeight() {
   window.addEventListener('orientationchange', () => {
     setTimeout(setVH, 100);
   });
-  
-  // Обновляем при появлении/скрытии виртуальной клавиатуры
-  window.addEventListener('focus', setVH);
-  window.addEventListener('blur', setVH);
-  
-  // Обновляем при изменении видимости страницы
-  document.addEventListener('visibilitychange', setVH);
 }
 
 // Инициализация при загрузке страницы
