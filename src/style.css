@@ -190,10 +190,10 @@ body {
     padding-top: calc(60px + env(safe-area-inset-top));
   }
 
-  /* Корректируем модальное окно */
+  /* Корректируем модальное окно - убираем safe-area для избежания конфликтов */
   .modal-overlay {
     top: 0 !important;
-    padding-top: env(safe-area-inset-top);
+    padding-top: 0 !important;
   }
 }
 
@@ -2389,7 +2389,8 @@ body:has(.product)::before {
 }
 
 /* Модальное окно для информации о лейблах */
-.modal-overlay {
+.modal-overlay,
+html > .modal-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
@@ -2401,7 +2402,7 @@ body:has(.product)::before {
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);
-  z-index: 10000 !important;
+  z-index: 2147483647 !important;
   display: flex !important;
   align-items: flex-end !important;
   justify-content: center !important;
@@ -2424,20 +2425,23 @@ body:has(.product)::before {
 
 /* Специальные стили для iOS Safari и мобильных устройств */
 @supports (-webkit-appearance: none) {
-  .modal-overlay {
+  .modal-overlay,
+  html > .modal-overlay {
     height: calc(var(--vh, 1vh) * 100) !important;
-    /* Используем env() для учета safe area */
-    height: calc(calc(var(--vh, 1vh) * 100) - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    /* НЕ используем safe area для модального окна, чтобы избежать проблем с позиционированием */
+    /* height: calc(calc(var(--vh, 1vh) * 100) - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important; */
   }
 }
 
 /* Защита от виртуальной клавиатуры */
 @media (max-height: 500px) {
-  .modal-overlay {
+  .modal-overlay,
+  html > .modal-overlay {
     height: calc(var(--vh, 1vh) * 100) !important;
     position: fixed !important;
     top: 0 !important;
     bottom: 0 !important;
+    z-index: 2147483647 !important;
   }
   
   .modal-content {
@@ -2742,7 +2746,8 @@ body:has(.product)::before {
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
-  .modal-overlay {
+  .modal-overlay,
+  html > .modal-overlay {
     /* Дополнительная фиксация для мобильных устройств */
     position: fixed !important;
     top: 0 !important;
@@ -2753,6 +2758,7 @@ body:has(.product)::before {
     height: calc(var(--vh, 1vh) * 100) !important;
     transform: none !important;
     -webkit-transform: none !important;
+    z-index: 2147483647 !important;
   }
   
   .modal-content {
@@ -2803,7 +2809,8 @@ body:has(.product)::before {
 
 /* Специальные стили для устройств в портретном режиме */
 @media (orientation: portrait) {
-  .modal-overlay {
+  .modal-overlay,
+  html > .modal-overlay {
     height: 100vh !important;
     height: calc(var(--vh, 1vh) * 100) !important;
   }
@@ -2811,7 +2818,8 @@ body:has(.product)::before {
 
 /* Специальные стили для устройств в альбомном режиме */
 @media (orientation: landscape) {
-  .modal-overlay {
+  .modal-overlay,
+  html > .modal-overlay {
     height: 100vh !important;
     height: calc(var(--vh, 1vh) * 100) !important;
   }
@@ -2823,9 +2831,10 @@ body:has(.product)::before {
 
 /* Фиксы для старых версий iOS Safari */
 @media screen and (-webkit-min-device-pixel-ratio: 2) {
-  .modal-overlay {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
+  .modal-overlay,
+  html > .modal-overlay {
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
   }
 }
 
@@ -2838,7 +2847,8 @@ body:has(.product)::before {
 
 /* Стили для очень маленьких экранов */
 @media (max-width: 320px) {
-  .modal-overlay {
+  .modal-overlay,
+  html > .modal-overlay {
     /* Дополнительная фиксация для очень маленьких устройств */
     position: fixed !important;
     top: 0 !important;
@@ -2849,6 +2859,7 @@ body:has(.product)::before {
     height: calc(var(--vh, 1vh) * 100) !important;
     transform: none !important;
     -webkit-transform: none !important;
+    z-index: 2147483647 !important;
   }
   
   .modal-content {
