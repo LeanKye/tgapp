@@ -136,7 +136,6 @@ input, textarea {
     /* Оптимизация для плавности скролла */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    transform: translateZ(0);
   }
 }
 

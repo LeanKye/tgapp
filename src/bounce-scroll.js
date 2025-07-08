@@ -35,9 +35,6 @@ class BounceScroll {
         overscroll-behavior-y: auto;
         /* Включаем плавный скролл на мобильных */
         -webkit-overflow-scrolling: touch;
-        /* Оптимизируем производительность */
-        transform: translateZ(0);
-        -webkit-transform: translateZ(0);
       }
       
       /* Для iOS - включаем momentum scrolling */
