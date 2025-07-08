@@ -2891,6 +2891,27 @@ html > .modal-overlay {
   }
 }
 
+/*
+  Принудительное исправление для модального окна с информацией о лейблах,
+  чтобы оно всегда было привязано к экрану, а не к странице.
+*/
+#label-modal.modal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+}
+
+/* 
+  Специальные стили для body когда bounce-эффект отключен.
+  Например, для предотвращения "залипания" модального окна на iOS.
+*/
+body:not(.bouncy-scroll) html > .modal-overlay {
+  -webkit-transform: scale(1);
+          transform: scale(1);
+}
+
 
 
 
