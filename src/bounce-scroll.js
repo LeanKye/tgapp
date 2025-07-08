@@ -50,8 +50,6 @@ class BounceScroll {
         body {
           will-change: scroll-position;
           transform-style: preserve-3d;
-          perspective: 1000px;
-          -webkit-perspective: 1000px;
           backface-visibility: hidden;
           -webkit-backface-visibility: hidden;
         }
