@@ -443,9 +443,11 @@ body:has(.product)::before {
   cursor: pointer;
 }
 
-.add-to-cart:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
+@media (hover: hover) {
+  .add-to-cart:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
+  }
 }
 
 .add-to-cart:active {
@@ -485,8 +487,10 @@ body:has(.product)::before {
   flex-shrink: 0;
 }
 
-.label:hover {
-  background-color: #3f3f3f;
+@media (hover: hover) {
+  .label:hover {
+    background-color: #3f3f3f;
+  }
 }
 
 .label:active {
@@ -677,12 +681,14 @@ body:has(.product)::before {
   transition: color 0.2s ease;
 }
 
-.menu-button:hover {
-  background-color: #3f3f3f;
-}
+@media (hover: hover) {
+  .menu-button:hover {
+    background-color: #3f3f3f;
+  }
 
-.menu-button:hover svg {
-  color: #29A5FF;
+  .menu-button:hover svg {
+    color: #29A5FF;
+  }
 }
 
 #close-menu-button {
@@ -694,8 +700,10 @@ body:has(.product)::before {
   cursor: pointer;
 }
 
-#close-menu-button:hover {
-  color: #29A5FF;
+@media (hover: hover) {
+  #close-menu-button:hover {
+    color: #29A5FF;
+  }
 }
 
 .search-dropdown {
@@ -731,9 +739,11 @@ body:has(.product)::before {
   border-bottom: none;
 }
 
-.search-suggestion:hover,
-.search-suggestion.selected {
-  background-color: #3f3f3f;
+@media (hover: hover) {
+  .search-suggestion:hover,
+  .search-suggestion.selected {
+    background-color: #3f3f3f;
+  }
 }
 
 .search-suggestion img {
@@ -855,9 +865,11 @@ body:has(.product)::before {
   margin-right: -16px;
 }
 
-.menu-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  transform: translateX(4px);
+@media (hover: hover) {
+  .menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    transform: translateX(4px);
+  }
 }
 
 .menu-item:active {
@@ -1224,9 +1236,11 @@ body:has(.product)::before {
   overflow: hidden;
 }
 
-.category-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+@media (hover: hover) {
+  .category-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .category-card::before {
@@ -1315,9 +1329,11 @@ body:has(.product)::before {
   padding-bottom: 4px;
 }
 
-.category-product-card:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
+@media (hover: hover) {
+  .category-product-card:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+  }
 }
 
 .category-product-card:active {
@@ -1731,8 +1747,10 @@ body:has(.product)::before {
   margin: -8px -4px;
 }
 
-.checkout-header #checkout-header-text:hover {
-  opacity: 0.8;
+@media (hover: hover) {
+  .checkout-header #checkout-header-text:hover {
+    opacity: 0.8;
+  }
 }
 
 .checkout-header #checkout-header-text:active {
@@ -1753,8 +1771,10 @@ body:has(.product)::before {
   margin: -8px;
 }
 
-.checkout-arrow:hover {
-  opacity: 0.8;
+@media (hover: hover) {
+  .checkout-arrow:hover {
+    opacity: 0.8;
+  }
 }
 
 .checkout-arrow:active {
@@ -1904,8 +1924,10 @@ body:has(.product)::before {
   border: none;
 }
 
-.back-to-main:hover {
-  background-color: #1E90FF;
+@media (hover: hover) {
+  .back-to-main:hover {
+    background-color: #1E90FF;
+  }
 }
 
 .full-width-group {
@@ -2198,8 +2220,10 @@ body:has(.product)::before {
     max-width: calc(100% - 32px);
   }
   
-  .add-to-cart:hover {
-    transform: translateX(-50%) translateY(-2px);
+  @media (hover: hover) {
+    .add-to-cart:hover {
+      transform: translateX(-50%) translateY(-2px);
+    }
   }
   
   .add-to-cart:active {
@@ -2371,12 +2395,14 @@ body:has(.product)::before {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.toggle-switches label:hover {
-  color: #E0E0E0;
-}
+@media (hover: hover) {
+  .toggle-switches label:hover {
+    color: #E0E0E0;
+  }
 
-.toggle-switches input[type="radio"]:checked + label:hover {
-  color: white;
+  .toggle-switches input[type="radio"]:checked + label:hover {
+    color: white;
+  }
 }
 
 /* Адаптивные стили для переключателей */
@@ -2543,8 +2569,10 @@ body.modal-open {
   transition: background 0.2s ease;
 }
 
-.modal-close:hover {
-  background: #1E90FF;
+@media (hover: hover) {
+  .modal-close:hover {
+    background: #1E90FF;
+  }
 }
 
 .modal-close:active {
