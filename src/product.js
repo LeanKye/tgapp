@@ -194,9 +194,13 @@ function updateEditions(product) {
 function updateTabs(product) {
   const tabsContent = document.querySelector('.tabs-content');
   const tabs = document.querySelectorAll('.tab');
+  const tabsContainer = document.querySelector('.tabs');
   
-  // Устанавливаем содержимое по умолчанию (описание)
-  tabsContent.innerHTML = product.description;
+  // Устанавливаем содержимое по умолчанию (описание) обернутое в анимированный контейнер
+  tabsContent.innerHTML = `<div class="tabs-content-inner fade-in">${product.description}</div>`;
+  
+  // Устанавливаем начальное положение полосочки
+  tabsContainer.setAttribute('data-active', '0');
   
   // Добавляем обработчики для переключения табов
   tabs.forEach((tab, index) => {
@@ -206,22 +210,34 @@ function updateTabs(product) {
       // Добавляем активный класс к текущему табу
       tab.classList.add('tab-selected');
       
-      // Плавно обновляем содержимое без "подпрыгивания"
+      // Обновляем положение полосочки
+      tabsContainer.setAttribute('data-active', index.toString());
+      
+      // Плавно обновляем содержимое с анимацией
       smoothUpdateTabContent(tabsContent, index === 0 ? product.description : product.systemRequirements);
     });
   });
 }
 
-// Функция для плавного обновления контента табов
+// Функция для плавного обновления контента табов с анимацией
 function smoothUpdateTabContent(container, newContent) {
-  // Сохраняем текущую высоту
+  const contentInner = container.querySelector('.tabs-content-inner');
+  
+  if (!contentInner) {
+    // Если нет обертки, создаем её
+    container.innerHTML = `<div class="tabs-content-inner fade-in">${newContent}</div>`;
+    return;
+  }
+  
+  // Сохраняем текущую высоту контейнера
   const currentHeight = container.offsetHeight;
   container.style.height = currentHeight + 'px';
   container.style.overflow = 'hidden';
-  container.style.transition = 'height 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+  container.style.transition = 'height 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
   
   // Создаем временный элемент для измерения новой высоты
   const tempDiv = document.createElement('div');
+  tempDiv.className = 'tabs-content-inner';
   tempDiv.style.position = 'absolute';
   tempDiv.style.visibility = 'hidden';
   tempDiv.style.width = container.offsetWidth + 'px';
@@ -235,18 +251,27 @@ function smoothUpdateTabContent(container, newContent) {
   const newHeight = tempDiv.offsetHeight;
   container.parentNode.removeChild(tempDiv);
   
-  // Запускаем анимацию к новой высоте
-  requestAnimationFrame(() => {
-    container.style.height = newHeight + 'px';
+  // Запускаем анимацию исчезновения старого контента
+  contentInner.classList.add('fade-out');
+  
+  // Через время анимации исчезновения обновляем контент
+  setTimeout(() => {
+    contentInner.innerHTML = newContent;
+    contentInner.classList.remove('fade-out');
+    contentInner.classList.add('fade-in');
     
-    // После завершения анимации обновляем контент и убираем ограничения
-    setTimeout(() => {
-      container.innerHTML = newContent;
-      container.style.height = '';
-      container.style.overflow = '';
-      container.style.transition = '';
-    }, 300);
-  });
+    // Анимируем высоту к новому размеру
+    requestAnimationFrame(() => {
+      container.style.height = newHeight + 'px';
+      
+      // После завершения анимации высоты убираем ограничения
+      setTimeout(() => {
+        container.style.height = '';
+        container.style.overflow = '';
+        container.style.transition = '';
+      }, 250);
+    });
+  }, 125); // Половина времени анимации текста
 }
 
 // Функции для работы с панелью оформления
@@ -429,7 +454,7 @@ function openLabelModal(labelText) {
   // Показываем модальное окно с небольшой задержкой для плавности
   setTimeout(() => {
     modal.classList.add('show');
-  }, 10);
+  }, 5);
 }
 
 function closeLabelModal() {
@@ -443,7 +468,7 @@ function closeLabelModal() {
   setTimeout(() => {
     document.body.style.overflow = '';
     modal.classList.remove('hide');
-  }, 300);
+  }, 100);
 }
 
 function getLabelInfo(labelText) {

@@ -16,9 +16,11 @@
   touch-action: manipulation;
 }
 
-/* Убираем bounce эффект на iOS */
+/* Настройка bounce эффекта для страниц как в блоке "Новинки" */
 html, body {
-  overscroll-behavior: none;
+  /* Включаем естественный bounce только для вертикального скролла */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
   -webkit-overflow-scrolling: touch;
   /* Предотвращаем сворачивание приложения */
   -webkit-user-select: none;
@@ -55,10 +57,11 @@ input, textarea {
   touch-action: pan-y;
 }
 
-/* Для горизонтального скролла */
+/* Для горизонтального скролла - с естественным bounce */
 .category-products-slider,
 .banner-slider {
   touch-action: pan-x;
+  overscroll-behavior-x: contain;
 }
 
 /* Отключаем анимации при первой загрузке */
@@ -78,65 +81,6 @@ input, textarea {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
-
-/* Telegram Web App CSS фиксы */
-* {
-  -webkit-tap-highlight-color: transparent;
-  -webkit-touch-callout: none;
-  touch-action: manipulation;
-}
-
-/* Убираем bounce эффект на iOS */
-html, body {
-  overscroll-behavior: none;
-  -webkit-overflow-scrolling: touch;
-  /* Предотвращаем сворачивание приложения */
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
-
-/* Убираем подпрыгивание анимаций при загрузке */
-body {
-  visibility: hidden;
-}
-
-body.loaded {
-  visibility: visible;
-}
-
-/* Позволяем выделение текста в инпутах */
-input, textarea {
-  -webkit-user-select: text;
-  -khtml-user-select: text;
-  -moz-user-select: text;
-  -ms-user-select: text;
-  user-select: text;
-  touch-action: manipulation;
-}
-
-/* Для элементов где нужен вертикальный скролл */
-.search-dropdown,
-.menu,
-.category-products-grid,
-.categories-grid {
-  touch-action: pan-y;
-}
-
-/* Для горизонтального скролла */
-.category-products-slider,
-.banner-slider {
-  touch-action: pan-x;
-}
-
-/* Отключаем анимации при первой загрузке */
-.preload * {
-  transition: none !important;
-  animation-duration: 0s !important;
-  animation-delay: 0s !important;
 }
 
 /* Специальная поддержка для Telegram WebApp */
@@ -172,7 +116,9 @@ input, textarea {
 .catalog,
 .product {
   touch-action: pan-y;
-  overscroll-behavior: none;
+  /* Позволяем естественный bounce для страниц */
+  overscroll-behavior-y: auto;
+  overscroll-behavior-x: none;
 }
 
 /* Плавное переключение контента табов */
@@ -180,70 +126,22 @@ input, textarea {
   will-change: height;
 }
 
-/* Bounce scroll эффект - только для мобильных устройств */
+/* Естественный bounce эффект для мобильных устройств */
 @media (max-width: 1024px) and (hover: none) {
   body {
-    will-change: transform;
-    /* Улучшаем рендеринг для плавных анимаций */
-    transform-style: preserve-3d;
-  }
-
-  /* Обеспечиваем максимальную плавность bounce анимации */
-  body.bounce-scrolling {
-    transform-origin: center center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    /* Дополнительная оптимизация для плавности */
-    perspective: 1000px;
-    -webkit-perspective: 1000px;
-    /* Принудительное использование композитного слоя */
+    /* Оптимизация для плавности скролла */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-  }
-
-  /* Оптимизация производительности для bounce */
-  @media (prefers-reduced-motion: no-preference) {
-    body {
-      transform: translateZ(0);
-      /* Дополнительная оптимизация GPU */
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
   }
 }
 
 /* Отключаем bounce для пользователей с настройкой reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  body {
-    transform: none !important;
-    transition: none !important;
+  html, body {
+    overscroll-behavior: none !important;
+    -webkit-overflow-scrolling: auto !important;
   }
-}
-
-/* Принудительно отключаем bounce на десктопе */
-@media (min-width: 1025px), (hover: hover) {
-  body {
-    transform: none !important;
-    transition: none !important;
-    will-change: auto;
-  }
-  
-  body.bounce-scrolling {
-    transform: none !important;
-    transition: none !important;
-  }
-}
-
-/* Предотвращаем контекстное меню */
-.category-product-card,
-.category-card,
-.banner-item {
-  -webkit-touch-callout: none;
-  -webkit-user-select: none;
-  -khtml-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 body {
@@ -1107,16 +1005,109 @@ body:has(.product)::before {
   margin-bottom: 10px;
   display: flex;
   gap: 16px;
+  position: relative;
 }
 
 .tab {
   color: #666666;
   padding-block: 8px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+  position: relative;
+}
+
+.tab:hover {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .tab-selected {
   color: rgb(255, 255, 255);
-  border-bottom: 2px solid #29a5ff;
+}
+
+/* Анимированная полосочка под вкладками */
+.tabs::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background-color: #29a5ff;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1px;
+}
+
+/* Позиции полосочки для разных вкладок */
+.tabs[data-active="0"]::after {
+  width: 80px; /* Ширина текста "Описание" */
+  transform: translateX(0);
+}
+
+.tabs[data-active="1"]::after {
+  width: 185px; /* Ширина текста "Системные требования" */
+  transform: translateX(96px); /* Отступ для первой вкладки + gap */
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+  .tabs {
+    gap: 12px;
+  }
+  
+  .tab {
+    font-size: 15px;
+    padding-block: 6px;
+  }
+  
+  .tabs[data-active="0"]::after {
+    width: 72px;
+    transform: translateX(0);
+  }
+  
+  .tabs[data-active="1"]::after {
+    width: 175px;
+    transform: translateX(84px);
+  }
+}
+
+@media (max-width: 375px) {
+  .tabs {
+    gap: 8px;
+  }
+  
+  .tab {
+    font-size: 14px;
+    padding-block: 6px;
+  }
+  
+  .tabs[data-active="0"]::after {
+    width: 65px;
+    transform: translateX(0);
+  }
+  
+  .tabs[data-active="1"]::after {
+    width: 165px;
+    transform: translateX(73px);
+  }
+}
+
+/* Анимация контента вкладок */
+.tabs-content {
+  position: relative;
+  overflow: hidden;
+}
+
+.tabs-content-inner {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tabs-content-inner.fade-out {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.tabs-content-inner.fade-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .swiper-slide {
@@ -2432,60 +2423,26 @@ html > .modal-overlay {
   }
 }
 
-/* Принудительно исключаем модальное окно из bounce трансформации body */
-body.bounce-scrolling .modal-overlay,
-html > .modal-overlay {
-  transform: none !important;
-  -webkit-transform: none !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-}
-
-/* Исключаем контент модального окна из bounce эффекта, но разрешаем анимацию */
-body.bounce-scrolling .modal-overlay.show .modal-content,
-html > .modal-overlay.show .modal-content {
-  animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-body.bounce-scrolling .modal-overlay.hide .modal-content,
-html > .modal-overlay.hide .modal-content {
-  animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Исключаем вложенные элементы модального окна из bounce эффекта */
-body.bounce-scrolling .modal-header,
-body.bounce-scrolling .modal-body,
-body.bounce-scrolling .modal-footer,
-body.bounce-scrolling .modal-header *,
-body.bounce-scrolling .modal-body *,
-body.bounce-scrolling .modal-footer *,
-html > .modal-overlay .modal-header,
-html > .modal-overlay .modal-body,
-html > .modal-overlay .modal-footer,
-html > .modal-overlay .modal-header *,
-html > .modal-overlay .modal-body *,
-html > .modal-overlay .modal-footer * {
-  transform: none !important;
-  -webkit-transform: none !important;
+/* Модальные окна имеют собственную обработку прокрутки */
+.modal-overlay {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: auto;
 }
 
 .modal-overlay.show {
   opacity: 1;
   visibility: visible;
-  animation: modalOverlayFadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modalOverlayFadeIn 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-overlay.hide {
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.1s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-overlay.hide .modal-content {
-  animation: modalSlideDown 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modalSlideDown 0.1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .modal-content {
@@ -2533,7 +2490,7 @@ html > .modal-overlay .modal-footer * {
 .modal-overlay.show .modal-content {
   transform: translateY(0);
   -webkit-transform: translateY(0);
-  animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: modalSlideUp 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes modalSlideUp {
@@ -2557,9 +2514,6 @@ html > .modal-overlay .modal-footer * {
     transform: translateY(0);
     -webkit-transform: translateY(0);
     opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
   }
   100% {
     transform: translateY(100%);
@@ -2607,7 +2561,7 @@ html > .modal-overlay .modal-footer * {
   gap: 12px;
   opacity: 0;
   transform: translateX(-10px);
-  animation: slideInLeft 0.5s ease-out 0.3s forwards;
+  animation: slideInLeft 0.25s ease-out 0.1s forwards;
 }
 
 @keyframes slideInLeft {
@@ -2630,7 +2584,7 @@ html > .modal-overlay .modal-footer * {
   justify-content: center;
   font-size: 18px;
   transition: transform 0.3s ease;
-  animation: modalIconPulse 2s infinite;
+  animation: modalIconPulse 1.5s infinite;
   position: relative;
   overflow: hidden;
 }
@@ -2718,7 +2672,7 @@ html > .modal-overlay .modal-footer * {
   box-shadow: 0 4px 16px rgba(41, 165, 255, 0.3);
   opacity: 0;
   transform: translateY(10px);
-  animation: fadeInUp 0.5s ease-out 0.3s forwards;
+  animation: fadeInUp 0.25s ease-out 0.1s forwards;
 }
 
 .modal-understand-btn:hover {
@@ -2756,7 +2710,7 @@ html > .modal-overlay .modal-footer * {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   opacity: 0;
   transform: translateY(10px);
-  animation: fadeInUp 0.5s ease-out 0.5s forwards;
+  animation: fadeInUp 0.25s ease-out 0.15s forwards;
 }
 
 @keyframes fadeInUp {

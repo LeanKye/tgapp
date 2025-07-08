@@ -1,33 +1,10 @@
-// Нативный Bounce Scroll как в Telegram/Яндекс.Маркете
+// Улучшенный bounce scroll эффект как в блоке "Новинки"
 class BounceScroll {
   constructor() {
     this.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.isMobile = this.detectMobile();
     
     if (!this.isMobile || this.reducedMotion) return;
-    
-    // Параметры физики (как в нативных приложениях)
-    this.maxBounceDistance = 120;
-    this.friction = 0.95;
-    this.snapBackForce = 0.15;
-    this.momentumVelocityThreshold = 0.1;
-    
-    // Состояние
-    this.isActive = false;
-    this.isTouching = false;
-    this.velocity = 0;
-    this.currentOffset = 0;
-    this.targetOffset = 0;
-    
-    // Touch tracking
-    this.touchStartY = 0;
-    this.touchLastY = 0;
-    this.touchStartTime = 0;
-    this.touchLastTime = 0;
-    this.touchHistory = [];
-    
-    // Animation
-    this.animationId = null;
     
     this.init();
   }
@@ -38,21 +15,11 @@ class BounceScroll {
   }
 
   init() {
-    // Добавляем CSS для плавности
+    // Добавляем CSS для естественного bounce эффекта
     this.addStyles();
     
-    // Touch события
-    document.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: true });
-    document.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-    document.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: true });
-    
-    // Предотвращаем системный bounce
-    document.addEventListener('touchmove', (e) => {
-      if (this.isActive) e.preventDefault();
-    }, { passive: false });
-    
-    // Начинаем анимационный цикл
-    this.startAnimationLoop();
+    // Настраиваем поведение скролла для страниц
+    this.setupScrollBehavior();
   }
 
   addStyles() {
@@ -61,276 +28,176 @@ class BounceScroll {
     const style = document.createElement('style');
     style.id = 'bounce-scroll-styles';
     style.textContent = `
-      .bounce-scroll-active {
-        overflow: hidden;
-        position: relative;
+      /* Естественный bounce эффект для страниц */
+      html, body {
+        /* Включаем нативный bounce только для вертикального скролла */
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: auto;
+        /* Включаем плавный скролл на мобильных */
+        -webkit-overflow-scrolling: touch;
+        /* Оптимизируем производительность */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
       }
-      .bounce-scroll-content {
-        will-change: transform;
-        backface-visibility: hidden;
-        perspective: 1000px;
+      
+      /* Для iOS - включаем momentum scrolling */
+      @supports (-webkit-overflow-scrolling: touch) {
+        html, body {
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: auto;
+        }
+      }
+      
+      /* Улучшенная производительность для bounce анимаций */
+      @media (max-width: 1024px) and (hover: none) {
+        body {
+          will-change: scroll-position;
+          transform-style: preserve-3d;
+          perspective: 1000px;
+          -webkit-perspective: 1000px;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+        
+        /* Оптимизация для плавности */
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+      }
+      
+      /* Убираем системные эффекты только там где нужно */
+      .no-bounce {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: auto;
+      }
+      
+      /* Специальная обработка для модальных окон */
+      .modal-overlay {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: auto;
+      }
+      
+      /* Исключаем конфликты с горизонтальными слайдерами */
+      .category-products-slider,
+      .banner-slider {
+        overscroll-behavior-x: contain;
+        touch-action: pan-x;
       }
     `;
     document.head.appendChild(style);
   }
 
-  onTouchStart(e) {
-    this.isTouching = true;
-    this.touchStartY = e.touches[0].clientY;
-    this.touchLastY = this.touchStartY;
-    this.touchStartTime = Date.now();
-    this.touchLastTime = this.touchStartTime;
-    this.touchHistory = [];
+  setupScrollBehavior() {
+    // Убеждаемся что страницы имеют правильные CSS классы
+    document.documentElement.classList.add('bounce-enabled');
+    document.body.classList.add('bounce-enabled');
     
-    // Останавливаем текущую анимацию
-    this.velocity = 0;
-    this.stopAnimation();
+    // Настраиваем специальное поведение для модальных окон
+    this.setupModalBehavior();
+    
+    // Оптимизируем touch поведение
+    this.optimizeTouchBehavior();
   }
 
-  onTouchMove(e) {
-    if (!this.isTouching) return;
-    
-    const currentY = e.touches[0].clientY;
-    const currentTime = Date.now();
-    const deltaY = currentY - this.touchStartY;
-    const deltaTime = currentTime - this.touchLastTime;
-    
-    // Обновляем историю касаний для momentum
-    if (deltaTime > 0) {
-      const instantVelocity = (currentY - this.touchLastY) / deltaTime;
-      this.touchHistory.push({
-        time: currentTime,
-        velocity: instantVelocity,
-        position: currentY
+  setupModalBehavior() {
+    // Отключаем bounce для модальных окон
+    document.addEventListener('DOMContentLoaded', () => {
+      const modals = document.querySelectorAll('.modal-overlay');
+      modals.forEach(modal => {
+        modal.classList.add('no-bounce');
       });
-      
-      // Ограничиваем историю
-      if (this.touchHistory.length > 5) {
-        this.touchHistory.shift();
-      }
-    }
-    
-    // Проверяем границы скролла
-    const scrollTop = window.pageYOffset;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const windowHeight = window.innerHeight;
-    const isAtTop = scrollTop <= 0;
-    const isAtBottom = scrollTop + windowHeight >= scrollHeight - 1;
-    
-    // Определяем направление
-    const isScrollingUp = deltaY > 0;
-    const isScrollingDown = deltaY < 0;
-    
-    // Активируем bounce только на границах
-    if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
-      e.preventDefault();
-      
-      if (!this.isActive) {
-        this.isActive = true;
-        document.body.classList.add('bounce-scroll-active');
-        document.body.classList.add('bounce-scroll-content');
-      }
-      
-      // Применяем rubber band эффект
-      const rubberBandOffset = this.calculateRubberBand(Math.abs(deltaY));
-      this.currentOffset = isScrollingUp ? rubberBandOffset : -rubberBandOffset;
-      this.updateTransform();
-      
-    } else if (this.isActive) {
-      // Выходим из bounce режима
-      this.deactivate();
-    }
-    
-    this.touchLastY = currentY;
-    this.touchLastTime = currentTime;
+    });
+
+    // Наблюдаем за добавлением новых модальных окон
+    const observer = new MutationObserver(mutations => {
+      mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+          if (node.nodeType === 1 && node.classList?.contains('modal-overlay')) {
+            node.classList.add('no-bounce');
+          }
+        });
+      });
+    });
+
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true 
+    });
   }
 
-  onTouchEnd(e) {
-    if (!this.isTouching) return;
+  optimizeTouchBehavior() {
+    // Предотвращаем двойное срабатывание на некоторых устройствах
+    let touchStartTime = 0;
     
-    this.isTouching = false;
-    
-    if (this.isActive) {
-      // Запускаем snap-back анимацию
-      this.startSnapBack();
-    } else {
-      // Проверяем momentum bounce
-      this.checkMomentumBounce();
-    }
-  }
+    document.addEventListener('touchstart', (e) => {
+      touchStartTime = Date.now();
+    }, { passive: true });
 
-  calculateRubberBand(distance) {
-    // Формула как в iOS (более естественная)
-    const resistance = 0.5;
-    const maxDistance = this.maxBounceDistance;
-    
-    if (distance <= 0) return 0;
-    
-    // Используем формулу rubber band из iOS
-    const result = maxDistance * (1 - (1 / ((distance * resistance / maxDistance) + 1)));
-    return Math.min(result, maxDistance);
-  }
-
-  updateTransform() {
-    // Применяем transform с аппаратным ускорением
-    const transform = `translate3d(0, ${this.currentOffset}px, 0)`;
-    document.body.style.transform = transform;
-  }
-
-  startSnapBack() {
-    this.targetOffset = 0;
-    this.velocity = 0;
-    
-    // Используем плавную анимацию возврата
-    const duration = 300;
-    const startOffset = this.currentOffset;
-    const startTime = Date.now();
-    
-    const animate = () => {
-      const currentTime = Date.now();
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
+    document.addEventListener('touchend', (e) => {
+      const touchDuration = Date.now() - touchStartTime;
       
-      // Используем easing функцию как в iOS
-      const easeProgress = this.easeOutCubic(progress);
-      this.currentOffset = startOffset * (1 - easeProgress);
-      
-      this.updateTransform();
-      
-      if (progress < 1) {
-        this.animationId = requestAnimationFrame(animate);
-      } else {
-        this.deactivate();
-      }
-    };
-    
-    animate();
-  }
-
-  checkMomentumBounce() {
-    if (this.touchHistory.length < 2) return;
-    
-    // Вычисляем среднюю скорость из последних касаний
-    const recentHistory = this.touchHistory.slice(-3);
-    const avgVelocity = recentHistory.reduce((sum, item) => sum + item.velocity, 0) / recentHistory.length;
-    
-    if (Math.abs(avgVelocity) < this.momentumVelocityThreshold) return;
-    
-    // Проверяем границы
-    const scrollTop = window.pageYOffset;
-    const scrollHeight = document.documentElement.scrollHeight;
-    const windowHeight = window.innerHeight;
-    const isAtTop = scrollTop <= 5;
-    const isAtBottom = scrollTop + windowHeight >= scrollHeight - 5;
-    
-    const isMovingUp = avgVelocity > 0;
-    const isMovingDown = avgVelocity < 0;
-    
-    if ((isAtTop && isMovingUp) || (isAtBottom && isMovingDown)) {
-      // Запускаем momentum bounce
-      this.startMomentumBounce(avgVelocity);
-    }
-  }
-
-  startMomentumBounce(initialVelocity) {
-    this.isActive = true;
-    document.body.classList.add('bounce-scroll-active');
-    document.body.classList.add('bounce-scroll-content');
-    
-    this.velocity = initialVelocity;
-    this.currentOffset = 0;
-    
-    // Запускаем физическую анимацию
-    this.startPhysicsAnimation();
-  }
-
-  startPhysicsAnimation() {
-    const animate = () => {
-      if (!this.isActive) return;
-      
-      // Обновляем позицию на основе скорости
-      this.currentOffset += this.velocity * 16; // 16ms frame time
-      
-      // Применяем rubber band resistance
-      const maxOffset = this.maxBounceDistance;
-      if (Math.abs(this.currentOffset) > maxOffset) {
-        this.currentOffset = Math.sign(this.currentOffset) * maxOffset;
-        this.velocity *= -0.5; // Отскок
-      }
-      
-      // Применяем трение
-      this.velocity *= this.friction;
-      
-      // Применяем возвращающую силу
-      if (this.currentOffset !== 0) {
-        const snapForce = -this.currentOffset * this.snapBackForce;
-        this.velocity += snapForce;
-      }
-      
-      this.updateTransform();
-      
-      // Проверяем остановку
-      if (Math.abs(this.velocity) < 0.01 && Math.abs(this.currentOffset) < 0.5) {
-        this.deactivate();
+      // Оптимизируем короткие касания
+      if (touchDuration < 150) {
+        // Короткое касание - оставляем как есть
         return;
       }
-      
-      this.animationId = requestAnimationFrame(animate);
-    };
-    
-    animate();
-  }
+    }, { passive: true });
 
-  startAnimationLoop() {
-    // Основной цикл обновления (для плавности)
-    const loop = () => {
-      if (this.isActive && !this.isTouching) {
-        // Дополнительная логика если нужна
+    // Улучшаем поведение на границах скролла
+    let isScrolling = false;
+    let scrollTimeout;
+
+    document.addEventListener('scroll', () => {
+      if (!isScrolling) {
+        // Начало скролла
+        document.body.classList.add('is-scrolling');
+        isScrolling = true;
       }
-      requestAnimationFrame(loop);
-    };
-    
-    loop();
+
+      // Очищаем предыдущий таймаут
+      clearTimeout(scrollTimeout);
+
+      // Устанавливаем новый таймаут для окончания скролла
+      scrollTimeout = setTimeout(() => {
+        document.body.classList.remove('is-scrolling');
+        isScrolling = false;
+      }, 150);
+    }, { passive: true });
   }
 
-  deactivate() {
-    this.isActive = false;
-    this.currentOffset = 0;
-    this.velocity = 0;
-    this.stopAnimation();
-    
-    document.body.classList.remove('bounce-scroll-active');
-    document.body.classList.remove('bounce-scroll-content');
-    document.body.style.transform = '';
-  }
-
-  stopAnimation() {
-    if (this.animationId) {
-      cancelAnimationFrame(this.animationId);
-      this.animationId = null;
+  // Метод для отключения bounce на конкретном элементе
+  disableBounce(element) {
+    if (element) {
+      element.classList.add('no-bounce');
     }
   }
 
-  // Easing функции как в нативных приложениях
-  easeOutCubic(t) {
-    return 1 - Math.pow(1 - t, 3);
+  // Метод для включения bounce на конкретном элементе
+  enableBounce(element) {
+    if (element) {
+      element.classList.remove('no-bounce');
+    }
   }
 
-  easeOutQuart(t) {
-    return 1 - Math.pow(1 - t, 4);
+  // Управление bounce для всей страницы
+  disablePageBounce() {
+    document.documentElement.classList.add('no-bounce');
+    document.body.classList.add('no-bounce');
   }
 
-  // Управление
+  enablePageBounce() {
+    document.documentElement.classList.remove('no-bounce');
+    document.body.classList.remove('no-bounce');
+  }
+
+  // Уничтожение
   destroy() {
-    this.stopAnimation();
-    this.deactivate();
-    
-    document.removeEventListener('touchstart', this.onTouchStart);
-    document.removeEventListener('touchmove', this.onTouchMove);
-    document.removeEventListener('touchend', this.onTouchEnd);
-    
     const styles = document.getElementById('bounce-scroll-styles');
     if (styles) styles.remove();
+    
+    document.documentElement.classList.remove('bounce-enabled');
+    document.body.classList.remove('bounce-enabled', 'is-scrolling');
   }
 }
 
