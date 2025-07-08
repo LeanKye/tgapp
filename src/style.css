@@ -197,6 +197,118 @@ body {
   }
 }
 
+/* Специальные стили для полноэкранного режима Telegram на iOS */
+.telegram-ios-fullscreen {
+  /* Принудительно убираем все отступы для полноэкранного режима */
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.telegram-ios-fullscreen::before {
+  /* Скрываем фоновый элемент статус-бара */
+  display: none !important;
+}
+
+.telegram-ios-fullscreen .header-container {
+  /* Убираем все отступы у header */
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+.telegram-ios-fullscreen .catalog {
+  /* Убираем все отступы у каталога */
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Дополнительные стили для мини-приложений Telegram */
+@media (display-mode: standalone) {
+  .telegram-ios-fullscreen {
+    /* Агрессивно убираем все системные отступы */
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    top: 0 !important;
+  }
+}
+
+/* Стили для viewport-fit=cover в мини-приложениях */
+@supports (padding: max(0px)) {
+  .telegram-ios-fullscreen {
+    /* Используем max() для гарантированного обнуления */
+    padding-top: max(0px) !important;
+  }
+}
+
+/* Дополнительные стили для надежной работы на разных версиях iOS */
+@media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone X, XS, 11 Pro */
+  .telegram-ios-fullscreen {
+    padding-top: 0 !important;
+  }
+}
+
+@media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) {
+  /* iPhone XR, 11 */
+  .telegram-ios-fullscreen {
+    padding-top: 0 !important;
+  }
+}
+
+@media screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone XS Max, 11 Pro Max */
+  .telegram-ios-fullscreen {
+    padding-top: 0 !important;
+  }
+}
+
+@media screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone 12, 12 Pro */
+  .telegram-ios-fullscreen {
+    padding-top: 0 !important;
+  }
+}
+
+@media screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone 12 Pro Max */
+  .telegram-ios-fullscreen {
+    padding-top: 0 !important;
+  }
+}
+
+@media screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) {
+  /* iPhone 12 mini */
+  .telegram-ios-fullscreen {
+    padding-top: 0 !important;
+  }
+}
+
+/* Универсальные стили для всех iOS устройств в мини-приложениях */
+@supports (-webkit-touch-callout: none) {
+  .telegram-ios-fullscreen {
+    /* Принудительно убираем все отступы на всех iOS устройствах */
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    top: 0 !important;
+  }
+  
+  .telegram-ios-fullscreen .header-container {
+    /* Убираем отступы у header на всех iOS устройствах */
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  .telegram-ios-fullscreen .catalog {
+    /* Убираем отступы у каталога на всех iOS устройствах */
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+  
+  .telegram-ios-fullscreen .product {
+    /* Убираем отступы у страницы товара на всех iOS устройствах */
+    margin-top: 0 !important;
+  }
+}
+
 /* Специальные стили для Telegram Web App на iOS */
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari */
