@@ -41,9 +41,9 @@ function renderProduct(product) {
       </svg>
     `;
     
-    // Добавляем обработчик клика по плашке
+    // Добавляем обработчик клика по лейблу
     labelDiv.addEventListener('click', () => {
-      openLabelModal(label);
+      openModal(label);
     });
     
     labelsContainer.appendChild(labelDiv);
@@ -427,223 +427,122 @@ function initSwiper() {
   });
 }
 
-// Функции для работы с модальным окном лейблов
-function openLabelModal(labelText) {
-  // Убеждаемся, что модальное окно создано
-  if (!document.getElementById('label-modal')) {
-    createModal();
-  }
-  
-  const modal = document.getElementById('label-modal');
-  const modalTitle = document.getElementById('modal-title');
-  const modalDescription = document.getElementById('modal-description');
-  const modalIcon = document.getElementById('modal-icon');
-  
-  // Устанавливаем заголовок и описание в зависимости от типа лейбла
-  const labelInfo = getLabelInfo(labelText);
-  modalTitle.textContent = labelInfo.title;
-  modalDescription.textContent = labelInfo.description;
-  
-  // Устанавливаем иконку и класс
-  modalIcon.textContent = labelInfo.icon;
-  modalIcon.className = `modal-icon ${labelInfo.iconClass}`;
-  
-  // Сохраняем текущую позицию скролла для мобильных
-  const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-  
-  // Блокируем прокрутку страницы
-  document.body.style.overflow = 'hidden';
-  
-  // Для мобильных устройств дополнительно фиксируем позицию
-  if (window.innerWidth <= 768) {
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = '100%';
-    modal.dataset.scrollY = scrollY;
-  }
-  
-  // Обновляем viewport height для мобильных
-  updateViewportHeight();
-  
-  // Показываем модальное окно
-  modal.classList.add('show');
-}
-
-function closeLabelModal() {
-  const modal = document.getElementById('label-modal');
-  
-  // Скрываем модальное окно
-  modal.classList.remove('show');
-  
-  // Восстанавливаем прокрутку страницы
-  document.body.style.overflow = '';
-  
-  // Для мобильных устройств восстанавливаем позицию скролла
-  if (window.innerWidth <= 768 && modal.dataset.scrollY) {
-    const scrollY = modal.dataset.scrollY;
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.width = '';
-    
-    // Восстанавливаем позицию скролла
-    window.scrollTo(0, parseInt(scrollY));
-    
-    // Очищаем сохраненную позицию
-    delete modal.dataset.scrollY;
-  }
-}
-
+// Функции для работы с модальными окнами
 function getLabelInfo(labelText) {
-  const labelInfoMap = {
+  const labelData = {
     'Гарантия': {
-      title: 'Гарантия',
-      description: 'Мы предоставляем гарантию на все цифровые товары. В случае возникновения проблем с работоспособностью продукта, мы бесплатно заменим его или вернем деньги. Гарантия действует в течение 30 дней с момента покупки.',
+      title: 'Гарантия качества',
+      description: 'Мы предоставляем гарантию на все цифровые товары. В случае возникновения проблем с работоспособностью продукта, мы бесплатно заменим его или вернем деньги в течение 30 дней с момента покупки.',
       icon: '🛡️',
       iconClass: 'guarantee'
     },
     'Лицензия': {
-      title: 'Лицензия',
+      title: 'Официальная лицензия',
       description: 'Все продукты поставляются с официальными лицензиями от производителя. Вы получаете полностью легальный и активированный продукт с возможностью получения обновлений и технической поддержки.',
       icon: '📜',
       iconClass: 'license'
     },
     'Нужен VPN': {
       title: 'Требуется VPN',
-      description: 'Для активации и использования данного продукта может потребоваться VPN-соединение. Это связано с региональными ограничениями производителя. Мы рекомендуем использовать надежные VPN-сервисы для обеспечения стабильной работы.',
+      description: 'Для активации и использования данного продукта может потребоваться VPN-соединение. Это связано с региональными ограничениями производителя. Рекомендуем использовать надежные VPN-сервисы.',
       icon: '🌐',
       iconClass: 'vpn'
     }
   };
-  
-  return labelInfoMap[labelText] || {
+
+  return labelData[labelText] || {
     title: 'Информация',
-    description: 'Информация о данном лейбле недоступна.',
-    icon: '⚡',
+    description: 'Дополнительная информация о данном продукте.',
+    icon: '💡',
     iconClass: 'guarantee'
   };
 }
 
-// Создание модального окна
 function createModal() {
-  // Проверяем, не создано ли уже модальное окно
   if (document.getElementById('label-modal')) {
     return;
   }
-  
+
   const modalHTML = `
     <div id="label-modal" class="modal-overlay">
       <div class="modal-content">
         <div class="modal-header">
-          <div class="modal-title-container">
-            <div id="modal-icon" class="modal-icon">
-              ⚡
-            </div>
-            <h3 id="modal-title">Информация</h3>
-          </div>
+          <div id="modal-icon" class="modal-icon">💡</div>
+          <h3 id="modal-title" class="modal-title">Информация</h3>
         </div>
         <div class="modal-body">
-          <p id="modal-description">Загрузка информации...</p>
+          <p id="modal-text" class="modal-text">Загрузка...</p>
         </div>
         <div class="modal-footer">
-          <button id="modal-understand" class="modal-understand-btn">
-            Понятно
-          </button>
+          <button id="modal-close" class="modal-close">Понятно</button>
         </div>
       </div>
     </div>
   `;
-  
-  // Создаем DOM элемент и добавляем в body
+
   document.body.insertAdjacentHTML('beforeend', modalHTML);
-  
-  // Принудительно применяем стили к модальному окну
-  const modal = document.getElementById('label-modal');
-  const modalContent = modal.querySelector('.modal-content');
-  
-  // Принудительно устанавливаем стили для модального окна
-  modal.style.position = 'fixed';
-  modal.style.top = '0';
-  modal.style.left = '0';
-  modal.style.right = '0';
-  modal.style.bottom = '0';
-  modal.style.width = '100vw';
-  modal.style.height = '100vh';
-  modal.style.zIndex = '10000';
-  modal.style.transform = 'none';
-  modal.style.webkitTransform = 'none';
-  modal.style.margin = '0';
-  modal.style.padding = '0';
-  
-  // Принудительно устанавливаем стили для контента
-  modalContent.style.position = 'absolute';
-  modalContent.style.bottom = '0';
-  modalContent.style.left = '0';
-  modalContent.style.right = '0';
-  modalContent.style.width = '100%';
-  modalContent.style.margin = '0';
 }
 
-// Инициализация модального окна
-function initLabelModal() {
-  // Создаем модальное окно динамически
+function openModal(labelText) {
   createModal();
-  
+
   const modal = document.getElementById('label-modal');
-  const understandBtn = document.getElementById('modal-understand');
+  const icon = document.getElementById('modal-icon');
+  const title = document.getElementById('modal-title');
+  const text = document.getElementById('modal-text');
+
+  const labelInfo = getLabelInfo(labelText);
   
-  // Обработчик для кнопки "Понятно"
-  understandBtn.addEventListener('click', closeLabelModal);
-  
-  // Обработчик для клика по фону модального окна
+  // Обновляем содержимое модального окна
+  icon.textContent = labelInfo.icon;
+  icon.className = `modal-icon ${labelInfo.iconClass}`;
+  title.textContent = labelInfo.title;
+  text.textContent = labelInfo.description;
+
+  // Блокируем прокрутку страницы
+  document.body.style.overflow = 'hidden';
+
+  // Показываем модальное окно
+  modal.classList.add('show');
+}
+
+function closeModal() {
+  const modal = document.getElementById('label-modal');
+  if (!modal) return;
+
+  // Убираем блокировку прокрутки
+  document.body.style.overflow = '';
+
+  // Скрываем модальное окно
+  modal.classList.remove('show');
+}
+
+function initModal() {
+  createModal();
+
+  const modal = document.getElementById('label-modal');
+  const closeBtn = document.getElementById('modal-close');
+
+  // Закрытие по кнопке
+  closeBtn.addEventListener('click', closeModal);
+
+  // Закрытие по клику на фон
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
-      closeLabelModal();
+      closeModal();
     }
   });
-  
-  // Обработчик для клавиши Escape
+
+  // Закрытие по клавише Escape
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && modal.classList.contains('show')) {
-      closeLabelModal();
+      closeModal();
     }
   });
-}
-
-// Функция для обновления viewport height
-function updateViewportHeight() {
-  const vh = window.innerHeight * 0.01;
-  document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-
-// Глобальная функция для инициализации viewport height
-function initViewportHeight() {
-  updateViewportHeight();
-  
-  // Обновляем при изменении размера окна
-  window.addEventListener('resize', updateViewportHeight);
-  
-  // Обновляем при изменении ориентации
-  window.addEventListener('orientationchange', () => {
-    setTimeout(updateViewportHeight, 100);
-  });
-  
-  // Дополнительные обработчики для мобильных устройств
-  if (window.innerWidth <= 768) {
-    // Обновляем при появлении/скрытии виртуальной клавиатуры
-    window.addEventListener('resize', () => {
-      setTimeout(updateViewportHeight, 300);
-    });
-    
-    // Обновляем при изменении видимости страницы
-    document.addEventListener('visibilitychange', updateViewportHeight);
-  }
 }
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
-  // Инициализируем viewport height для всех устройств
-  initViewportHeight();
-  
   const productId = getUrlParameter('product');
   const product = getProductById(productId);
   renderProduct(product);
@@ -654,10 +553,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initSwiper();
       initCheckoutPanel();
-      initLabelModal(); // Добавляем инициализацию модального окна
-        }, 100);
-    
-    
+      initModal();
+    }, 100);
   }
   
   // Если продукт не найден, перенаправляем на главную

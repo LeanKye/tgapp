@@ -72,11 +72,7 @@ class BounceScroll {
         -webkit-overflow-scrolling: auto;
       }
       
-      /* Специальная обработка для модальных окон */
-      .modal-overlay {
-        overscroll-behavior: none;
-        -webkit-overflow-scrolling: auto;
-      }
+
       
       /* Исключаем конфликты с горизонтальными слайдерами */
       .category-products-slider {
@@ -97,37 +93,12 @@ class BounceScroll {
     document.documentElement.classList.add('bounce-enabled');
     document.body.classList.add('bounce-enabled');
     
-    // Настраиваем специальное поведение для модальных окон
-    this.setupModalBehavior();
-    
     // Оптимизируем touch поведение
     this.optimizeTouchBehavior();
   }
 
   setupModalBehavior() {
-    // Отключаем bounce для модальных окон
-    document.addEventListener('DOMContentLoaded', () => {
-      const modals = document.querySelectorAll('.modal-overlay');
-      modals.forEach(modal => {
-        modal.classList.add('no-bounce');
-      });
-    });
-
-    // Наблюдаем за добавлением новых модальных окон
-    const observer = new MutationObserver(mutations => {
-      mutations.forEach(mutation => {
-        mutation.addedNodes.forEach(node => {
-          if (node.nodeType === 1 && node.classList?.contains('modal-overlay')) {
-            node.classList.add('no-bounce');
-          }
-        });
-      });
-    });
-
-    observer.observe(document.body, { 
-      childList: true, 
-      subtree: true 
-    });
+    // Модальные окна удалены
   }
 
   optimizeTouchBehavior() {
