@@ -2405,6 +2405,33 @@ body:has(.product)::before {
   transition: opacity 0.25s ease, visibility 0.25s ease;
 }
 
+/* Специальные стили для мобильных устройств */
+@media (hover: none) and (pointer: coarse) {
+  .modal-overlay {
+    /* Используем динамическую высоту viewport для мобильных */
+    height: 100dvh;
+    /* Фоллбэк для старых браузеров */
+    height: calc(var(--vh, 1vh) * 100);
+    /* Дополнительная фиксация позиционирования */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+}
+
+/* iOS Safari специальные стили */
+@supports (-webkit-touch-callout: none) {
+  .modal-overlay {
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+    /* Учитываем safe area только сверху */
+    padding-top: env(safe-area-inset-top);
+    box-sizing: border-box;
+  }
+}
+
 .modal-overlay.show {
   opacity: 1;
   visibility: visible;
@@ -2438,6 +2465,29 @@ body:has(.product)::before {
   -webkit-transform: translateY(100%);
   /* Убеждаемся что контент не смещается */
   margin: 0 !important;
+}
+
+/* Специальные стили контента для мобильных */
+@media (hover: none) and (pointer: coarse) {
+  .modal-content {
+    max-height: 80dvh;
+    max-height: calc(var(--vh, 1vh) * 80);
+    /* Убеждаемся что контент помещается на экране */
+    min-height: auto;
+    width: 100vw;
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+/* Специальные стили для iOS */
+@supports (-webkit-touch-callout: none) {
+  .modal-content {
+    max-height: 80dvh;
+    max-height: calc(var(--vh, 1vh) * 80);
+    /* Учитываем safe area снизу */
+    padding-bottom: env(safe-area-inset-bottom);
+    box-sizing: border-box;
+  }
 }
 
 .modal-content::before {
@@ -2701,8 +2751,16 @@ body:has(.product)::before {
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
+  .modal-overlay {
+    /* Дополнительная фиксация для планшетов и мобильных */
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+  
   .modal-content {
-    max-height: 80vh;
+    max-height: 80dvh;
+    max-height: calc(var(--vh, 1vh) * 80);
+    width: 100vw;
   }
   
   .modal-header {
@@ -2747,17 +2805,44 @@ body:has(.product)::before {
   }
 }
 
+/* Обработка виртуальной клавиатуры на мобильных */
+@media (max-height: 500px) and (hover: none) {
+  .modal-overlay {
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+    /* Принудительно фиксируем позицию */
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+  }
+  
+  .modal-content {
+    max-height: 90dvh;
+    max-height: calc(var(--vh, 1vh) * 90);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Дополнительные стили для высоких экранов */
 @media (min-height: 800px) {
   .modal-content {
-    max-height: 70vh;
+    max-height: 70dvh;
+    max-height: calc(var(--vh, 1vh) * 70);
   }
 }
 
 /* Стили для очень маленьких экранов */
 @media (max-width: 320px) {
+  .modal-overlay {
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+  
   .modal-content {
-    max-height: 85vh;
+    max-height: 85dvh;
+    max-height: calc(var(--vh, 1vh) * 85);
+    width: 100vw;
   }
   
   .modal-header {

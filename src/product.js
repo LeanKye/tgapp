@@ -448,8 +448,22 @@ function openLabelModal(labelText) {
   modalIcon.textContent = labelInfo.icon;
   modalIcon.className = `modal-icon ${labelInfo.iconClass}`;
   
+  // Сохраняем текущую позицию скролла для мобильных
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+  
   // Блокируем прокрутку страницы
   document.body.style.overflow = 'hidden';
+  
+  // Для мобильных устройств дополнительно фиксируем позицию
+  if (window.innerWidth <= 768) {
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+    modal.dataset.scrollY = scrollY;
+  }
+  
+  // Обновляем viewport height для мобильных
+  updateViewportHeight();
   
   // Показываем модальное окно
   modal.classList.add('show');
@@ -463,6 +477,20 @@ function closeLabelModal() {
   
   // Восстанавливаем прокрутку страницы
   document.body.style.overflow = '';
+  
+  // Для мобильных устройств восстанавливаем позицию скролла
+  if (window.innerWidth <= 768 && modal.dataset.scrollY) {
+    const scrollY = modal.dataset.scrollY;
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+    
+    // Восстанавливаем позицию скролла
+    window.scrollTo(0, parseInt(scrollY));
+    
+    // Очищаем сохраненную позицию
+    delete modal.dataset.scrollY;
+  }
 }
 
 function getLabelInfo(labelText) {
@@ -555,22 +583,34 @@ function initLabelModal() {
   });
 }
 
+// Функция для обновления viewport height
+function updateViewportHeight() {
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
 // Глобальная функция для инициализации viewport height
 function initViewportHeight() {
-  const setVH = () => {
-    const vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-  };
-  
-  setVH();
+  updateViewportHeight();
   
   // Обновляем при изменении размера окна
-  window.addEventListener('resize', setVH);
+  window.addEventListener('resize', updateViewportHeight);
   
   // Обновляем при изменении ориентации
   window.addEventListener('orientationchange', () => {
-    setTimeout(setVH, 100);
+    setTimeout(updateViewportHeight, 100);
   });
+  
+  // Дополнительные обработчики для мобильных устройств
+  if (window.innerWidth <= 768) {
+    // Обновляем при появлении/скрытии виртуальной клавиатуры
+    window.addEventListener('resize', () => {
+      setTimeout(updateViewportHeight, 300);
+    });
+    
+    // Обновляем при изменении видимости страницы
+    document.addEventListener('visibilitychange', updateViewportHeight);
+  }
 }
 
 // Инициализация при загрузке страницы
