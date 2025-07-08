@@ -4,17 +4,18 @@
 <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <title>Product</title>
-  <script type="module" crossorigin src="/tgapp/assets/product-DoO_P7Q9.js"></script>
-  <link rel="modulepreload" crossorigin href="/tgapp/assets/products-data-K11yznnQ.js">
-  <link rel="stylesheet" crossorigin href="/tgapp/assets/products-data-BR6tC9Aw.css">
+  <script type="module" crossorigin src="/tgapp/assets/product-B_g_kxni.js"></script>
+  <link rel="modulepreload" crossorigin href="/tgapp/assets/products-data--MUGIqBM.js">
+  <link rel="stylesheet" crossorigin href="/tgapp/assets/products-data-BvjYAKpI.css">
 </head>
 
-<body>
+<body class="preload">
     <div class="product">
         <div class="product-cover">
             <div class="swiper">
@@ -83,6 +84,16 @@
         </div>
     </div>
     <button class="add-to-cart reset-Button">Купить</button>
+    
+    <script>
+      // Убираем preload класс и показываем контент после загрузки
+      document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          document.body.classList.remove('preload');
+          document.body.classList.add('loaded');
+        }, 100);
+      });
+    </script>
 </body>
 
 </html>

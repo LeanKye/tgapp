@@ -4,37 +4,40 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <title>App</title>
-  <script type="module" crossorigin src="/tgapp/assets/main-CcHRAcfG.js"></script>
-  <link rel="modulepreload" crossorigin href="/tgapp/assets/products-data-K11yznnQ.js">
-  <link rel="stylesheet" crossorigin href="/tgapp/assets/products-data-BR6tC9Aw.css">
+  <script type="module" crossorigin src="/tgapp/assets/main-BRZOpPge.js"></script>
+  <link rel="modulepreload" crossorigin href="/tgapp/assets/products-data--MUGIqBM.js">
+  <link rel="stylesheet" crossorigin href="/tgapp/assets/products-data-BvjYAKpI.css">
 </head>
 
-<body>
+<body class="preload">
   <div class="catalog">
-    <div class="search">
-      <div class="search-container">
-        <div class="input-container">
-          <div class="search-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+    <div class="header-container">
+      <div class="search">
+        <div class="search-container">
+          <div class="input-container">
+            <div class="search-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <input id="search-input" placeholder="Найти товар">
           </div>
-          <input id="search-input" placeholder="Найти товар">
+          <div class="search-dropdown" id="search-dropdown">
+            <!-- Здесь будут появляться предложения -->
+          </div>
         </div>
-        <div class="search-dropdown" id="search-dropdown">
-          <!-- Здесь будут появляться предложения -->
-        </div>
+        <button id="menu-button" class="menu-button reset-Button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
-      <button id="menu-button" class="input-container menu-button reset-Button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
     </div>
     <!-- Слайдер баннеров -->
     <div class="container">
@@ -87,25 +90,16 @@
     </div>
     <div>
       <div class="category-title">Подписка PS Plus</div>
-      <div class="button-group full-width-group period-buttons">
-        <input type="radio" name="period" id="period-1" value="period-1">
-        <label for="period-1">
-          <span>
-            1 Месяц
-          </span>
-        </label>
-        <input type="radio" name="period" id="period-2" value="period-2">
-        <label for="period-2">
-          <span>
-            2 Месяца
-          </span>
-        </label>
-        <input type="radio" name="period" id="period-3" value="period-3">
-        <label for="period-3">
-          <span>
-            3 Месяца
-          </span>
-        </label>
+      <div class="toggle-switches-container">
+        <div class="toggle-switches" id="ps-plus-switches">
+          <div class="toggle-switch-slider"></div>
+          <input type="radio" name="ps-plus-period" id="ps-plus-period-1" value="1-month" checked>
+          <label for="ps-plus-period-1">1 Месяц</label>
+          <input type="radio" name="ps-plus-period" id="ps-plus-period-2" value="2-months">
+          <label for="ps-plus-period-2">2 Месяца</label>
+          <input type="radio" name="ps-plus-period" id="ps-plus-period-3" value="3-months">
+          <label for="ps-plus-period-3">3 Месяца</label>
+        </div>
       </div>
       <div class="container product-sub">
         <img src="">
@@ -185,6 +179,16 @@
       <div class="menu-item">Антивирусы</div>
     </div>
   </div>
-</body>
+  <script>
+    // Убираем preload класс и показываем контент после загрузки
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.body.classList.remove('preload');
+        document.body.classList.add('loaded');
+      }, 100);
+      
 
+    });
+  </script>
+</body>
 </html>

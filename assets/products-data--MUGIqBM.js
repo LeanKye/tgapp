@@ -1,4 +1,65 @@
-(function(){const r=document.createElement("link").relList;if(r&&r.supports&&r.supports("modulepreload"))return;for(const e of document.querySelectorAll('link[rel="modulepreload"]'))t(e);new MutationObserver(e=>{for(const i of e)if(i.type==="childList")for(const a of i.addedNodes)a.tagName==="LINK"&&a.rel==="modulepreload"&&t(a)}).observe(document,{childList:!0,subtree:!0});function n(e){const i={};return e.integrity&&(i.integrity=e.integrity),e.referrerPolicy&&(i.referrerPolicy=e.referrerPolicy),e.crossOrigin==="use-credentials"?i.credentials="include":e.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function t(e){if(e.ep)return;e.ep=!0;const i=n(e);fetch(e.href,i)}})();const s={"adobe-creative-cloud":{id:"adobe-creative-cloud",title:"Adobe Creative Cloud",category:"Adobe",price:1e3,oldPrice:1500,discount:"-30%",priceUSDT:"на wallet 26.90 USDT",labels:["Гарантия","Лицензия","Нужен VPN"],labelColors:["orange","violet","blue"],images:["https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop&crop=center","https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center","https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600&h=400&fit=crop&crop=center"],variants:[{id:"variant-1",name:"Аккаунт"},{id:"variant-2",name:"Подписка"},{id:"variant-3",name:"Ключ"}],periods:[{id:"period-week",name:"Неделя",price:300},{id:"period-1",name:"1 Мес",price:1e3},{id:"period-3",name:"3 Мес",price:2500,discount:"Выгода 17%"},{id:"period-12",name:"12 Мес",price:8e3,discount:"Выгода 33%"}],editions:[{id:"edition-1",name:"Adobe Creative Cloud",price:1e3},{id:"edition-2",name:"Photoshop + Lightroom",price:1500},{id:"edition-3",name:"Deluxe",price:1990}],description:`Adobe Creative Cloud — это полный набор профессиональных приложений для творчества. 
+(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))t(i);new MutationObserver(i=>{for(const o of i)if(o.type==="childList")for(const a of o.addedNodes)a.tagName==="LINK"&&a.rel==="modulepreload"&&t(a)}).observe(document,{childList:!0,subtree:!0});function r(i){const o={};return i.integrity&&(o.integrity=i.integrity),i.referrerPolicy&&(o.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?o.credentials="include":i.crossOrigin==="anonymous"?o.credentials="omit":o.credentials="same-origin",o}function t(i){if(i.ep)return;i.ep=!0;const o=r(i);fetch(i.href,o)}})();class d{constructor(){this.tg=null,this.currentPage=this.detectCurrentPage(),this.init()}init(){window.Telegram?.WebApp?this.setupTelegramWebApp():window.addEventListener("load",()=>{setTimeout(()=>{this.setupTelegramWebApp()},100)})}setupTelegramWebApp(){this.tg=window.Telegram.WebApp,this.tg.ready(),this.tg.expand(),this.tg.disableVerticalSwipes(),this.tg.setHeaderColor("#000000"),this.setupUIBehavior(),this.updateTelegramHeader()}setupUIBehavior(){document.addEventListener("contextmenu",e=>{e.preventDefault()}),document.addEventListener("dragstart",e=>{e.preventDefault()}),document.addEventListener("selectstart",e=>{e.target.tagName!=="INPUT"&&e.target.tagName!=="TEXTAREA"&&e.preventDefault()})}detectCurrentPage(){const e=window.location.pathname;return new URLSearchParams(window.location.search),e.includes("category.html")?"categories":e.includes("product.html")?"product":"home"}updateTelegramHeader(){this.tg&&(this.currentPage==="home"?(this.tg.BackButton.hide(),this.tg.MainButton.hide()):(this.tg.MainButton.hide(),this.tg.BackButton.show(),this.tg.BackButton.offClick(),this.tg.BackButton.onClick(()=>{window.location.href="./"})))}}window.telegramWebApp=null;document.addEventListener("DOMContentLoaded",()=>{window.telegramWebApp=new d});class c{constructor(){this.reducedMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches,this.isMobile=this.detectMobile(),!(!this.isMobile||this.reducedMotion)&&this.init()}detectMobile(){return/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)||"ontouchstart"in window&&window.innerWidth<=1024}init(){this.addStyles(),this.setupScrollBehavior()}addStyles(){if(document.getElementById("bounce-scroll-styles"))return;const e=document.createElement("style");e.id="bounce-scroll-styles",e.textContent=`
+      /* Естественный bounce эффект для страниц */
+      html, body {
+        /* Включаем нативный bounce только для вертикального скролла */
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: auto;
+        /* Включаем плавный скролл на мобильных */
+        -webkit-overflow-scrolling: touch;
+        /* Оптимизируем производительность */
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+      }
+      
+      /* Для iOS - включаем momentum scrolling */
+      @supports (-webkit-overflow-scrolling: touch) {
+        html, body {
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-y: auto;
+        }
+      }
+      
+      /* Улучшенная производительность для bounce анимаций */
+      @media (max-width: 1024px) and (hover: none) {
+        body {
+          will-change: scroll-position;
+          transform-style: preserve-3d;
+          perspective: 1000px;
+          -webkit-perspective: 1000px;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
+        
+        /* Оптимизация для плавности */
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+      }
+      
+      /* Убираем системные эффекты только там где нужно */
+      .no-bounce {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: auto;
+      }
+      
+      /* Специальная обработка для модальных окон */
+      .modal-overlay {
+        overscroll-behavior: none;
+        -webkit-overflow-scrolling: auto;
+      }
+      
+      /* Исключаем конфликты с горизонтальными слайдерами */
+      .category-products-slider {
+        overscroll-behavior-x: contain;
+        touch-action: pan-x pan-y;
+      }
+      
+      .banner-slider {
+        overscroll-behavior-x: contain;
+        touch-action: pan-x;
+      }
+    `,document.head.appendChild(e)}setupScrollBehavior(){document.documentElement.classList.add("bounce-enabled"),document.body.classList.add("bounce-enabled"),this.setupModalBehavior(),this.optimizeTouchBehavior()}setupModalBehavior(){document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".modal-overlay").forEach(t=>{t.classList.add("no-bounce")})}),new MutationObserver(r=>{r.forEach(t=>{t.addedNodes.forEach(i=>{i.nodeType===1&&i.classList?.contains("modal-overlay")&&i.classList.add("no-bounce")})})}).observe(document.body,{childList:!0,subtree:!0})}optimizeTouchBehavior(){let e=0;document.addEventListener("touchstart",i=>{e=Date.now()},{passive:!0}),document.addEventListener("touchend",i=>{Date.now()-e<150},{passive:!0});let r=!1,t;document.addEventListener("scroll",()=>{r||(document.body.classList.add("is-scrolling"),r=!0),clearTimeout(t),t=setTimeout(()=>{document.body.classList.remove("is-scrolling"),r=!1},150)},{passive:!0})}disableBounce(e){e&&e.classList.add("no-bounce")}enableBounce(e){e&&e.classList.remove("no-bounce")}disablePageBounce(){document.documentElement.classList.add("no-bounce"),document.body.classList.add("no-bounce")}enablePageBounce(){document.documentElement.classList.remove("no-bounce"),document.body.classList.remove("no-bounce")}destroy(){const e=document.getElementById("bounce-scroll-styles");e&&e.remove(),document.documentElement.classList.remove("bounce-enabled"),document.body.classList.remove("bounce-enabled","is-scrolling")}}document.addEventListener("DOMContentLoaded",()=>{window.self===window.top&&(window.bounceScroll=new c)});window.BounceScroll=c;const s={"adobe-creative-cloud":{id:"adobe-creative-cloud",title:"Adobe Creative Cloud",category:"Adobe",price:1e3,oldPrice:1500,discount:"-30%",priceUSDT:"на wallet 26.90 USDT",labels:["Гарантия","Лицензия","Нужен VPN"],labelColors:["orange","violet","blue"],images:["https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop&crop=center","https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center","https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600&h=400&fit=crop&crop=center"],variants:[{id:"variant-1",name:"Аккаунт"},{id:"variant-2",name:"Подписка"},{id:"variant-3",name:"Ключ"}],periods:[{id:"period-week",name:"Неделя",price:300},{id:"period-1",name:"1 мес",price:1e3},{id:"period-3",name:"3 мес",price:2500,discount:"Выгода 17%"},{id:"period-12",name:"12 мес",price:8e3,discount:"Выгода 33%"}],editions:[{id:"edition-1",name:"Adobe Creative Cloud",price:1e3},{id:"edition-2",name:"Photoshop + Lightroom",price:1500},{id:"edition-3",name:"Deluxe",price:1990}],description:`Adobe Creative Cloud — это полный набор профессиональных приложений для творчества. 
     Включает Photoshop, Illustrator, InDesign, After Effects, Premiere Pro и многие другие инструменты 
     для дизайна, фотографии, видео и веб-разработки. Подписка дает доступ ко всем приложениям, 
     облачному хранилищу и дополнительным сервисам Adobe.`,systemRequirements:`
@@ -175,4 +236,4 @@
       • ОЗУ: 2 ГБ<br>
       • Место на диске: 500 МБ<br>
       • Интернет-соединение для обновлений
-         `}};function c(o){return s[o]||null}function p(){return Object.values(s)}function d(o){return Object.values(s).filter(r=>r.category===o)}function m(o,r="₽"){const n=o.toString();let t="";for(let e=n.length-1,i=0;e>=0;e--,i++)i>0&&i%3===0&&(t=" "+t),t=n[e]+t;return`<span class="formatted-price">${t} <span class="currency-separator">${r}</span></span>`}function l(o,r="₽"){const n=o.toString();let t="";for(let e=n.length-1,i=0;e>=0;e--,i++)i>0&&i%3===0&&(t=" "+t),t=n[e]+t;return`${t} ${r}`}function h(o,r="₽",n=!1){const t=o.toString();let e="";for(let i=t.length-1,a=0;i>=0;i--,a++)a>0&&a%3===0&&(e="&thinsp;"+e),e=t[i]+e;return n?`<span style="text-decoration: line-through;">${e}</span>&thinsp;<span style="font-size: 0.8em;">${r}</span>`:`${e}&thinsp;<span style="font-size: 0.8em;">${r}</span>`}const u={Adobe:{name:"Adobe",description:"Профессиональные инструменты для дизайна и творчества",image:"https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop&crop=center"},Нейросети:{name:"Нейросети",description:"Искусственный интеллект и нейронные сети",image:"https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop&crop=center"},Игры:{name:"Игры",description:"Лучшие игры для PC и консолей",image:"https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&h=300&fit=crop&crop=center"},Подписки:{name:"Подписки",description:"Подписки на сервисы и программы",image:"https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop&crop=center"},Антивирусы:{name:"Антивирусы",description:"Защита компьютера и данных",image:"https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop&crop=center"}};export{d as a,m as b,u as c,c as d,l as e,h as f,p as g};
+         `}};function p(n){return s[n]||null}function l(){return Object.values(s)}function m(n){return Object.values(s).filter(e=>e.category===n)}function u(n,e="₽"){const r=n.toString();let t="";for(let i=r.length-1,o=0;i>=0;i--,o++)o>0&&o%3===0&&(t=" "+t),t=r[i]+t;return`<span class="formatted-price">${t}<span class="currency-separator">${e}</span></span>`}function h(n,e="₽"){const r=n.toString();let t="";for(let i=r.length-1,o=0;i>=0;i--,o++)o>0&&o%3===0&&(t=" "+t),t=r[i]+t;return`${t} ${e}`}function b(n,e="₽",r=!1){const t=n.toString();let i="";for(let o=t.length-1,a=0;o>=0;o--,a++)a>0&&a%3===0&&(i=" "+i),i=t[o]+i;return r?`<span class="formatted-price"><span style="text-decoration: line-through;">${i}</span><span class="currency-separator">${e}</span></span>`:`<span class="formatted-price">${i}<span class="currency-separator">${e}</span></span>`}const g={Adobe:{name:"Adobe",description:"Профессиональные инструменты для дизайна и творчества",image:"https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop&crop=center"},Нейросети:{name:"Нейросети",description:"Искусственный интеллект и нейронные сети",image:"https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop&crop=center"},Игры:{name:"Игры",description:"Лучшие игры для PC и консолей",image:"https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&h=300&fit=crop&crop=center"},Подписки:{name:"Подписки",description:"Подписки на сервисы и программы",image:"https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop&crop=center"},Антивирусы:{name:"Антивирусы",description:"Защита компьютера и данных",image:"https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop&crop=center"}};export{m as a,u as b,g as c,p as d,h as e,b as f,l as g};
