@@ -879,10 +879,9 @@ body:has(.product)::before {
 
 /* Специальные стили для кнопок плана */
 .edition-group .button-group {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
-  width: 100%;
   justify-content: center;
 }
 
@@ -942,7 +941,7 @@ body:has(.product)::before {
 
 .button-group input[name="edition"] + label {
   display: flex;
-  width: 100%;
+  width: 140px;
   height: 64px;
   justify-content: center;
   align-items: center;
@@ -1040,10 +1039,15 @@ body:has(.product)::before {
   cursor: pointer;
   transition: color 0.3s ease;
   position: relative;
+  font-size: 18px;
+  font-weight: 500;
 }
 
-.tab:hover {
-  color: rgba(255, 255, 255, 0.7);
+/* Hover эффект только для устройств с мышью (не мобильные) */
+@media (hover: hover) {
+  .tab:hover {
+    color: rgba(255, 255, 255, 0.7);
+  }
 }
 
 .tab-selected {
@@ -1080,18 +1084,18 @@ body:has(.product)::before {
   }
   
   .tab {
-    font-size: 15px;
+    font-size: 17px;
     padding-block: 6px;
   }
   
   .tabs[data-active="0"]::after {
-    width: 72px;
+    width: 82px;
     transform: translateX(0);
   }
   
   .tabs[data-active="1"]::after {
-    width: 175px;
-    transform: translateX(84px);
+    width: 185px;
+    transform: translateX(94px);
   }
 }
 
@@ -1101,18 +1105,18 @@ body:has(.product)::before {
   }
   
   .tab {
-    font-size: 14px;
+    font-size: 16px;
     padding-block: 6px;
   }
   
   .tabs[data-active="0"]::after {
-    width: 65px;
+    width: 75px;
     transform: translateX(0);
   }
   
   .tabs[data-active="1"]::after {
-    width: 165px;
-    transform: translateX(73px);
+    width: 175px;
+    transform: translateX(83px);
   }
 }
 
@@ -1933,6 +1937,7 @@ body:has(.product)::before {
   margin-top: 12px;
   padding-top: 8px;
   padding-bottom: 4px;
+  justify-content: flex-start;
 }
 
 .period-buttons::-webkit-scrollbar {
@@ -1940,17 +1945,17 @@ body:has(.product)::before {
 }
 
 .period-buttons label {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 auto;
+  min-width: 80px;
   white-space: nowrap;
   position: relative;
 }
 
 .period-buttons span {
   font-size: clamp(13px, 2.5vw, 16px);
-  padding: clamp(10px, 2.5vw, 14px) clamp(8px, 2vw, 16px);
+  padding: clamp(10px, 2.5vw, 14px) clamp(16px, 2vw, 20px);
   text-align: center;
-  width: 100%;
+  width: auto;
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2044,6 +2049,10 @@ body:has(.product)::before {
     padding-top: 6px;
   }
   
+  .period-buttons label {
+    min-width: 70px;
+  }
+  
   /* Уменьшаем отступ для групп с плашками на маленьких экранах */
   .period-group,
   .edition-group {
@@ -2052,7 +2061,7 @@ body:has(.product)::before {
   
   .period-buttons span {
     font-size: 12px;
-    padding: 8px 4px;
+    padding: 8px 12px;
     min-height: 36px;
   }
   
@@ -2068,10 +2077,14 @@ body:has(.product)::before {
   .button-group input[name="edition"] + label {
     height: 56px;
     padding: 6px;
+    width: 110px;
   }
 
   .edition-group .button-group {
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
   }
   
   .discount-badge {
@@ -2117,6 +2130,10 @@ body:has(.product)::before {
     padding-top: 8px;
   }
   
+  .period-buttons label {
+    min-width: 85px;
+  }
+  
   /* Стили для групп с плашками на планшетах */
   .period-group,
   .edition-group {
@@ -2125,7 +2142,7 @@ body:has(.product)::before {
   
   .period-buttons span {
     font-size: 14px;
-    padding: 10px 8px;
+    padding: 10px 16px;
     min-height: 42px;
   }
   
@@ -2140,6 +2157,7 @@ body:has(.product)::before {
 
   .button-group input[name="edition"] + label {
     height: 60px;
+    width: 125px;
   }
   
   .discount-badge {
@@ -2201,6 +2219,10 @@ body:has(.product)::before {
     padding-top: 10px;
   }
   
+  .period-buttons label {
+    min-width: 100px;
+  }
+  
   /* Стили для групп с плашками на десктопе */
   .period-group,
   .edition-group {
@@ -2209,9 +2231,16 @@ body:has(.product)::before {
 
   /* Кнопки плана на десктопе */
   .edition-group .button-group {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
     max-width: 600px;
     margin: 0 auto;
+  }
+  
+  .button-group input[name="edition"] + label {
+    width: 155px;
   }
   
   /* Отступы между группами как на макете на десктопе */
