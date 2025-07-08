@@ -1054,7 +1054,7 @@ body:has(.product)::before {
 }
 
 .tabs[data-active="1"]::after {
-  width: 185px; /* Ширина текста "Системные требования" */
+  width: 200px; /* Ширина текста "Системные требования" */
   transform: translateX(96px); /* Отступ для первой вкладки + gap */
 }
 
@@ -1075,7 +1075,7 @@ body:has(.product)::before {
   }
   
   .tabs[data-active="1"]::after {
-    width: 185px;
+    width: 200px;
     transform: translateX(94px);
   }
 }
@@ -1096,7 +1096,7 @@ body:has(.product)::before {
   }
   
   .tabs[data-active="1"]::after {
-    width: 175px;
+    width: 200px;
     transform: translateX(83px);
   }
 }
