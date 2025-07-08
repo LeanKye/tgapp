@@ -499,8 +499,8 @@ function openModal(labelText) {
   title.textContent = labelInfo.title;
   text.textContent = labelInfo.description;
 
-  // Блокируем прокрутку страницы
-  document.body.style.overflow = 'hidden';
+  // Блокируем прокрутку страницы и фиксируем позицию
+  document.body.classList.add('modal-open');
 
   // Показываем модальное окно
   modal.classList.add('show');
@@ -510,8 +510,8 @@ function closeModal() {
   const modal = document.getElementById('label-modal');
   if (!modal) return;
 
-  // Убираем блокировку прокрутки
-  document.body.style.overflow = '';
+  // Убираем блокировку прокрутки и фиксацию позиции
+  document.body.classList.remove('modal-open');
 
   // Скрываем модальное окно
   modal.classList.remove('show');

@@ -2397,11 +2397,28 @@ body:has(.product)::before {
   opacity: 0;
   visibility: hidden;
   transition: all 0.3s ease;
+  /* Обеспечиваем правильное позиционирование в WebView */
+  height: 100vh;
+  height: 100dvh; /* Динамическая высота viewport для мобильных */
+  width: 100vw;
+  overflow: hidden;
+  /* Предотвращаем скролл фона */
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay.show {
   opacity: 1;
   visibility: visible;
+}
+
+/* Предотвращаем скролл фона при открытом модальном окне */
+body.modal-open {
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
 }
 
 .modal-content {
@@ -2413,10 +2430,17 @@ body:has(.product)::before {
   border-radius: 20px 20px 0 0;
   padding: 24px;
   max-height: 70vh;
+  max-height: 70dvh; /* Динамическая высота viewport для мобильных */
   overflow-y: auto;
   transform: translateY(100%);
   transition: transform 0.3s ease;
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+  /* Обеспечиваем правильное позиционирование внизу экрана */
+  margin-bottom: 0;
+  /* Учитываем безопасную зону iOS */
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  /* Плавная прокрутка на мобильных */
+  -webkit-overflow-scrolling: touch;
 }
 
 .modal-overlay.show .modal-content {
@@ -2497,9 +2521,28 @@ body:has(.product)::before {
 
 /* Адаптация для мобильных */
 @media (max-width: 768px) {
+  .modal-overlay {
+    /* Усиливаем фиксацию позиции для мобильных */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    height: 100vh !important;
+    width: 100vw !important;
+  }
+  
   .modal-content {
     padding: 20px;
     max-height: 80vh;
+    max-height: 80dvh;
+    /* Дополнительная фиксация внизу экрана */
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
   }
   
   .modal-icon {
