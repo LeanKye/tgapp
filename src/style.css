@@ -155,44 +155,6 @@ body {
   -ms-text-size-adjust: 100%;
 }
 
-/* Обработка безопасной зоны iOS для полноэкранного режима */
-@supports (padding-top: env(safe-area-inset-top)) {
-  /* Растягиваем body на всю высоту включая безопасные зоны */
-  body {
-    padding-top: env(safe-area-inset-top);
-    min-height: 100vh;
-    /* Компенсируем padding чтобы контент начинался с нужного места */
-    box-sizing: border-box;
-  }
-
-  /* Фоновый элемент для заполнения области статус-бара */
-  body::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: env(safe-area-inset-top);
-    background-color: #1f1f1f; /* Цвет фона header-container */
-    z-index: 1000;
-  }
-
-  /* Корректируем позиционирование header-container */
-  .header-container {
-    position: relative;
-    z-index: 1001;
-    /* Убираем отступ сверху так как он уже есть у body */
-    margin-top: 0;
-  }
-
-  /* Корректируем позиционирование меню с учетом safe area */
-  .menu {
-    padding-top: calc(60px + env(safe-area-inset-top));
-  }
-
-
-}
-
 /* Специальные стили для Telegram Web App на iOS */
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari */
