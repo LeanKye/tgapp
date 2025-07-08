@@ -370,6 +370,11 @@ body:has(.product)::before {
   border-radius: 16px;
 }
 
+/* Специальное правило для плашки инструкций */
+.product .container.instruction {
+  border-radius: 16px 16px 0 0;
+}
+
 /* Обеспечиваем, что блок с табами перекрывает блок инструкций */
 .container:last-of-type {
   z-index: 3;
@@ -381,8 +386,8 @@ body:has(.product)::before {
   height: 50px;
   position: relative;
   z-index: 1;
-  /* Убираем нижние закругленные углы, так как они все равно будут скрыты */
-  border-radius: 0;
+  /* Оставляем только верхние закругленные углы */
+  border-radius: 16px 16px 0 0;
   /* Добавляем flex для лучшего выравнивания контента */
   display: flex;
   flex-direction: column;
