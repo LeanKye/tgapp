@@ -2441,6 +2441,10 @@ body.modal-open {
   padding-bottom: calc(24px + env(safe-area-inset-bottom));
   /* Плавная прокрутка на мобильных */
   -webkit-overflow-scrolling: touch;
+  /* Исправляем проблему с выходом за край экрана */
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100vw;
 }
 
 .modal-overlay.show .modal-content {
@@ -2543,6 +2547,9 @@ body.modal-open {
     right: 0 !important;
     width: 100% !important;
     margin: 0 !important;
+    /* Исправляем проблему с выходом за край */
+    box-sizing: border-box !important;
+    max-width: 100vw !important;
   }
   
   .modal-icon {
