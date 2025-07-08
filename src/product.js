@@ -448,12 +448,35 @@ function openLabelModal(labelText) {
   modalIcon.textContent = labelInfo.icon;
   modalIcon.className = `modal-icon ${labelInfo.iconClass}`;
   
-  // Блокируем прокрутку страницы
+  // Сохраняем текущую позицию прокрутки
+  const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+  
+  // Блокируем прокрутку страницы агрессивно
   document.body.style.overflow = 'hidden';
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${scrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+  
+  // Сохраняем позицию для восстановления
+  modal.setAttribute('data-scroll-y', scrollY);
+  
+  // Принудительно фиксируем позицию модального окна
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.right = '0';
+  modal.style.bottom = '0';
+  modal.style.zIndex = '10000';
   
   // Показываем модальное окно с небольшой задержкой для плавности
   setTimeout(() => {
     modal.classList.add('show');
+    // Принудительно исправляем позицию после показа
+    setTimeout(() => {
+      fixModalPosition();
+    }, 10);
   }, 5);
 }
 
@@ -466,7 +489,22 @@ function closeLabelModal() {
   
   // Восстанавливаем прокрутку страницы после анимации
   setTimeout(() => {
+    // Получаем сохраненную позицию прокрутки
+    const scrollY = parseInt(modal.getAttribute('data-scroll-y') || '0');
+    
+    // Восстанавливаем стили body
     document.body.style.overflow = '';
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    
+    // Восстанавливаем позицию прокрутки
+    if (scrollY > 0) {
+      window.scrollTo(0, scrollY);
+    }
+    
     modal.classList.remove('hide');
   }, 100);
 }
@@ -536,6 +574,18 @@ function createModal() {
   modalElement.innerHTML = modalHTML;
   const modal = modalElement.firstElementChild;
   
+  // Принудительно устанавливаем начальные стили для надежности
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.right = '0';
+  modal.style.bottom = '0';
+  modal.style.width = '100%';
+  modal.style.height = '100%';
+  modal.style.zIndex = '10000';
+  modal.style.margin = '0';
+  modal.style.padding = '0';
+  
   // Добавляем в body (не в documentElement)
   document.body.appendChild(modal);
   
@@ -566,6 +616,26 @@ function createModal() {
   window.addEventListener('orientationchange', handleResize);
 }
 
+// Функция для принудительного исправления позиции модального окна
+function fixModalPosition() {
+  const modal = document.getElementById('label-modal');
+  if (!modal || !modal.classList.contains('show')) return;
+  
+  // Принудительно исправляем позицию
+  modal.style.position = 'fixed';
+  modal.style.top = '0';
+  modal.style.left = '0';
+  modal.style.right = '0';
+  modal.style.bottom = '0';
+  modal.style.width = '100%';
+  modal.style.height = '100%';
+  modal.style.zIndex = '10000';
+  modal.style.transform = 'none';
+  modal.style.webkitTransform = 'none';
+  modal.style.margin = '0';
+  modal.style.padding = '0';
+}
+
 // Инициализация модального окна
 function initLabelModal() {
   // Создаем модальное окно динамически
@@ -589,6 +659,30 @@ function initLabelModal() {
     if (e.key === 'Escape' && modal.classList.contains('show')) {
       closeLabelModal();
     }
+  });
+  
+  // Принудительно исправляем позицию модального окна при прокрутке или изменении размера
+  window.addEventListener('scroll', fixModalPosition);
+  window.addEventListener('resize', fixModalPosition);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(fixModalPosition, 100);
+  });
+  
+  // Дополнительная защита от "висячих" модальных окон
+  const modalObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+        const modal = mutation.target;
+        if (modal.classList.contains('show')) {
+          setTimeout(fixModalPosition, 50);
+        }
+      }
+    });
+  });
+  
+  modalObserver.observe(modal, {
+    attributes: true,
+    attributeFilter: ['class']
   });
 }
 
