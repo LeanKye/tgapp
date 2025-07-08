@@ -572,6 +572,33 @@ function fixButtonPositionOnMobile() {
   }
 }
 
+// === FIXED BUTTON MOBILE COMPATIBILITY ================================
+/**
+ * Проверяем, корректно ли работает position: fixed в текущем WebView.
+ * В некоторых iOS WebView при наличии transform у предков fixed «отвязывается».
+ * Если fixed работает – добавляем класс .fixed-ok к <body>, иначе убираем.
+ */
+function testFixedSupport() {
+  const probe = document.createElement('div');
+  probe.style.position = 'fixed';
+  probe.style.top = '0';
+  document.body.appendChild(probe);
+  const supported = probe.getBoundingClientRect().top === 0;
+  document.body.removeChild(probe);
+
+  if (supported) {
+    document.body.classList.add('fixed-ok');
+  } else {
+    document.body.classList.remove('fixed-ok');
+  }
+}
+
+// Проверяем после загрузки, резайза и смены ориентации
+document.addEventListener('DOMContentLoaded', testFixedSupport);
+window.addEventListener('resize', testFixedSupport);
+window.addEventListener('orientationchange', () => setTimeout(testFixedSupport, 100));
+// === /FIXED BUTTON MOBILE COMPATIBILITY ===============================
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   const productId = getUrlParameter('product');
