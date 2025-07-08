@@ -1,5 +1,5 @@
 import './style.css'
-import { getAllProducts, categoryData, formatPrice, formatPriceCard } from './products-data.js'
+import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
 
 const menuButton = document.getElementById('menu-button');
 const closeMenuButton = document.getElementById('close-menu-button')
@@ -144,8 +144,8 @@ function initMenuNavigation() {
 class BannerSlider {
   constructor() {
     this.slider = document.getElementById('bannerSlider');
-    this.originalBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
-    this.totalOriginalBanners = this.originalBanners.length;
+    this.bannerData = bannerData;
+    this.totalOriginalBanners = this.bannerData.length;
     this.currentIndex = 1; // Начинаем с 1, так как 0 будет клоном последнего элемента
     this.gap = 0;
     this.isTransitioning = false;
@@ -166,7 +166,10 @@ class BannerSlider {
   }
 
   init() {
-    // Создаем циклические клоны
+    // Сначала рендерим баннеры из данных
+    this.renderBanners();
+    
+    // Затем создаем циклические клоны
     this.createCyclicClones();
     
     // Получаем обновленный список всех баннеров (включая клоны)
@@ -178,8 +181,23 @@ class BannerSlider {
     // Добавляем обработчики событий только для оригинальных баннеров
     this.originalBanners.forEach((banner, index) => {
       banner.addEventListener('click', () => {
+        this.handleBannerClick(index);
         this.setActive(index + 1, true); // +1 потому что первый клон сдвигает индексы, true - пользовательское взаимодействие
       });
+    });
+
+    // Добавляем обработчики кликов для клонированных баннеров
+    this.allBanners.forEach((banner, index) => {
+      if (banner.dataset.isClone === 'true') {
+        banner.addEventListener('click', () => {
+          // Для клонов определяем оригинальный индекс
+          const originalIndex = this.getOriginalIndexFromClone(index);
+          if (originalIndex !== -1) {
+            this.handleBannerClick(originalIndex);
+            this.setActive(index, true);
+          }
+        });
+      }
     });
 
     // Автоматическое переключение каждые 5 секунд
@@ -194,15 +212,89 @@ class BannerSlider {
     this.initTouchEvents();
   }
 
+  // Рендеринг баннеров из данных
+  renderBanners() {
+    // Очищаем слайдер
+    this.slider.innerHTML = '';
+    
+    // Создаем баннеры из данных
+    this.bannerData.forEach((banner, index) => {
+      const bannerElement = this.createBannerElement(banner, index);
+      this.slider.appendChild(bannerElement);
+    });
+    
+    // Сохраняем список оригинальных баннеров
+    this.originalBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
+  }
+
+  // Создание элемента баннера
+  createBannerElement(banner, index) {
+    const bannerItem = document.createElement('div');
+    bannerItem.className = `banner-item ${banner.active ? 'active' : ''}`;
+    bannerItem.dataset.bannerId = banner.id;
+    bannerItem.dataset.bannerIndex = index;
+    
+    // Устанавливаем градиент как фон
+    bannerItem.style.background = banner.gradient;
+    
+    bannerItem.innerHTML = `
+      <div class="banner-content">
+        <h3>${banner.title}</h3>
+        <p>${banner.subtitle}</p>
+      </div>
+    `;
+    
+    return bannerItem;
+  }
+
+  // Обработка клика по баннеру
+  handleBannerClick(index) {
+    const banner = this.bannerData[index];
+    if (!banner) return;
+    
+    // Выполняем действие баннера
+    switch (banner.action) {
+      case 'category':
+        window.location.href = `category.html?category=${encodeURIComponent(banner.actionParams.category)}`;
+        break;
+      case 'product':
+        window.location.href = `product.html?product=${banner.actionParams.productId}`;
+        break;
+      case 'url':
+        window.location.href = banner.actionParams.url;
+        break;
+      default:
+        console.log('Неизвестное действие баннера:', banner.action);
+    }
+  }
+
+  // Получение оригинального индекса для клонированного баннера
+  getOriginalIndexFromClone(cloneIndex) {
+    // Первый элемент (индекс 0) - это клон последнего баннера
+    if (cloneIndex === 0) {
+      return this.totalOriginalBanners - 1;
+    }
+    
+    // Последний элемент - это клон первого баннера
+    if (cloneIndex === this.allBanners.length - 1) {
+      return 0;
+    }
+    
+    // Для остальных элементов вычисляем индекс (учитываем, что первый клон сдвигает индексы)
+    return cloneIndex - 1;
+  }
+
   createCyclicClones() {
     // Клонируем последний элемент и вставляем в начало
     const lastClone = this.originalBanners[this.totalOriginalBanners - 1].cloneNode(true);
     lastClone.classList.remove('active');
+    lastClone.dataset.isClone = 'true';
     this.slider.insertBefore(lastClone, this.slider.firstChild);
     
     // Клонируем первый элемент и добавляем в конец
     const firstClone = this.originalBanners[0].cloneNode(true);
     firstClone.classList.remove('active');
+    firstClone.dataset.isClone = 'true';
     this.slider.appendChild(firstClone);
   }
 

@@ -1422,7 +1422,7 @@ body:has(.product)::before {
   max-width: 350px;
   height: 145px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #29A5FF, #4FC3F7);
+  /* Фон теперь задается динамически через JavaScript */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1449,10 +1449,10 @@ body:has(.product)::before {
 }
 
 .banner-item.active {
-  background: linear-gradient(135deg, #FF6B35, #F7931E);
+  /* Фон для активного баннера также задается динамически через JavaScript */
   transform: scale(1);
   z-index: 2;
-  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
 .banner-item.active .banner-content {

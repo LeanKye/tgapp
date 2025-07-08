@@ -994,6 +994,50 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
+// Данные баннеров для главной страницы
+export const bannerData = [
+  {
+    id: 'banner-1',
+    title: 'Скидка 50%',
+    subtitle: 'На все игры PlayStation',
+    category: 'Игры',
+    action: 'category',
+    actionParams: { category: 'Игры' },
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    active: true // Первый баннер активен по умолчанию
+  },
+  {
+    id: 'banner-2',
+    title: 'Новинки',
+    subtitle: 'Лучшие игры месяца',
+    category: 'Игры',
+    action: 'category',
+    actionParams: { category: 'Игры' },
+    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    active: false
+  },
+  {
+    id: 'banner-3',
+    title: 'Подписки',
+    subtitle: 'Выгодные предложения',
+    category: 'Подписки',
+    action: 'category',
+    actionParams: { category: 'Подписки' },
+    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    active: false
+  },
+  {
+    id: 'banner-4',
+    title: 'Акция',
+    subtitle: 'Ограниченное время',
+    category: 'Adobe',
+    action: 'category',
+    actionParams: { category: 'Adobe' },
+    gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    active: false
+  }
+];
+
 // Данные категорий с изображениями и описаниями
 export const categoryData = {
   'Adobe': {
