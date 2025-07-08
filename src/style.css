@@ -2475,6 +2475,11 @@ body.modal-open {
   left: 0;
 }
 
+/* Скрываем кнопку "Купить" при открытом модальном окне */
+body.modal-open .add-to-cart {
+  display: none;
+}
+
 .modal-content {
   position: absolute;
   bottom: 0;
