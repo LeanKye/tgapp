@@ -79,7 +79,11 @@ class BounceScroll {
       }
       
       /* Исключаем конфликты с горизонтальными слайдерами */
-      .category-products-slider,
+      .category-products-slider {
+        overscroll-behavior-x: contain;
+        touch-action: pan-x pan-y;
+      }
+      
       .banner-slider {
         overscroll-behavior-x: contain;
         touch-action: pan-x;

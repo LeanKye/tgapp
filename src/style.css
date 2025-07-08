@@ -58,7 +58,11 @@ input, textarea {
 }
 
 /* Для горизонтального скролла - с естественным bounce */
-.category-products-slider,
+.category-products-slider {
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
+}
+
 .banner-slider {
   touch-action: pan-x;
   overscroll-behavior-x: contain;
@@ -1905,7 +1909,6 @@ body:has(.product)::before {
   overflow-x: auto;
   gap: clamp(8px, 1.5vw, 14px);
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y;
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* Internet Explorer 10+ */
   position: relative;
@@ -1917,8 +1920,6 @@ body:has(.product)::before {
   clip-path: inset(0 0 0 0);
   /* Ограничиваем прокрутку до последнего элемента */
   padding-right: 16px; /* Отступ как у контейнера */
-  /* Улучшенное поведение скролла */
-  overscroll-behavior-x: contain;
 }
 
 /* Псевдо-элемент для четкого ограничения прокрутки */
