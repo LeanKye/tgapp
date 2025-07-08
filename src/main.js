@@ -227,8 +227,8 @@ class BannerSlider {
     const originalIndex = index % this.totalOriginalBanners;
     bannerItem.dataset.originalIndex = originalIndex;
     
-    // Устанавливаем градиент как фон
-    bannerItem.style.background = banner.gradient;
+    // Устанавливаем цвет фона
+    bannerItem.style.backgroundColor = banner.backgroundColor;
     
     bannerItem.innerHTML = `
       <div class="banner-content">

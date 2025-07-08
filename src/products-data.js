@@ -998,22 +998,22 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
 export const bannerData = [
   {
     id: 'banner-1',
-    title: 'Скидка 50%',
-    subtitle: 'На все игры PlayStation',
+    title: 'Скидки до 70%',
+    subtitle: 'На популярные товары',
     category: 'Игры',
     action: 'category',
     actionParams: { category: 'Игры' },
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    backgroundColor: '#6366f1',
     active: true // Первый баннер активен по умолчанию
   },
   {
     id: 'banner-2',
-    title: 'Новинки',
-    subtitle: 'Лучшие игры месяца',
+    title: 'Хиты продаж',
+    subtitle: 'Самые покупаемые товары',
     category: 'Игры',
     action: 'category',
     actionParams: { category: 'Игры' },
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    backgroundColor: '#ef4444',
     active: false
   },
   {
@@ -1023,17 +1023,17 @@ export const bannerData = [
     category: 'Подписки',
     action: 'category',
     actionParams: { category: 'Подписки' },
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    backgroundColor: '#06b6d4',
     active: false
   },
   {
     id: 'banner-4',
-    title: 'Акция',
+    title: 'Специальное предложение',
     subtitle: 'Ограниченное время',
     category: 'Adobe',
     action: 'category',
     actionParams: { category: 'Adobe' },
-    gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    backgroundColor: '#f59e0b',
     active: false
   }
 ];
