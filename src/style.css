@@ -1818,7 +1818,7 @@ body:has(.product)::before {
 
 .period-buttons label {
   flex: 0 0 auto;
-  min-width: 120px; /* Увеличиваем ширину кнопок */
+  min-width: 100px; /* Оптимальная ширина кнопок */
   white-space: nowrap;
   position: relative;
 }
@@ -2004,7 +2004,7 @@ body:has(.product)::before {
   }
   
   .period-buttons label {
-    min-width: 100px;
+    min-width: 85px;
   }
   
   .period-group,
@@ -2119,7 +2119,7 @@ body:has(.product)::before {
   }
   
   .period-buttons label {
-    min-width: 110px;
+    min-width: 95px;
   }
   
   .period-group,
@@ -2201,7 +2201,7 @@ body:has(.product)::before {
   }
   
   .period-buttons label {
-    min-width: 140px;
+    min-width: 120px;
   }
   
   .period-group,
