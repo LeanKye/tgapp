@@ -887,8 +887,8 @@ body:has(.product)::before {
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 4px;
-  /* Обеспечиваем вертикальный скролл страницы */
-  touch-action: pan-y;
+  /* Обеспечиваем горизонтальный и вертикальный скролл */
+  touch-action: pan-x pan-y;
 }
 
 .edition-group .button-group::-webkit-scrollbar {
@@ -1805,8 +1805,8 @@ body:has(.product)::before {
   padding-top: 8px;
   padding-bottom: 4px;
   justify-content: flex-start;
-  /* Обеспечиваем вертикальный скролл страницы */
-  touch-action: pan-y;
+  /* Обеспечиваем горизонтальный и вертикальный скролл */
+  touch-action: pan-x pan-y;
 }
 
 .period-buttons::-webkit-scrollbar {
@@ -2040,7 +2040,7 @@ body:has(.product)::before {
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding-bottom: 4px;
-    touch-action: pan-y;
+    touch-action: pan-x pan-y;
   }
   
   .discount-badge {
@@ -2219,7 +2219,7 @@ body:has(.product)::before {
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding-bottom: 4px;
-    touch-action: pan-y;
+    touch-action: pan-x pan-y;
   }
   
   .edition-group .button-group::-webkit-scrollbar {
