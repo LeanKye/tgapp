@@ -878,9 +878,21 @@ body:has(.product)::before {
 /* Специальные стили для кнопок плана */
 .edition-group .button-group {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  justify-content: center;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
+  /* Обеспечиваем вертикальный скролл страницы */
+  touch-action: pan-y;
+}
+
+.edition-group .button-group::-webkit-scrollbar {
+  display: none;
 }
 
 /* Единый верхний отступ для всех групп кнопок */
@@ -950,6 +962,7 @@ body:has(.product)::before {
   transition: border-color 0.2s ease;
   overflow: hidden;
   box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .button-group input[name="edition"] + label > div {
@@ -1784,6 +1797,7 @@ body:has(.product)::before {
   flex-wrap: nowrap;
   gap: clamp(6px, 1.5vw, 12px);
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -1791,6 +1805,8 @@ body:has(.product)::before {
   padding-top: 8px;
   padding-bottom: 4px;
   justify-content: flex-start;
+  /* Обеспечиваем вертикальный скролл страницы */
+  touch-action: pan-y;
 }
 
 .period-buttons::-webkit-scrollbar {
@@ -1799,7 +1815,7 @@ body:has(.product)::before {
 
 .period-buttons label {
   flex: 0 0 auto;
-  min-width: 80px;
+  min-width: 120px; /* Увеличиваем ширину кнопок */
   white-space: nowrap;
   position: relative;
 }
@@ -1985,7 +2001,7 @@ body:has(.product)::before {
   }
   
   .period-buttons label {
-    min-width: 70px;
+    min-width: 100px;
   }
   
   .period-group,
@@ -2015,9 +2031,16 @@ body:has(.product)::before {
 
   .edition-group .button-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+    touch-action: pan-y;
   }
   
   .discount-badge {
@@ -2093,7 +2116,7 @@ body:has(.product)::before {
   }
   
   .period-buttons label {
-    min-width: 85px;
+    min-width: 110px;
   }
   
   .period-group,
@@ -2175,7 +2198,7 @@ body:has(.product)::before {
   }
   
   .period-buttons label {
-    min-width: 100px;
+    min-width: 140px;
   }
   
   .period-group,
@@ -2185,11 +2208,22 @@ body:has(.product)::before {
 
   .edition-group .button-group {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 8px;
-    justify-content: center;
-    max-width: 600px;
-    margin: 0 auto;
+    justify-content: flex-start;
+    max-width: 100%;
+    margin: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+    touch-action: pan-y;
+  }
+  
+  .edition-group .button-group::-webkit-scrollbar {
+    display: none;
   }
   
   .button-group input[name="edition"] + label {
