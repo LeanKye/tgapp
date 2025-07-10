@@ -74,7 +74,7 @@ class BounceScroll {
       
       .banner-slider {
         overscroll-behavior-x: contain;
-        touch-action: pan-x;
+        touch-action: pan-x pan-y;
       }
     `;
     document.head.appendChild(style);

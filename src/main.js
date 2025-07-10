@@ -439,7 +439,10 @@ class BannerSlider {
         const deltaX = Math.abs(touch.clientX - this.touchStartX);
         const deltaY = Math.abs(touch.clientY - this.touchStartY);
         
-        if (deltaX > deltaY && deltaX > 20 && deltaY < 10) {
+        // Более толерантное условие - блокируем только явно горизонтальные свайпы
+        const isDefinitelyHorizontal = deltaX > 30 && deltaX > deltaY * 2 && deltaY < 20;
+        
+        if (isDefinitelyHorizontal) {
           e.preventDefault();
         }
       }, { passive: false });
