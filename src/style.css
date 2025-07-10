@@ -318,6 +318,12 @@ body:has(.product)::before {
   overflow: hidden;
 }
 
+/* Разрешаем горизонтальный скролл для контейнера с кнопками */
+#checkout.container {
+  overflow-x: visible;
+  overflow-y: hidden;
+}
+
 /* Убираем отступы только у контейнеров внутри catalog (Категории и Новинки) */
 .catalog > .container {
   margin-inline: 0;
@@ -887,6 +893,7 @@ body:has(.product)::before {
   scrollbar-width: none;
   -ms-overflow-style: none;
   padding-bottom: 4px;
+  padding-right: 16px;
   /* Обеспечиваем горизонтальный и вертикальный скролл */
   touch-action: pan-x pan-y;
 }
@@ -1804,6 +1811,7 @@ body:has(.product)::before {
   margin-top: 12px;
   padding-top: 8px;
   padding-bottom: 4px;
+  padding-right: 16px;
   justify-content: flex-start;
   /* Обеспечиваем горизонтальный и вертикальный скролл */
   touch-action: pan-x pan-y;
@@ -2040,6 +2048,7 @@ body:has(.product)::before {
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding-bottom: 4px;
+    padding-right: 12px;
     touch-action: pan-x pan-y;
   }
   
@@ -2219,6 +2228,7 @@ body:has(.product)::before {
     scrollbar-width: none;
     -ms-overflow-style: none;
     padding-bottom: 4px;
+    padding-right: 16px;
     touch-action: pan-x pan-y;
   }
   
