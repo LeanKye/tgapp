@@ -668,8 +668,10 @@ body:has(.product)::before {
 .menu-button svg {
   color: #999999;
   transition: color 0.2s ease;
-  font-size: 20px;
+  font-size: 24px;
   stroke-width: 2.5;
+  width: 24px;
+  height: 24px;
 }
 
 @media (hover: hover) {
