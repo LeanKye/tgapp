@@ -505,20 +505,21 @@ function initImageSlider() {
   
   // Обработчики событий добавляем только если больше одного изображения
   if (slides.length > 1) {
+    // Проверяем, является ли устройство мобильным
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     ('ontouchstart' in window) || 
+                     (navigator.maxTouchPoints > 0);
+    
     // Обработка touch событий
     let startX = 0;
-    let startY = 0;
     let currentX = 0;
     let isDragging = false;
     let startTime = 0;
-    let hasStarted = false;
     
     function handleTouchStart(e) {
       startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
       currentX = startX;
       isDragging = true;
-      hasStarted = false;
       startTime = Date.now();
       wrapper.style.transition = 'none';
     }
@@ -527,78 +528,74 @@ function initImageSlider() {
       if (!isDragging) return;
       
       currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
       const deltaX = currentX - startX;
-      const deltaY = currentY - startY;
+      const currentTransform = -currentIndex * 100;
+      const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
       
-      // Проверяем, что движение горизонтальное и началось
-      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) {
-        hasStarted = true;
-        e.preventDefault(); // Предотвращаем скролл страницы
-        
-        const currentTransform = -currentIndex * 100;
-        const maxMove = 30; // Ограничиваем движение до 30%
-        const movePercent = Math.max(-maxMove, Math.min(maxMove, (deltaX / slider.offsetWidth) * 100));
-        const newTransform = currentTransform + movePercent;
-        
-        wrapper.style.transform = `translateX(${newTransform}%)`;
-      }
+      wrapper.style.transform = `translateX(${newTransform}%)`;
     }
     
     function handleTouchEnd() {
       if (!isDragging) return;
       
       isDragging = false;
-      
-      // Принудительно возвращаем transition
       wrapper.style.transition = 'transform 0.3s ease';
-      
-      if (!hasStarted) {
-        // Если не было движения, просто возвращаем в текущую позицию
-        snapToPosition();
-        return;
-      }
       
       const deltaX = currentX - startX;
       const deltaTime = Date.now() - startTime;
-      const velocity = Math.abs(deltaX) / deltaTime;
+      const velocity = Math.abs(deltaX) / deltaTime; // пикселей в миллисекунду
       
-      // Определяем, нужно ли переключить слайд
-      const threshold = 50;
-      const velocityThreshold = 0.3;
+      // Улучшенная логика определения переключения слайда
+      const threshold = 50; // Минимальное расстояние
+      const velocityThreshold = 0.3; // Минимальная скорость для быстрого свайпа
       
-      const shouldSwipe = Math.abs(deltaX) > threshold || velocity > velocityThreshold;
+      const shouldChange = Math.abs(deltaX) > threshold || 
+                          (velocity > velocityThreshold && Math.abs(deltaX) > 20);
       
-      if (shouldSwipe && Math.abs(deltaX) > 20) {
+      if (shouldChange) {
         if (deltaX > 0) {
+          // Свайп вправо - предыдущий слайд
           goToSlide(currentIndex - 1);
         } else {
+          // Свайп влево - следующий слайд
           goToSlide(currentIndex + 1);
         }
       } else {
-        // Принудительно возвращаем в текущую позицию
-        snapToPosition();
+        // Возвращаем слайд на место
+        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
       }
+      
+      // Сбрасываем переменные
+      startX = 0;
+      currentX = 0;
+      startTime = 0;
     }
     
-    // Функция для принудительного возврата в позицию
-    function snapToPosition() {
-      wrapper.style.transition = 'transform 0.3s ease';
-      wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-    }
-    
-    // Добавляем обработчики
-    slider.addEventListener('touchstart', handleTouchStart, { passive: false });
+    // Добавляем touch обработчики
+    slider.addEventListener('touchstart', handleTouchStart, { passive: true });
     slider.addEventListener('touchmove', handleTouchMove, { passive: false });
     slider.addEventListener('touchend', handleTouchEnd, { passive: true });
     
-    // Добавляем обработчик для принудительного возврата при потере фокуса
-    slider.addEventListener('touchcancel', () => {
-      if (isDragging) {
-        isDragging = false;
-        snapToPosition();
+    // Добавляем обработчики кликов только на десктопе
+    if (!isMobile) {
+      function handleClick(e) {
+        if (isDragging) return;
+        
+        const rect = slider.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const centerX = rect.width / 2;
+        
+        if (clickX < centerX) {
+          // Клик слева - предыдущий слайд
+          goToSlide(currentIndex - 1);
+        } else {
+          // Клик справа - следующий слайд
+          goToSlide(currentIndex + 1);
+        }
       }
-    });
+      
+      slider.addEventListener('click', handleClick);
+    }
   }
 }
 
