@@ -515,8 +515,22 @@ function initImageSlider() {
     let currentX = 0;
     let isDragging = false;
     let startTime = 0;
+    let touchBlocked = false; // Блокируем новые touch события во время анимации
     
     function handleTouchStart(e) {
+      // Блокируем новые touch события если идет анимация
+      if (isTransitioning || touchBlocked) {
+        e.preventDefault();
+        return;
+      }
+      
+      // Сбрасываем предыдущее состояние
+      if (isDragging) {
+        isDragging = false;
+        wrapper.style.transition = 'transform 0.3s ease';
+        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+      }
+      
       startX = e.touches[0].clientX;
       currentX = startX;
       isDragging = true;
@@ -525,7 +539,7 @@ function initImageSlider() {
     }
     
     function handleTouchMove(e) {
-      if (!isDragging) return;
+      if (!isDragging || isTransitioning || touchBlocked) return;
       
       currentX = e.touches[0].clientX;
       const deltaX = currentX - startX;
@@ -536,9 +550,10 @@ function initImageSlider() {
     }
     
     function handleTouchEnd() {
-      if (!isDragging) return;
+      if (!isDragging || isTransitioning || touchBlocked) return;
       
       isDragging = false;
+      touchBlocked = true; // Блокируем новые touch события
       wrapper.style.transition = 'transform 0.3s ease';
       
       const deltaX = currentX - startX;
@@ -565,21 +580,41 @@ function initImageSlider() {
         wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
       }
       
-      // Сбрасываем переменные
-      startX = 0;
-      currentX = 0;
-      startTime = 0;
+      // Разблокируем touch события через небольшую задержку
+      setTimeout(() => {
+        touchBlocked = false;
+        startX = 0;
+        currentX = 0;
+        startTime = 0;
+      }, 350); // Чуть больше времени анимации
+    }
+    
+    // Добавляем обработчик для отмены touch событий
+    function handleTouchCancel() {
+      if (isDragging) {
+        isDragging = false;
+        wrapper.style.transition = 'transform 0.3s ease';
+        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+        
+        setTimeout(() => {
+          touchBlocked = false;
+          startX = 0;
+          currentX = 0;
+          startTime = 0;
+        }, 350);
+      }
     }
     
     // Добавляем touch обработчики
-    slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+    slider.addEventListener('touchstart', handleTouchStart, { passive: false });
     slider.addEventListener('touchmove', handleTouchMove, { passive: false });
     slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+    slider.addEventListener('touchcancel', handleTouchCancel, { passive: true });
     
     // Добавляем обработчики кликов только на десктопе
     if (!isMobile) {
       function handleClick(e) {
-        if (isDragging) return;
+        if (isDragging || isTransitioning || touchBlocked) return;
         
         const rect = slider.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
