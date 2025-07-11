@@ -511,12 +511,14 @@ function initImageSlider() {
     let currentX = 0;
     let isDragging = false;
     let startTime = 0;
+    let hasStarted = false;
     
     function handleTouchStart(e) {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
       currentX = startX;
       isDragging = true;
+      hasStarted = false;
       startTime = Date.now();
       wrapper.style.transition = 'none';
     }
@@ -529,12 +531,15 @@ function initImageSlider() {
       const deltaX = currentX - startX;
       const deltaY = currentY - startY;
       
-      // Проверяем, что движение горизонтальное (предотвращаем случайные вертикальные свайпы)
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Проверяем, что движение горизонтальное и началось
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) {
+        hasStarted = true;
         e.preventDefault(); // Предотвращаем скролл страницы
         
         const currentTransform = -currentIndex * 100;
-        const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
+        const maxMove = 30; // Ограничиваем движение до 30%
+        const movePercent = Math.max(-maxMove, Math.min(maxMove, (deltaX / slider.offsetWidth) * 100));
+        const newTransform = currentTransform + movePercent;
         
         wrapper.style.transform = `translateX(${newTransform}%)`;
       }
@@ -544,45 +549,55 @@ function initImageSlider() {
       if (!isDragging) return;
       
       isDragging = false;
+      
+      // Принудительно возвращаем transition
       wrapper.style.transition = 'transform 0.3s ease';
+      
+      if (!hasStarted) {
+        // Если не было движения, просто возвращаем в текущую позицию
+        snapToPosition();
+        return;
+      }
       
       const deltaX = currentX - startX;
       const deltaTime = Date.now() - startTime;
-      const velocity = Math.abs(deltaX) / deltaTime; // pixels per millisecond
+      const velocity = Math.abs(deltaX) / deltaTime;
       
       // Определяем, нужно ли переключить слайд
-      const threshold = 50; // Минимальное расстояние
-      const velocityThreshold = 0.5; // Минимальная скорость для быстрого свайпа
+      const threshold = 50;
+      const velocityThreshold = 0.3;
       
       const shouldSwipe = Math.abs(deltaX) > threshold || velocity > velocityThreshold;
       
-      if (shouldSwipe && Math.abs(deltaX) > 10) { // Минимальное движение 10px
+      if (shouldSwipe && Math.abs(deltaX) > 20) {
         if (deltaX > 0) {
-          // Свайп вправо - предыдущий слайд
           goToSlide(currentIndex - 1);
         } else {
-          // Свайп влево - следующий слайд
           goToSlide(currentIndex + 1);
         }
       } else {
-        // Возвращаем слайд на место
-        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+        // Принудительно возвращаем в текущую позицию
+        snapToPosition();
       }
+    }
+    
+    // Функция для принудительного возврата в позицию
+    function snapToPosition() {
+      wrapper.style.transition = 'transform 0.3s ease';
+      wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
     }
     
     // Обработка кликов
     function handleClick(e) {
-      if (isDragging) return;
+      if (hasStarted) return; // Игнорируем клики если было движение
       
       const rect = slider.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
       const centerX = rect.width / 2;
       
       if (clickX < centerX) {
-        // Клик слева - предыдущий слайд
         goToSlide(currentIndex - 1);
       } else {
-        // Клик справа - следующий слайд
         goToSlide(currentIndex + 1);
       }
     }
@@ -592,6 +607,14 @@ function initImageSlider() {
     slider.addEventListener('touchmove', handleTouchMove, { passive: false });
     slider.addEventListener('touchend', handleTouchEnd, { passive: true });
     slider.addEventListener('click', handleClick);
+    
+    // Добавляем обработчик для принудительного возврата при потере фокуса
+    slider.addEventListener('touchcancel', () => {
+      if (isDragging) {
+        isDragging = false;
+        snapToPosition();
+      }
+    });
   }
 }
 
