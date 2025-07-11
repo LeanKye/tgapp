@@ -11,9 +11,11 @@ export const products = {
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
     images: [
-      'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=600&h=400&fit=crop&crop=center'
+      'https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=600&h=400&fit=crop&crop=center',
+      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center',
+      'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&h=400&fit=crop&crop=center',
+      'https://images.unsplash.com/photo-1504805572947-34fad45aed93?w=600&h=400&fit=crop&crop=center',
+      'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [
       { id: 'variant-1', name: 'Аккаунт' },
@@ -967,8 +969,8 @@ export function formatPriceSimple(price, currency = '₽') {
     formattedPrice = priceStr[i] + formattedPrice;
   }
   
-  // Возвращаем простую строку с компактным отступом как на Я.Маркете
-  return `${formattedPrice} ${currency}`;
+  // Возвращаем простую строку без пробела между числом и валютой
+  return `${formattedPrice}${currency}`;
 }
 
 // Функция для форматирования цен в карточках товаров (используем CSS для отступов)

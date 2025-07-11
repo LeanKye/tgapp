@@ -300,11 +300,12 @@ body:has(.product)::before {
   height: 100%;
   max-height: 100%;
   width: 100%;
-  overflow: hidden;
   border-radius: 0;
   position: relative;
   margin: 0;
   padding: 0;
+  display: flex;
+  transition: transform 0.3s ease;
 }
 
 .container {
@@ -384,7 +385,7 @@ body:has(.product)::before {
 
 .tab {
   color: #666666;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .add-to-cart {
@@ -549,7 +550,7 @@ body:has(.product)::before {
 
 .header-container {
   background-color: #1f1f1f;
-  border-radius: 0 0 16px 16px;
+  border-radius: 16px 16px 16px 16px;
   padding: 16px;
   margin-bottom: 0px;
   position: relative;
@@ -615,7 +616,7 @@ body:has(.product)::before {
 .input-container {
   background-color: #2f2f2f;
   border-radius: 12px;
-  height: 42px;
+  height: 44px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -656,6 +657,8 @@ body:has(.product)::before {
 .menu-button svg {
   color: #999999;
   transition: color 0.2s ease;
+  font-size: 20px;
+  stroke-width: 2.5;
 }
 
 @media (hover: hover) {
@@ -773,7 +776,7 @@ body:has(.product)::before {
 
 .menu-button {
   width: 44px;
-  height: 42px;
+  height: 44px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -1095,7 +1098,7 @@ body:has(.product)::before {
   }
   
   .tab {
-    font-size: 17px;
+    font-size: 16px;
     padding-block: 6px;
   }
   
@@ -1116,7 +1119,7 @@ body:has(.product)::before {
   }
   
   .tab {
-    font-size: 16px;
+    font-size: 14px;
     padding-block: 6px;
   }
   
@@ -1155,6 +1158,7 @@ body:has(.product)::before {
   height: 100%;
   max-height: 100%;
   width: 100%;
+  min-width: 100%;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -1169,6 +1173,7 @@ body:has(.product)::before {
   /* Убираем любые отступы или пробелы */
   margin: 0;
   padding: 0;
+  flex-shrink: 0;
 }
 
 .swiper-slide img {
@@ -2434,7 +2439,7 @@ body.modal-open {
 .modal-header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0px;
   margin-bottom: 16px;
 }
 
@@ -2442,7 +2447,7 @@ body.modal-open {
   width: 40px;
   height: 40px;
   border-radius: 12px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   font-size: 20px;
@@ -2568,3 +2573,5 @@ body.modal-open {
     font-size: 14px;
   }
 }
+
+

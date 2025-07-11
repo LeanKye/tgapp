@@ -1,6 +1,5 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple } from './products-data.js'
-import Swiper from 'https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.mjs'
 
 // Функция для получения параметров URL
 function getUrlParameter(name) {
@@ -20,13 +19,31 @@ function renderProduct(product) {
 
   // Обновляем слайдер изображений
   const swiperWrapper = document.querySelector('.swiper-wrapper');
+  const slider = document.querySelector('.swiper');
   swiperWrapper.innerHTML = '';
+  
+  // Удаляем старые индикаторы если они есть
+  const oldIndicators = document.querySelector('.slider-indicators');
+  if (oldIndicators) {
+    oldIndicators.remove();
+  }
+  
+  // Сбрасываем инициализацию слайдера
+  if (slider) {
+    slider.classList.remove('slider-initialized');
+  }
+  
   product.images.forEach((image, index) => {
     const slide = document.createElement('div');
     slide.className = 'swiper-slide';
     slide.innerHTML = `<img src="${image}" alt="${product.title} ${index + 1}" />`;
     swiperWrapper.appendChild(slide);
   });
+
+  // Инициализируем слайдер сразу после создания слайдов
+  setTimeout(() => {
+    initImageSlider();
+  }, 10);
 
   // Обновляем лейблы
   const labelsContainer = document.querySelector('.labels');
@@ -409,22 +426,153 @@ function initCheckoutPanel() {
   updateHeaderText();
 }
 
-// Инициализация Swiper
-function initSwiper() {
-  const swiper = new Swiper('.swiper', {
-    speed: 400,
-    slidesPerView: 1,
-    spaceBetween: 30,
-    loop: true,
-    // Настройки для touch/swipe
-    touchRatio: 1,
-    touchAngle: 45,
-    grabCursor: true,
-    // Симуляция нативного touch поведения
-    simulateTouch: true,
-    allowTouchMove: true,
-    touchStartPreventDefault: false,
-  });
+// Нативный слайдер изображений
+function initImageSlider() {
+  const slider = document.querySelector('.swiper');
+  const wrapper = document.querySelector('.swiper-wrapper');
+  let slides = document.querySelectorAll('.swiper-slide');
+  
+  if (!slider || !wrapper || slides.length === 0) {
+    return;
+  }
+
+  // Проверяем, что слайдер еще не инициализирован
+  if (slider.classList.contains('slider-initialized')) {
+    return;
+  }
+  
+  // Для infinite loop клонируем первый и последний слайды
+  if (slides.length > 1) {
+    // Клонируем последний слайд и добавляем в начало
+    const lastSlideClone = slides[slides.length - 1].cloneNode(true);
+    lastSlideClone.classList.add('cloned');
+    wrapper.insertBefore(lastSlideClone, wrapper.firstChild);
+    
+    // Клонируем первый слайд и добавляем в конец
+    const firstSlideClone = slides[0].cloneNode(true);
+    firstSlideClone.classList.add('cloned');
+    wrapper.appendChild(firstSlideClone);
+    
+    // Обновляем список слайдов
+    slides = document.querySelectorAll('.swiper-slide');
+  }
+  
+  let currentIndex = 1; // Начинаем с первого реального слайда (после клона)
+  let isTransitioning = false;
+  const totalSlides = slides.length;
+  const realSlidesCount = totalSlides - 2; // Исключаем 2 клона
+  
+  // Устанавливаем начальную позицию на первый реальный слайд
+  wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+  wrapper.style.transition = 'transform 0.3s ease';
+  
+  // Помечаем слайдер как инициализированный
+  slider.classList.add('slider-initialized');
+  
+  // Функция для перехода к слайду
+  function goToSlide(index) {
+    if (isTransitioning) return;
+    
+    isTransitioning = true;
+    currentIndex = index;
+    
+    // Обновляем позицию слайдера
+    wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+    
+    setTimeout(() => {
+      // Обрабатываем loop переходы
+      if (currentIndex === 0) {
+        // Если мы на клоне последнего слайда, мгновенно переходим к реальному последнему
+        wrapper.style.transition = 'none';
+        currentIndex = realSlidesCount;
+        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+        setTimeout(() => {
+          wrapper.style.transition = 'transform 0.3s ease';
+        }, 10);
+      } else if (currentIndex === totalSlides - 1) {
+        // Если мы на клоне первого слайда, мгновенно переходим к реальному первому
+        wrapper.style.transition = 'none';
+        currentIndex = 1;
+        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+        setTimeout(() => {
+          wrapper.style.transition = 'transform 0.3s ease';
+        }, 10);
+      }
+      
+      isTransitioning = false;
+    }, 300);
+  }
+  
+  // Обработчики событий добавляем только если больше одного изображения
+  if (slides.length > 1) {
+    // Обработка touch событий
+    let startX = 0;
+    let currentX = 0;
+    let isDragging = false;
+    
+    function handleTouchStart(e) {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+      wrapper.style.transition = 'none';
+    }
+    
+    function handleTouchMove(e) {
+      if (!isDragging) return;
+      
+      currentX = e.touches[0].clientX;
+      const deltaX = currentX - startX;
+      const currentTransform = -currentIndex * 100;
+      const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
+      
+      wrapper.style.transform = `translateX(${newTransform}%)`;
+    }
+    
+    function handleTouchEnd() {
+      if (!isDragging) return;
+      
+      isDragging = false;
+      wrapper.style.transition = 'transform 0.3s ease';
+      
+      const deltaX = currentX - startX;
+      const threshold = 50; // Минимальное расстояние для смены слайда
+      
+      if (Math.abs(deltaX) > threshold) {
+        if (deltaX > 0) {
+          // Свайп вправо - предыдущий слайд
+          goToSlide(currentIndex - 1);
+        } else {
+          // Свайп влево - следующий слайд
+          goToSlide(currentIndex + 1);
+        }
+      } else {
+        // Возвращаем слайд на место
+        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
+      }
+    }
+    
+    // Обработка кликов
+    function handleClick(e) {
+      if (isDragging) return;
+      
+      const rect = slider.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const centerX = rect.width / 2;
+      
+      if (clickX < centerX) {
+        // Клик слева - предыдущий слайд
+        goToSlide(currentIndex - 1);
+      } else {
+        // Клик справа - следующий слайд
+        goToSlide(currentIndex + 1);
+      }
+    }
+    
+    // Добавляем обработчики
+    slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+    slider.addEventListener('touchmove', handleTouchMove, { passive: false });
+    slider.addEventListener('touchend', handleTouchEnd, { passive: true });
+    slider.addEventListener('click', handleClick);
+  }
 }
 
 // Функции для работы с модальными окнами
@@ -564,7 +712,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (product) {
     // Небольшая задержка чтобы DOM успел обновиться
     setTimeout(() => {
-      initSwiper();
       initCheckoutPanel();
       initModal();
     }, 100);
