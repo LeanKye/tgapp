@@ -457,14 +457,25 @@ body:has(.product)::before {
   flex-shrink: 0;
 }
 
+/* Убираем интерактивность на мобильных устройствах */
+@media (hover: none) {
+  .label {
+    cursor: default;
+    transition: none;
+  }
+}
+
 @media (hover: hover) {
   .label:hover {
     background-color: #3f3f3f;
   }
 }
 
-.label:active {
-  background-color: #4f4f4f;
+/* Убираем активное состояние на мобильных устройствах */
+@media (hover: hover) {
+  .label:active {
+    background-color: #4f4f4f;
+  }
 }
 
 .label-orange {
