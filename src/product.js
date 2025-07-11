@@ -587,26 +587,10 @@ function initImageSlider() {
       wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
     }
     
-    // Обработка кликов
-    function handleClick(e) {
-      if (hasStarted) return; // Игнорируем клики если было движение
-      
-      const rect = slider.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const centerX = rect.width / 2;
-      
-      if (clickX < centerX) {
-        goToSlide(currentIndex - 1);
-      } else {
-        goToSlide(currentIndex + 1);
-      }
-    }
-    
     // Добавляем обработчики
     slider.addEventListener('touchstart', handleTouchStart, { passive: false });
     slider.addEventListener('touchmove', handleTouchMove, { passive: false });
     slider.addEventListener('touchend', handleTouchEnd, { passive: true });
-    slider.addEventListener('click', handleClick);
     
     // Добавляем обработчик для принудительного возврата при потере фокуса
     slider.addEventListener('touchcancel', () => {
