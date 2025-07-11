@@ -955,22 +955,10 @@ export function formatPrice(price, currency = '₽') {
   return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
-// Функция для простого форматирования цен с разделителями (для кнопок)
+// Функция для простого форматирования цен без разделителей (для кнопок)
 export function formatPriceSimple(price, currency = '₽') {
-  // Преобразуем число в строку и добавляем обычные пробелы как разделители
-  const priceStr = price.toString();
-  let formattedPrice = '';
-  
-  // Разбиваем число на разряды справа налево
-  for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
-    if (count > 0 && count % 3 === 0) {
-      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
-    }
-    formattedPrice = priceStr[i] + formattedPrice;
-  }
-  
-  // Возвращаем простую строку без пробела между числом и валютой
-  return `${formattedPrice}${currency}`;
+  // Возвращаем простую строку без разделителей тысяч
+  return `${price}${currency}`;
 }
 
 // Функция для форматирования цен в карточках товаров (используем CSS для отступов)
