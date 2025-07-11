@@ -507,12 +507,17 @@ function initImageSlider() {
   if (slides.length > 1) {
     // Обработка touch событий
     let startX = 0;
+    let startY = 0;
     let currentX = 0;
     let isDragging = false;
+    let startTime = 0;
     
     function handleTouchStart(e) {
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+      currentX = startX;
       isDragging = true;
+      startTime = Date.now();
       wrapper.style.transition = 'none';
     }
     
@@ -520,11 +525,19 @@ function initImageSlider() {
       if (!isDragging) return;
       
       currentX = e.touches[0].clientX;
+      const currentY = e.touches[0].clientY;
       const deltaX = currentX - startX;
-      const currentTransform = -currentIndex * 100;
-      const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
+      const deltaY = currentY - startY;
       
-      wrapper.style.transform = `translateX(${newTransform}%)`;
+      // Проверяем, что движение горизонтальное (предотвращаем случайные вертикальные свайпы)
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        e.preventDefault(); // Предотвращаем скролл страницы
+        
+        const currentTransform = -currentIndex * 100;
+        const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
+        
+        wrapper.style.transform = `translateX(${newTransform}%)`;
+      }
     }
     
     function handleTouchEnd() {
@@ -534,9 +547,16 @@ function initImageSlider() {
       wrapper.style.transition = 'transform 0.3s ease';
       
       const deltaX = currentX - startX;
-      const threshold = 50; // Минимальное расстояние для смены слайда
+      const deltaTime = Date.now() - startTime;
+      const velocity = Math.abs(deltaX) / deltaTime; // pixels per millisecond
       
-      if (Math.abs(deltaX) > threshold) {
+      // Определяем, нужно ли переключить слайд
+      const threshold = 50; // Минимальное расстояние
+      const velocityThreshold = 0.5; // Минимальная скорость для быстрого свайпа
+      
+      const shouldSwipe = Math.abs(deltaX) > threshold || velocity > velocityThreshold;
+      
+      if (shouldSwipe && Math.abs(deltaX) > 10) { // Минимальное движение 10px
         if (deltaX > 0) {
           // Свайп вправо - предыдущий слайд
           goToSlide(currentIndex - 1);
@@ -568,7 +588,7 @@ function initImageSlider() {
     }
     
     // Добавляем обработчики
-    slider.addEventListener('touchstart', handleTouchStart, { passive: true });
+    slider.addEventListener('touchstart', handleTouchStart, { passive: false });
     slider.addEventListener('touchmove', handleTouchMove, { passive: false });
     slider.addEventListener('touchend', handleTouchEnd, { passive: true });
     slider.addEventListener('click', handleClick);
