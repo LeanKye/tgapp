@@ -136,7 +136,62 @@ function renderProduct(product) {
       };
       updateTabIndicator(activeIndex);
     }
+    
+    // Инициализируем скролл для уже выбранных кнопок
+    const scrollableContainers = [
+      document.querySelector('#variant-group'),
+      document.querySelector('#period-group'),
+      document.querySelector('#edition-group')
+    ];
+    
+    scrollableContainers.forEach(container => {
+      if (container) {
+        const checkedInput = container.querySelector('input:checked');
+        if (checkedInput) {
+          const label = container.querySelector(`label[for="${checkedInput.id}"]`);
+          if (label) {
+            scrollToSelectedButton(container, label);
+          }
+        }
+      }
+    });
   }, 100);
+}
+
+// Функция для автоматического скролла к выбранной кнопке
+function scrollToSelectedButton(container, selectedElement) {
+  if (!container || !selectedElement) return;
+  
+  // Получаем размеры контейнера и выбранного элемента
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = selectedElement.getBoundingClientRect();
+  
+  // Вычисляем, насколько элемент выходит за границы контейнера
+  const elementLeft = elementRect.left;
+  const elementRight = elementRect.right;
+  const containerLeft = containerRect.left;
+  const containerRight = containerRect.right;
+  
+  // Проверяем, нужно ли скроллить
+  let scrollOffset = 0;
+  
+  // Если элемент частично или полностью скрыт справа
+  if (elementRight > containerRight) {
+    scrollOffset = elementRight - containerRight + 16; // 16px отступ
+  }
+  // Если элемент частично или полностью скрыт слева
+  else if (elementLeft < containerLeft) {
+    scrollOffset = elementLeft - containerLeft - 16; // 16px отступ
+  }
+  
+  // Если нужно скроллить
+  if (scrollOffset !== 0) {
+    // Плавный скролл к элементу
+    container.scrollBy({
+      left: scrollOffset,
+      behavior: 'smooth'
+    });
+  }
 }
 
 function updateVariants(product) {
@@ -160,6 +215,13 @@ function updateVariants(product) {
 
     container.appendChild(input);
     container.appendChild(label);
+    
+    // Добавляем обработчик для автоматического скролла
+    input.addEventListener('change', () => {
+      if (input.checked) {
+        scrollToSelectedButton(container, label);
+      }
+    });
   });
 }
 
@@ -192,6 +254,8 @@ function updatePeriods(product) {
     input.addEventListener('change', () => {
       if (input.checked) {
         document.querySelector('.price-value').innerHTML = formatPrice(period.price);
+        // Добавляем автоматический скролл к выбранной кнопке
+        scrollToSelectedButton(container, label);
       }
     });
   });
@@ -225,6 +289,8 @@ function updateEditions(product) {
     input.addEventListener('change', () => {
       if (input.checked) {
         document.querySelector('.price-value').innerHTML = formatPrice(edition.price);
+        // Добавляем автоматический скролл к выбранной кнопке
+        scrollToSelectedButton(container, label);
       }
     });
   });
@@ -294,6 +360,54 @@ function updateTabs(product) {
     setTimeout(() => {
       const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
       updateTabIndicator(activeIndex);
+    }, 100);
+  });
+  
+  // Обновляем позицию скролла в кнопках при изменении размера окна
+  window.addEventListener('resize', () => {
+    // Находим все активные кнопки в скроллируемых контейнерах
+    const scrollableContainers = [
+      document.querySelector('#variant-group'),
+      document.querySelector('#period-group'),
+      document.querySelector('#edition-group')
+    ];
+    
+    scrollableContainers.forEach(container => {
+      if (container) {
+        const checkedInput = container.querySelector('input:checked');
+        if (checkedInput) {
+          const label = container.querySelector(`label[for="${checkedInput.id}"]`);
+          if (label) {
+            // Небольшая задержка для корректного расчета размеров
+            setTimeout(() => {
+              scrollToSelectedButton(container, label);
+            }, 50);
+          }
+        }
+      }
+    });
+  });
+  
+  // Обновляем позицию скролла в кнопках при изменении ориентации устройства
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      const scrollableContainers = [
+        document.querySelector('#variant-group'),
+        document.querySelector('#period-group'),
+        document.querySelector('#edition-group')
+      ];
+      
+      scrollableContainers.forEach(container => {
+        if (container) {
+          const checkedInput = container.querySelector('input:checked');
+          if (checkedInput) {
+            const label = container.querySelector(`label[for="${checkedInput.id}"]`);
+            if (label) {
+              scrollToSelectedButton(container, label);
+            }
+          }
+        }
+      });
     }, 100);
   });
 }
