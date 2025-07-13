@@ -809,8 +809,9 @@ body:has(.product)::before {
 .menu {
   position: fixed;
   top: 85px;
-  right: 16px;
-  width: 260px;
+  right: 0;
+  bottom: 0;
+  width: 280px;
   background-color: #1f1f1f;
   padding: 16px;
   z-index: 1000;
@@ -818,7 +819,7 @@ body:has(.product)::before {
   opacity: 1;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
   will-change: transform, opacity;
-  border-radius: 16px;
+  border-radius: 16px 0 0 0;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
@@ -1075,7 +1076,7 @@ body:has(.logo) .menu {
 .tabs {
   margin-bottom: 10px;
   display: flex;
-  gap: 16px;
+  gap: 20px;
   position: relative;
 }
 
@@ -1105,65 +1106,35 @@ body:has(.logo) .menu {
   content: '';
   position: absolute;
   bottom: 0;
-  left: 0;
+  left: var(--tab-indicator-left, 0);
   height: 2px;
   background-color: #29a5ff;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 1px;
-}
-
-/* Позиции полосочки для разных вкладок */
-.tabs[data-active="0"]::after {
-  width: 80px; /* Ширина текста "Описание" */
-  transform: translateX(0);
-}
-
-.tabs[data-active="1"]::after {
-  width: 200px; /* Ширина текста "Системные требования" */
-  transform: translateX(96px); /* Отступ для первой вкладки + gap */
+  width: var(--tab-indicator-width, 0);
 }
 
 /* Адаптивность для планшетов */
 @media (max-width: 768px) {
   .tabs {
-    gap: 12px;
+    gap: 16px;
   }
   
   .tab {
     font-size: 16px;
     padding-block: 6px;
   }
-  
-  .tabs[data-active="0"]::after {
-    width: 82px;
-    transform: translateX(0);
-  }
-  
-  .tabs[data-active="1"]::after {
-    width: 200px;
-    transform: translateX(84px); /* 82px + 12px gap */
-  }
 }
 
 /* Адаптивность для мобильных */
 @media (max-width: 375px) {
   .tabs {
-    gap: 8px;
+    gap: 12px;
   }
   
   .tab {
     font-size: 14px;
     padding-block: 6px;
-  }
-  
-  .tabs[data-active="0"]::after {
-    width: 67px;
-    transform: translateX(0);
-  }
-  
-  .tabs[data-active="1"]::after {
-    width: 168px;
-    transform: translateX(75px); /* 67px + 8px gap */
   }
 }
 
@@ -2330,10 +2301,9 @@ body:has(.logo) .menu {
   transition: transform 0.3s ease;
 }
 
-#checkout.selection-made .checkout-header {
-  background-color: rgba(21, 234, 97, 0.1);
-  border-radius: 12px;
-  transition: background-color 0.3s ease;
+#checkout.selection-made .checkout-header #checkout-header-text {
+  color: #15EA61;
+  transition: color 0.3s ease;
 }
 
 /* Новые стили для кнопок-переключателей на главной странице */

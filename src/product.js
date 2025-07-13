@@ -115,6 +115,28 @@ function renderProduct(product) {
 
   // Обновляем описание и системные требования
   updateTabs(product);
+  
+  // Убеждаемся, что полосочка правильно позиционируется после полной загрузки
+  setTimeout(() => {
+    const tabsContainer = document.querySelector('.tabs');
+    if (tabsContainer) {
+      const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
+      const updateTabIndicator = (activeIndex) => {
+        const activeTab = document.querySelectorAll('.tab')[activeIndex];
+        if (!activeTab || !tabsContainer) return;
+        
+        const tabRect = activeTab.getBoundingClientRect();
+        const containerRect = tabsContainer.getBoundingClientRect();
+        
+        const left = tabRect.left - containerRect.left;
+        const width = tabRect.width;
+        
+        tabsContainer.style.setProperty('--tab-indicator-left', `${left}px`);
+        tabsContainer.style.setProperty('--tab-indicator-width', `${width}px`);
+      };
+      updateTabIndicator(activeIndex);
+    }
+  }, 100);
 }
 
 function updateVariants(product) {
@@ -219,6 +241,31 @@ function updateTabs(product) {
   // Устанавливаем начальное положение полосочки
   tabsContainer.setAttribute('data-active', '0');
   
+  // Функция для обновления позиции полосочки
+  function updateTabIndicator(activeIndex) {
+    const activeTab = tabs[activeIndex];
+    const tabsContainer = document.querySelector('.tabs');
+    
+    if (!activeTab || !tabsContainer) return;
+    
+    // Получаем размеры и позицию активного таба
+    const tabRect = activeTab.getBoundingClientRect();
+    const containerRect = tabsContainer.getBoundingClientRect();
+    
+    // Вычисляем позицию относительно контейнера табов
+    const left = tabRect.left - containerRect.left;
+    const width = tabRect.width;
+    
+    // Применяем стили к псевдоэлементу через CSS переменные
+    tabsContainer.style.setProperty('--tab-indicator-left', `${left}px`);
+    tabsContainer.style.setProperty('--tab-indicator-width', `${width}px`);
+  }
+  
+  // Инициализируем позицию полосочки для первого таба
+  setTimeout(() => {
+    updateTabIndicator(0);
+  }, 0);
+  
   // Добавляем обработчики для переключения табов
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => {
@@ -229,10 +276,25 @@ function updateTabs(product) {
       
       // Обновляем положение полосочки
       tabsContainer.setAttribute('data-active', index.toString());
+      updateTabIndicator(index);
       
       // Плавно обновляем содержимое с анимацией
       smoothUpdateTabContent(tabsContent, index === 0 ? product.description : product.systemRequirements);
     });
+  });
+  
+  // Обновляем позицию полосочки при изменении размера окна
+  window.addEventListener('resize', () => {
+    const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
+    updateTabIndicator(activeIndex);
+  });
+  
+  // Обновляем позицию полосочки при изменении ориентации устройства
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => {
+      const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
+      updateTabIndicator(activeIndex);
+    }, 100);
   });
 }
 

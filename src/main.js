@@ -601,10 +601,17 @@ class SearchManager {
       }
     });
 
-    // Показываем dropdown при фокусе, если есть текст
+    // Показываем dropdown при фокусе всегда
     this.searchInput.addEventListener('focus', () => {
+      // Закрываем бургер-меню если оно открыто
+      if (!menu.classList.contains('menu-closed')) {
+        closeMenu();
+      }
+      
       if (this.searchInput.value.trim()) {
         this.handleInput(this.searchInput.value);
+      } else {
+        this.showNoResults();
       }
     });
   }
@@ -678,6 +685,15 @@ class SearchManager {
   showNoResults() {
     this.searchDropdown.innerHTML = '<div class="no-results">Товары не найдены</div>';
     this.showDropdown();
+    
+    // Добавляем обработчик клика для сброса поиска
+    const noResultsElement = this.searchDropdown.querySelector('.no-results');
+    if (noResultsElement) {
+      noResultsElement.addEventListener('click', () => {
+        this.searchInput.value = ''; // Очищаем поле
+        this.hideDropdown(); // Закрываем поиск
+      });
+    }
   }
 
   selectProduct(product) {
@@ -932,7 +948,7 @@ class PSPlusManager {
       <img src="${product.image}" alt="${product.name}">
       <div>
         <div>${product.name}</div>
-        <div class="product-price">${price} ₽</div>
+        <div class="product-price">${formatPrice(price)}</div>
       </div>
     `;
     
@@ -949,7 +965,7 @@ class PSPlusManager {
         const priceElement = card.querySelector('.product-price');
         if (priceElement) {
           const newPrice = product.prices[period];
-          priceElement.textContent = `${newPrice} ₽`;
+          priceElement.innerHTML = formatPrice(newPrice);
         }
       }
     });
