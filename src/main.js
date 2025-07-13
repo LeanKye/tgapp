@@ -393,17 +393,29 @@ class BannerSlider {
   // Инициализация touch событий
   initTouchEvents() {
     const container = this.slider.parentElement;
+    let swipeDirection = null; // 'horizontal', 'vertical', null
+    let swipeStarted = false;
     
     // Touch события на контейнере
     container.addEventListener('touchstart', (e) => {
       this.touchStartX = e.touches[0].clientX;
       this.touchStartY = e.touches[0].clientY;
+      swipeDirection = null;
+      swipeStarted = false;
     }, { passive: true });
 
     container.addEventListener('touchend', (e) => {
       this.touchEndX = e.changedTouches[0].clientX;
       this.touchEndY = e.changedTouches[0].clientY;
-      this.handleSwipe();
+      
+      // Обрабатываем свайп только если было горизонтальное движение
+      if (swipeDirection === 'horizontal') {
+        this.handleSwipe();
+      }
+      
+      // Сбрасываем состояние
+      swipeDirection = null;
+      swipeStarted = false;
     }, { passive: true });
 
     // Touch события на баннерах
@@ -412,24 +424,33 @@ class BannerSlider {
         this.touchStartX = e.touches[0].clientX;
         this.touchStartY = e.touches[0].clientY;
         this.isSwipeInProgress = false;
+        swipeDirection = null;
+        swipeStarted = false;
       }, { passive: true });
 
       banner.addEventListener('touchend', (e) => {
         this.touchEndX = e.changedTouches[0].clientX;
         this.touchEndY = e.changedTouches[0].clientY;
         
-        const swipeDistanceX = Math.abs(this.touchStartX - this.touchEndX);
-        const swipeDistanceY = Math.abs(this.touchStartY - this.touchEndY);
-        const isHorizontalSwipe = swipeDistanceX > swipeDistanceY && swipeDistanceX > this.minSwipeDistance;
-        
-        if (isHorizontalSwipe) {
-          this.isSwipeInProgress = true;
-          setTimeout(() => {
-            this.isSwipeInProgress = false;
-          }, 100);
+        // Обрабатываем свайп только если было горизонтальное движение
+        if (swipeDirection === 'horizontal') {
+          const swipeDistanceX = Math.abs(this.touchStartX - this.touchEndX);
+          const swipeDistanceY = Math.abs(this.touchStartY - this.touchEndY);
+          const isHorizontalSwipe = swipeDistanceX > swipeDistanceY && swipeDistanceX > this.minSwipeDistance;
+          
+          if (isHorizontalSwipe) {
+            this.isSwipeInProgress = true;
+            setTimeout(() => {
+              this.isSwipeInProgress = false;
+            }, 100);
+          }
+          
+          this.handleSwipe();
         }
         
-        this.handleSwipe();
+        // Сбрасываем состояние
+        swipeDirection = null;
+        swipeStarted = false;
       }, { passive: true });
 
       banner.addEventListener('touchmove', (e) => {
@@ -439,12 +460,23 @@ class BannerSlider {
         const deltaX = Math.abs(touch.clientX - this.touchStartX);
         const deltaY = Math.abs(touch.clientY - this.touchStartY);
         
-        // Более толерантное условие - блокируем только явно горизонтальные свайпы
-        const isDefinitelyHorizontal = deltaX > 30 && deltaX > deltaY * 2 && deltaY < 20;
+        // Определяем направление свайпа только один раз
+        if (!swipeStarted && (deltaX > 10 || deltaY > 10)) {
+          swipeStarted = true;
+          
+          // Определяем преобладающее направление движения
+          if (deltaX > deltaY * 1.5) {
+            swipeDirection = 'horizontal';
+          } else if (deltaY > deltaX * 1.5) {
+            swipeDirection = 'vertical';
+          }
+        }
         
-        if (isDefinitelyHorizontal) {
+        // Блокируем событие только для горизонтальных свайпов
+        if (swipeDirection === 'horizontal') {
           e.preventDefault();
         }
+        // Для вертикальных свайпов позволяем браузеру обрабатывать событие нормально
       }, { passive: false });
 
       banner.addEventListener('click', (e) => {

@@ -512,10 +512,14 @@ function initImageSlider() {
     
     // Обработка touch событий
     let startX = 0;
+    let startY = 0;
     let currentX = 0;
+    let currentY = 0;
     let isDragging = false;
     let startTime = 0;
     let touchBlocked = false; // Блокируем новые touch события во время анимации
+    let swipeDirection = null; // 'horizontal', 'vertical', null
+    let swipeStarted = false;
     
     function handleTouchStart(e) {
       // Блокируем новые touch события если идет анимация
@@ -532,9 +536,13 @@ function initImageSlider() {
       }
       
       startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
       currentX = startX;
+      currentY = startY;
       isDragging = true;
       startTime = Date.now();
+      swipeDirection = null;
+      swipeStarted = false;
       wrapper.style.transition = 'none';
     }
     
@@ -542,11 +550,33 @@ function initImageSlider() {
       if (!isDragging || isTransitioning || touchBlocked) return;
       
       currentX = e.touches[0].clientX;
-      const deltaX = currentX - startX;
-      const currentTransform = -currentIndex * 100;
-      const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
+      currentY = e.touches[0].clientY;
       
-      wrapper.style.transform = `translateX(${newTransform}%)`;
+      const deltaX = Math.abs(currentX - startX);
+      const deltaY = Math.abs(currentY - startY);
+      
+      // Определяем направление свайпа только один раз
+      if (!swipeStarted && (deltaX > 10 || deltaY > 10)) {
+        swipeStarted = true;
+        
+        // Определяем преобладающее направление движения
+        if (deltaX > deltaY * 1.5) {
+          swipeDirection = 'horizontal';
+        } else if (deltaY > deltaX * 1.5) {
+          swipeDirection = 'vertical';
+        }
+      }
+      
+      // Обновляем трансформацию только для горизонтальных свайпов
+      if (swipeDirection === 'horizontal') {
+        const deltaX = currentX - startX;
+        const currentTransform = -currentIndex * 100;
+        const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
+        
+        wrapper.style.transform = `translateX(${newTransform}%)`;
+        e.preventDefault(); // Блокируем скролл только для горизонтальных свайпов
+      }
+      // Для вертикальных свайпов позволяем браузеру обрабатывать событие нормально
     }
     
     function handleTouchEnd() {
@@ -556,27 +586,33 @@ function initImageSlider() {
       touchBlocked = true; // Блокируем новые touch события
       wrapper.style.transition = 'transform 0.3s ease';
       
-      const deltaX = currentX - startX;
-      const deltaTime = Date.now() - startTime;
-      const velocity = Math.abs(deltaX) / deltaTime; // пикселей в миллисекунду
-      
-      // Улучшенная логика определения переключения слайда
-      const threshold = 50; // Минимальное расстояние
-      const velocityThreshold = 0.3; // Минимальная скорость для быстрого свайпа
-      
-      const shouldChange = Math.abs(deltaX) > threshold || 
-                          (velocity > velocityThreshold && Math.abs(deltaX) > 20);
-      
-      if (shouldChange) {
-        if (deltaX > 0) {
-          // Свайп вправо - предыдущий слайд
-          goToSlide(currentIndex - 1);
+      // Обрабатываем свайп только если было горизонтальное движение
+      if (swipeDirection === 'horizontal') {
+        const deltaX = currentX - startX;
+        const deltaTime = Date.now() - startTime;
+        const velocity = Math.abs(deltaX) / deltaTime; // пикселей в миллисекунду
+        
+        // Улучшенная логика определения переключения слайда
+        const threshold = 50; // Минимальное расстояние
+        const velocityThreshold = 0.3; // Минимальная скорость для быстрого свайпа
+        
+        const shouldChange = Math.abs(deltaX) > threshold || 
+                            (velocity > velocityThreshold && Math.abs(deltaX) > 20);
+        
+        if (shouldChange) {
+          if (deltaX > 0) {
+            // Свайп вправо - предыдущий слайд
+            goToSlide(currentIndex - 1);
+          } else {
+            // Свайп влево - следующий слайд
+            goToSlide(currentIndex + 1);
+          }
         } else {
-          // Свайп влево - следующий слайд
-          goToSlide(currentIndex + 1);
+          // Возвращаем слайд на место
+          wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
         }
       } else {
-        // Возвращаем слайд на место
+        // Если это был вертикальный свайп, просто возвращаем слайд на место
         wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
       }
       
@@ -584,8 +620,12 @@ function initImageSlider() {
       setTimeout(() => {
         touchBlocked = false;
         startX = 0;
+        startY = 0;
         currentX = 0;
+        currentY = 0;
         startTime = 0;
+        swipeDirection = null;
+        swipeStarted = false;
       }, 350); // Чуть больше времени анимации
     }
     
@@ -599,8 +639,12 @@ function initImageSlider() {
         setTimeout(() => {
           touchBlocked = false;
           startX = 0;
+          startY = 0;
           currentX = 0;
+          currentY = 0;
           startTime = 0;
+          swipeDirection = null;
+          swipeStarted = false;
         }, 350);
       }
     }
