@@ -831,7 +831,7 @@ class PSPlusManager {
     this.psPlus = {
       essential: {
         name: 'Essential',
-        image: '/src/images/ps-plus-essential.jpg',
+        image: 'https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=600&h=400&fit=crop&crop=center',
         prices: {
           '1-month': 960,
           '2-months': 1800,
@@ -840,7 +840,7 @@ class PSPlusManager {
       },
       extra: {
         name: 'Extra',
-        image: '/src/images/ps-plus-extra.jpg',
+        image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600&h=400&fit=crop&crop=center',
         prices: {
           '1-month': 1350,
           '2-months': 2500,
@@ -849,7 +849,7 @@ class PSPlusManager {
       },
       premium: {
         name: 'Premium',
-        image: '/src/images/ps-plus-premium.jpg',
+        image: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&h=400&fit=crop&crop=center',
         prices: {
           '1-month': 1700,
           '2-months': 3200,
