@@ -1123,7 +1123,7 @@ body:has(.logo) .menu {
   transform: translateX(96px); /* Отступ для первой вкладки + gap */
 }
 
-/* Адаптивность для мобильных устройств */
+/* Адаптивность для планшетов */
 @media (max-width: 768px) {
   .tabs {
     gap: 12px;
@@ -1141,10 +1141,11 @@ body:has(.logo) .menu {
   
   .tabs[data-active="1"]::after {
     width: 200px;
-    transform: translateX(94px);
+    transform: translateX(84px); /* 82px + 12px gap */
   }
 }
 
+/* Адаптивность для мобильных */
 @media (max-width: 375px) {
   .tabs {
     gap: 8px;
@@ -1156,13 +1157,13 @@ body:has(.logo) .menu {
   }
   
   .tabs[data-active="0"]::after {
-    width: 75px;
+    width: 67px;
     transform: translateX(0);
   }
   
   .tabs[data-active="1"]::after {
-    width: 200px;
-    transform: translateX(83px);
+    width: 168px;
+    transform: translateX(75px); /* 67px + 8px gap */
   }
 }
 
