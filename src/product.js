@@ -166,29 +166,45 @@ function scrollToSelectedButton(container, selectedElement) {
   const containerRect = container.getBoundingClientRect();
   const elementRect = selectedElement.getBoundingClientRect();
   
-  // Вычисляем, насколько элемент выходит за границы контейнера
-  const elementLeft = elementRect.left;
-  const elementRight = elementRect.right;
-  const containerLeft = containerRect.left;
-  const containerRight = containerRect.right;
+  // Получаем текущий скролл контейнера
+  const currentScrollLeft = container.scrollLeft;
   
-  // Проверяем, нужно ли скроллить
-  let scrollOffset = 0;
+  // Вычисляем позицию элемента относительно контейнера с учетом скролла
+  const elementLeftRelative = elementRect.left - containerRect.left + currentScrollLeft;
+  const elementRightRelative = elementLeftRelative + elementRect.width;
+  
+  // Получаем видимую область контейнера
+  const containerWidth = containerRect.width;
+  
+  // Проверяем, полностью ли элемент видим (с небольшим запасом)
+  const isFullyVisible = elementLeftRelative >= 0 && elementRightRelative <= containerWidth;
+  
+  // Если элемент уже полностью видим, не скроллим
+  if (isFullyVisible) return;
+  
+  // Определяем, нужно ли скроллить
+  let newScrollLeft = currentScrollLeft;
   
   // Если элемент частично или полностью скрыт справа
-  if (elementRight > containerRight) {
-    scrollOffset = elementRight - containerRight + 16; // 16px отступ
+  if (elementRightRelative > containerWidth) {
+    // Скроллим так, чтобы элемент был виден справа с небольшим отступом
+    newScrollLeft = elementRightRelative - containerWidth + 8; // 8px отступ справа
   }
   // Если элемент частично или полностью скрыт слева
-  else if (elementLeft < containerLeft) {
-    scrollOffset = elementLeft - containerLeft - 16; // 16px отступ
+  else if (elementLeftRelative < 0) {
+    // Скроллим так, чтобы элемент был виден слева с небольшим отступом
+    newScrollLeft = elementLeftRelative - 8; // 8px отступ слева
   }
   
-  // Если нужно скроллить
-  if (scrollOffset !== 0) {
-    // Плавный скролл к элементу
-    container.scrollBy({
-      left: scrollOffset,
+  // Если нужно скроллить и позиция изменилась
+  if (newScrollLeft !== currentScrollLeft) {
+    // Ограничиваем скролл пределами контента
+    const maxScrollLeft = container.scrollWidth - containerWidth;
+    newScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
+    
+    // Плавный скролл к новой позиции
+    container.scrollTo({
+      left: newScrollLeft,
       behavior: 'smooth'
     });
   }
