@@ -2,7 +2,6 @@ import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
 
 const menuButton = document.getElementById('menu-button');
-const closeMenuButton = document.getElementById('close-menu-button')
 const menu = document.getElementById('menu')
 const menuOverlay = document.getElementById('menu-overlay')
 
@@ -30,7 +29,6 @@ const closeMenu = () => {
 }
 
 menuButton.addEventListener('click', toggleMenu)
-closeMenuButton.addEventListener('click', toggleMenu)
 // Закрытие меню при клике на overlay
 menuOverlay.addEventListener('click', closeMenu)
 
@@ -750,14 +748,115 @@ class SearchManager {
   }
 }
 
-// Класс для управления переключателями на главной странице
-class ToggleSwitches {
+// Класс для управления блокировкой кликов при открытом меню или поиске
+class ClickBlocker {
+  constructor() {
+    this.isMenuOpen = false;
+    this.isSearchOpen = false;
+    this.blockedElements = new Set();
+    this.init();
+  }
+
+  init() {
+    // Отслеживаем изменения в меню
+    const menu = document.getElementById('menu');
+    if (menu) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            this.isMenuOpen = !menu.classList.contains('menu-closed');
+            this.updateBlockState();
+          }
+        });
+      });
+      observer.observe(menu, { attributes: true });
+    }
+
+    // Отслеживаем изменения в поиске
+    const searchDropdown = document.getElementById('search-dropdown');
+    if (searchDropdown) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            this.isSearchOpen = searchDropdown.classList.contains('show');
+            this.updateBlockState();
+          }
+        });
+      });
+      observer.observe(searchDropdown, { attributes: true });
+    }
+  }
+
+  updateBlockState() {
+    const shouldBlock = this.isMenuOpen || this.isSearchOpen;
+    
+    if (shouldBlock) {
+      this.blockClicks();
+    } else {
+      this.unblockClicks();
+    }
+  }
+
+  blockClicks() {
+    // Блокируем клики по карточкам товаров
+    const productCards = document.querySelectorAll('.category-product-card, .category-card');
+    productCards.forEach(card => {
+      if (!this.blockedElements.has(card)) {
+        card.style.pointerEvents = 'none';
+        this.blockedElements.add(card);
+      }
+    });
+  }
+
+  unblockClicks() {
+    // Разблокируем клики по карточкам товаров
+    this.blockedElements.forEach(card => {
+      card.style.pointerEvents = '';
+    });
+    this.blockedElements.clear();
+  }
+}
+
+// Класс для управления подписками PS Plus
+class PSPlusManager {
   constructor() {
     this.switchesContainer = document.getElementById('ps-plus-switches');
-    if (!this.switchesContainer) return;
+    this.productsContainer = document.getElementById('ps-plus-products-container');
+    if (!this.switchesContainer || !this.productsContainer) return;
     
     this.slider = this.switchesContainer.querySelector('.toggle-switch-slider');
     this.inputs = this.switchesContainer.querySelectorAll('input[type="radio"]');
+    
+    // Данные подписок PS Plus
+    this.psPlus = {
+      essential: {
+        name: 'Essential',
+        image: '/src/images/ps-plus-essential.jpg',
+        prices: {
+          '1-month': 960,
+          '2-months': 1800,
+          '3-months': 2600
+        }
+      },
+      extra: {
+        name: 'Extra',
+        image: '/src/images/ps-plus-extra.jpg',
+        prices: {
+          '1-month': 1350,
+          '2-months': 2500,
+          '3-months': 3600
+        }
+      },
+      premium: {
+        name: 'Premium',
+        image: '/src/images/ps-plus-premium.jpg',
+        prices: {
+          '1-month': 1700,
+          '2-months': 3200,
+          '3-months': 4600
+        }
+      }
+    };
     
     this.init();
   }
@@ -768,6 +867,7 @@ class ToggleSwitches {
       input.addEventListener('change', () => {
         if (input.checked) {
           this.moveSlider(index);
+          this.updateProductPrices(input.value);
         }
       });
     });
@@ -777,7 +877,11 @@ class ToggleSwitches {
     if (checkedInput) {
       const index = Array.from(this.inputs).indexOf(checkedInput);
       this.moveSlider(index);
+      this.updateProductPrices(checkedInput.value);
     }
+    
+    // Рендерим карточки товаров
+    this.renderProducts();
     
     // Обновляем позицию при изменении размера окна
     window.addEventListener('resize', () => {
@@ -805,13 +909,66 @@ class ToggleSwitches {
     // Добавляем небольшую анимацию отскока через CSS
     this.slider.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
   }
+  
+  renderProducts() {
+    this.productsContainer.innerHTML = '';
+    
+    Object.entries(this.psPlus).forEach(([key, product]) => {
+      const productElement = this.createProductCard(product, key);
+      this.productsContainer.appendChild(productElement);
+    });
+  }
+  
+  createProductCard(product, key) {
+    const card = document.createElement('div');
+    card.className = 'container product-sub';
+    card.dataset.productKey = key;
+    
+    const checkedInput = this.switchesContainer.querySelector('input[type="radio"]:checked');
+    const currentPeriod = checkedInput ? checkedInput.value : '1-month';
+    const price = product.prices[currentPeriod];
+    
+    card.innerHTML = `
+      <img src="${product.image}" alt="${product.name}">
+      <div>
+        <div>${product.name}</div>
+        <div class="product-price">${price} ₽</div>
+      </div>
+    `;
+    
+    return card;
+  }
+  
+  updateProductPrices(period) {
+    const productCards = this.productsContainer.querySelectorAll('.product-sub');
+    
+    productCards.forEach(card => {
+      const productKey = card.dataset.productKey;
+      const product = this.psPlus[productKey];
+      if (product) {
+        const priceElement = card.querySelector('.product-price');
+        if (priceElement) {
+          const newPrice = product.prices[period];
+          priceElement.textContent = `${newPrice} ₽`;
+        }
+      }
+    });
+  }
+}
+
+// Класс для управления переключателями на главной странице (устаревший)
+class ToggleSwitches {
+  constructor() {
+    // Пустой конструктор, функциональность перенесена в PSPlusManager
+  }
 }
 
 // Инициализация слайдера после загрузки DOM
 document.addEventListener('DOMContentLoaded', () => {
   const slider = new BannerSlider();
   const searchManager = new SearchManager();
-  const toggleSwitches = new ToggleSwitches();
+  const psPlusManager = new PSPlusManager();
+  const clickBlocker = new ClickBlocker();
   
   // Рендерим товары
   renderNewProducts();

@@ -28,7 +28,7 @@ class CategoryPage {
 
   initMenu() {
     const menuButton = document.getElementById('menu-button');
-    const closeMenuButton = document.getElementById('close-menu-button');
+
     const menu = document.getElementById('menu');
     const menuOverlay = document.getElementById('menu-overlay');
 
@@ -53,7 +53,6 @@ class CategoryPage {
     };
 
     if (menuButton) menuButton.addEventListener('click', toggleMenu);
-    if (closeMenuButton) closeMenuButton.addEventListener('click', toggleMenu);
     if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
 
     // Закрытие меню клавишей Escape
@@ -262,9 +261,77 @@ class CategoryPage {
   }
 }
 
+// Класс для управления блокировкой кликов при открытом меню или поиске
+class ClickBlocker {
+  constructor() {
+    this.isMenuOpen = false;
+    this.isSearchOpen = false;
+    this.blockedElements = new Set();
+    this.init();
+  }
+
+  init() {
+    // Отслеживаем изменения в меню
+    const menu = document.getElementById('menu');
+    if (menu) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            this.isMenuOpen = !menu.classList.contains('menu-closed');
+            this.updateBlockState();
+          }
+        });
+      });
+      observer.observe(menu, { attributes: true });
+    }
+
+    // Отслеживаем изменения в поиске
+    const searchDropdown = document.getElementById('search-dropdown');
+    if (searchDropdown) {
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            this.isSearchOpen = searchDropdown.classList.contains('show');
+            this.updateBlockState();
+          }
+        });
+      });
+      observer.observe(searchDropdown, { attributes: true });
+    }
+  }
+
+  updateBlockState() {
+    const shouldBlock = this.isMenuOpen || this.isSearchOpen;
+    
+    if (shouldBlock) {
+      this.blockClicks();
+    } else {
+      this.unblockClicks();
+    }
+  }
+
+  blockClicks() {
+    // Блокируем клики по карточкам товаров
+    const productCards = document.querySelectorAll('.category-product-card, .category-card');
+    productCards.forEach(card => {
+      if (!this.blockedElements.has(card)) {
+        card.style.pointerEvents = 'none';
+        this.blockedElements.add(card);
+      }
+    });
+  }
+
+  unblockClicks() {
+    // Разблокируем клики по карточкам товаров
+    this.blockedElements.forEach(card => {
+      card.style.pointerEvents = '';
+    });
+    this.blockedElements.clear();
+  }
+}
+
 // Инициализируем страницу категории
 document.addEventListener('DOMContentLoaded', () => {
   new CategoryPage();
-
-
+  const clickBlocker = new ClickBlocker();
 }); 

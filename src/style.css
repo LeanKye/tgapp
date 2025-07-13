@@ -703,20 +703,7 @@ body:has(.product)::before {
   }
 }
 
-#close-menu-button {
-  color: #999999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease;
-  cursor: pointer;
-}
 
-@media (hover: hover) {
-  #close-menu-button:hover {
-    color: #29A5FF;
-  }
-}
 
 .search-dropdown {
   position: absolute;
@@ -821,28 +808,33 @@ body:has(.product)::before {
 
 .menu {
   position: fixed;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  width: 259px;
+  top: 85px;
+  right: 16px;
+  width: 260px;
   background-color: #1f1f1f;
-  padding-top: 60px;
-  padding-inline: 16px;
+  padding: 16px;
   z-index: 1000;
   transform: translateX(0);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+  opacity: 1;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  will-change: transform, opacity;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Больший отступ для главной страницы (где есть логотип) */
+body:has(.logo) .menu {
+  top: 113px;
 }
 
 .menu-closed {
-  transform: translateX(100%);
+  transform: translateX(100%) translateY(-20px);
+  opacity: 0;
   /* Принудительно скрываем закрытое меню */
   visibility: hidden;
   pointer-events: none;
   /* Дополнительная изоляция */
   contain: layout style paint;
-  /* Полное скрытие за пределами видимой области */
-  clip-path: inset(0 0 0 100%);
 }
 
 /* Темный фон за меню */
@@ -864,38 +856,27 @@ body:has(.product)::before {
   pointer-events: none;
 }
 
-.menu-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32px;
-}
 
-.menu-title {
-  font-size: 20px;
-}
 
 .menu-item {
-  margin-bottom: 20px;
+  margin-bottom: 8px;
   font-size: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 14px 16px;
+  border-radius: 12px;
   cursor: pointer;
   transition: background-color 0.2s ease, transform 0.1s ease;
-  margin-left: -16px;
-  margin-right: -16px;
 }
 
 @media (hover: hover) {
   .menu-item:hover {
-    background-color: rgba(255, 255, 255, 0.05);
-    transform: translateX(4px);
+    background-color: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
   }
 }
 
 .menu-item:active {
-  transform: translateX(2px);
-  background-color: rgba(255, 255, 255, 0.1);
+  transform: translateX(1px);
+  background-color: rgba(255, 255, 255, 0.15);
 }
 
 .button-group {
@@ -1040,6 +1021,7 @@ body:has(.product)::before {
 
 .button-group input[name="edition"]:checked + label {
   border: 1px solid #29A5FF;
+  background-color: #354046;
 }
 
 .discount-badge {
@@ -2322,6 +2304,18 @@ body:has(.product)::before {
   animation: fadeOutToTop 0.3s ease forwards;
 }
 
+/* Анимация для показа выбора */
+#checkout.selection-made {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+#checkout.selection-made .checkout-header {
+  background-color: rgba(21, 234, 97, 0.1);
+  border-radius: 12px;
+  transition: background-color 0.3s ease;
+}
+
 /* Новые стили для кнопок-переключателей на главной странице */
 .toggle-switches-container {
   padding: 0 16px;
@@ -2410,7 +2404,6 @@ body:has(.product)::before {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
   z-index: 10000;
   opacity: 0;
   visibility: hidden;

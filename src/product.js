@@ -324,8 +324,16 @@ function initCheckoutPanel() {
   }
   
   // Функция для сворачивания блока
-  function collapseCheckout() {
+  function collapseCheckout(showSelection = false) {
     isExpanded = false;
+    
+    // Обновляем выбранный вариант перед анимацией
+    selectedVariant = getSelectedVariantText();
+    
+    if (showSelection) {
+      // Показываем анимацию выбора
+      showSelectionAnimation();
+    }
     
     // Запускаем анимацию закрытия для variant-group
     variantGroup.classList.add('collapsing');
@@ -344,9 +352,25 @@ function initCheckoutPanel() {
       variantGroup.classList.remove('expanded', 'collapsing');
     }, 300); // Длительность анимации collapsing
     
-    // Обновляем выбранный вариант и текст заголовка
-    selectedVariant = getSelectedVariantText();
+    // Обновляем текст заголовка
     updateHeaderText();
+  }
+  
+  // Функция для показа анимации выбора
+  function showSelectionAnimation() {
+    // Добавляем класс для анимации выбора
+    checkoutContainer.classList.add('selection-made');
+    
+    // Временно показываем выбранный вариант
+    const tempText = checkoutHeaderText.textContent;
+    checkoutHeaderText.textContent = `✓ ${selectedVariant}`;
+    checkoutHeaderText.style.color = '#15EA61';
+    
+    // Убираем анимацию через короткое время
+    setTimeout(() => {
+      checkoutContainer.classList.remove('selection-made');
+      checkoutHeaderText.style.color = '';
+    }, 500);
   }
   
   // Функция для разворачивания блока
@@ -390,8 +414,7 @@ function initCheckoutPanel() {
   // Добавляем обработчики к вариантам оформления
   function handleVariantSelection() {
     if (isExpanded) {
-      selectedVariant = getSelectedVariantText();
-      collapseCheckout();
+      collapseCheckout(true); // Показываем анимацию выбора
     }
   }
   
