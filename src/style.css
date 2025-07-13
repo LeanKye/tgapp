@@ -824,7 +824,25 @@ body:has(.product)::before {
 
 /* Больший отступ для главной страницы (где есть логотип) */
 body:has(.logo) .menu {
-  top: 113px;
+  top: 100px;
+}
+
+/* Адаптивные отступы для меню на разных устройствах */
+@media (max-width: 768px) {
+  body:has(.logo) .menu {
+    top: 113px;
+  }
+}
+
+@media (max-width: 375px) {
+  body:has(.logo) .menu {
+    top: 120px;
+  }
+  
+  /* Меню на странице категории также нужно подстроить для мобильных */
+  .menu {
+    top: 80px;
+  }
 }
 
 .menu-closed {
