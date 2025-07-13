@@ -161,48 +161,51 @@ function renderProduct(product) {
 // Функция для автоматического скролла к выбранной кнопке
 function scrollToSelectedButton(container, selectedElement) {
   if (!container || !selectedElement) return;
-  
+
   // Получаем размеры контейнера и выбранного элемента
   const containerRect = container.getBoundingClientRect();
   const elementRect = selectedElement.getBoundingClientRect();
-  
-  // Получаем текущий скролл контейнера
   const currentScrollLeft = container.scrollLeft;
-  
+
+  // Получаем стили контейнера
+  const style = getComputedStyle(container);
+  const paddingLeft = parseInt(style.paddingLeft) || 0;
+  const paddingRight = parseInt(style.paddingRight) || 0;
+  // Получаем gap между кнопками (если есть)
+  let gap = 0;
+  if (style.gap) {
+    gap = parseInt(style.gap) || 0;
+  } else if (style.columnGap) {
+    gap = parseInt(style.columnGap) || 0;
+  }
+
   // Вычисляем позицию элемента относительно контейнера с учетом скролла
   const elementLeftRelative = elementRect.left - containerRect.left + currentScrollLeft;
   const elementRightRelative = elementLeftRelative + elementRect.width;
-  
-  // Получаем видимую область контейнера
   const containerWidth = containerRect.width;
-  
+
   // Проверяем, полностью ли элемент видим (с небольшим запасом)
-  const isFullyVisible = elementLeftRelative >= 0 && elementRightRelative <= containerWidth;
-  
-  // Если элемент уже полностью видим, не скроллим
+  const isFullyVisible =
+    elementLeftRelative >= currentScrollLeft + paddingLeft - gap &&
+    elementRightRelative <= currentScrollLeft + containerWidth - paddingRight + gap;
   if (isFullyVisible) return;
-  
-  // Определяем, нужно ли скроллить
+
   let newScrollLeft = currentScrollLeft;
-  
+
   // Если элемент частично или полностью скрыт справа
-  if (elementRightRelative > containerWidth) {
-    // Скроллим так, чтобы элемент был виден справа с небольшим отступом
-    newScrollLeft = elementRightRelative - containerWidth + 8; // 8px отступ справа
+  if (elementRightRelative > currentScrollLeft + containerWidth - paddingRight) {
+    newScrollLeft = elementRightRelative - containerWidth + paddingRight + gap;
   }
   // Если элемент частично или полностью скрыт слева
-  else if (elementLeftRelative < 0) {
-    // Скроллим так, чтобы элемент был виден слева с небольшим отступом
-    newScrollLeft = elementLeftRelative - 8; // 8px отступ слева
+  else if (elementLeftRelative < currentScrollLeft + paddingLeft) {
+    newScrollLeft = elementLeftRelative - paddingLeft - gap;
   }
-  
-  // Если нужно скроллить и позиция изменилась
+
+  // Ограничиваем скролл пределами контента
+  const maxScrollLeft = container.scrollWidth - containerWidth;
+  newScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
+
   if (newScrollLeft !== currentScrollLeft) {
-    // Ограничиваем скролл пределами контента
-    const maxScrollLeft = container.scrollWidth - containerWidth;
-    newScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScrollLeft));
-    
-    // Плавный скролл к новой позиции
     container.scrollTo({
       left: newScrollLeft,
       behavior: 'smooth'
