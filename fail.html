@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Ошибка оплаты</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .fail-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .fail-icon {
+            width: 80px;
+            height: 80px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: white;
+        }
+
+        .fail-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .fail-message {
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .back-button {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .retry-button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: #4b5563;
+        }
+
+        .retry-button:hover {
+            background: #dc2626;
+        }
+
+        .back-button:active,
+        .retry-button:active {
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="fail-container">
+        <div class="fail-icon">✕</div>
+        <h1 class="fail-title">Ошибка оплаты</h1>
+        <p class="fail-message">
+            К сожалению, произошла ошибка при обработке платежа. Попробуйте еще раз или обратитесь в поддержку.
+        </p>
+        <div class="button-group">
+            <button class="back-button" onclick="goBack()">Вернуться в магазин</button>
+            <button class="retry-button" onclick="goBack()">Попробовать снова</button>
+        </div>
+    </div>
+
+    <script>
+        function goBack() {
+            // Если мы в Telegram WebView, используем его API
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.close();
+            } else {
+                // Иначе возвращаемся на главную страницу
+                window.location.href = '/';
+            }
+        }
+
+        // Автоматически закрываем через 10 секунд
+        setTimeout(() => {
+            goBack();
+        }, 10000);
+    </script>
+</body>
+
+</html> 

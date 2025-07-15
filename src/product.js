@@ -1023,6 +1023,77 @@ function initModal() {
   });
 }
 
+// Функция для интеграции с YooKassa
+function buyWithYooKassa(product) {
+  // Получаем выбранные опции
+  const selectedVariant = document.querySelector('input[name="variant"]:checked');
+  const selectedPeriod = document.querySelector('input[name="period"]:checked');
+  const selectedEdition = document.querySelector('input[name="edition"]:checked');
+  
+  // Формируем описание товара
+  let description = product.title;
+  if (selectedVariant) {
+    description += ` - ${selectedVariant.nextElementSibling.textContent}`;
+  }
+  if (selectedPeriod) {
+    description += ` - ${selectedPeriod.nextElementSibling.textContent}`;
+  }
+  if (selectedEdition) {
+    description += ` - ${selectedEdition.nextElementSibling.textContent}`;
+  }
+  
+  // Определяем цену
+  let price = product.price;
+  if (selectedPeriod && selectedPeriod.value !== 'period-1') {
+    // Ищем период в данных товара для получения цены
+    const periodData = product.periods.find(p => p.id === selectedPeriod.value);
+    if (periodData) {
+      price = periodData.price;
+    }
+  }
+  if (selectedEdition && selectedEdition.value !== 'edition-1') {
+    // Ищем издание в данных товара для получения цены
+    const editionData = product.editions.find(e => e.id === selectedEdition.value);
+    if (editionData) {
+      price = editionData.price;
+    }
+  }
+  
+  // Показываем информацию о покупке
+  const confirmMessage = `Подтвердите покупку:\n\nТовар: ${description}\nЦена: ${price} ₽\n\nВы будете перенаправлены на страницу оплаты YooKassa.`;
+  
+  if (confirm(confirmMessage)) {
+    // Параметры для YooKassa
+    const shopId = '1125098';
+    const encodedDescription = encodeURIComponent(description);
+    const successUrl = encodeURIComponent(window.location.origin + '/success.html');
+    const failUrl = encodeURIComponent(window.location.origin + '/fail.html');
+    
+    // Формируем ссылку на YooKassa
+    const yooKassaUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=${encodedDescription}&targets-hint=&default-sum=${price}&button-text=11&payment-type-choice=on&mobile-payment-type-choice=on&hint=&successURL=${successUrl}&failURL=${failUrl}&quickpay=shop&account=${shopId}`;
+    
+    // Перенаправляем на страницу оплаты
+    window.location.href = yooKassaUrl;
+  }
+}
+
+// Функция для инициализации обработчика кнопки "Купить"
+function initBuyButton() {
+  const buyButton = document.querySelector('.add-to-cart');
+  if (!buyButton) return;
+  
+  buyButton.addEventListener('click', () => {
+    const productId = getUrlParameter('product');
+    const product = getProductById(productId);
+    
+    if (product) {
+      buyWithYooKassa(product);
+    } else {
+      alert('Ошибка: товар не найден');
+    }
+  });
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   const productId = getUrlParameter('product');
@@ -1035,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initCheckoutPanel();
       initModal();
+      initBuyButton(); // Добавляем инициализацию кнопки "Купить"
     }, 100);
   }
   
