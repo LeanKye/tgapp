@@ -57,12 +57,6 @@ class TelegramWebApp {
         e.preventDefault();
       }
     });
-
-    // Обработка навигации в Telegram WebView
-    window.addEventListener('popstate', () => {
-      this.currentPage = this.detectCurrentPage();
-      this.updateTelegramHeader();
-    });
   }
 
   // Определение текущей страницы по URL
@@ -94,26 +88,8 @@ class TelegramWebApp {
       
       // Удаляем предыдущие обработчики
       this.tg.BackButton.offClick();
-      
-      // Добавляем обработчик для закрытия WebView при долгом нажатии
-      let backButtonTimer = null;
       this.tg.BackButton.onClick(() => {
-        if (backButtonTimer) {
-          clearTimeout(backButtonTimer);
-          backButtonTimer = null;
-          // Долгое нажатие - закрываем WebView
-          this.tg.close();
-        } else {
-          backButtonTimer = setTimeout(() => {
-            backButtonTimer = null;
-            // Короткое нажатие - возвращаемся назад
-            if (window.history.length > 1) {
-              window.history.back();
-            } else {
-              window.location.href = './';
-            }
-          }, 200);
-        }
+        window.location.href = './';
       });
     }
   }

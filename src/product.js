@@ -1023,93 +1023,6 @@ function initModal() {
   });
 }
 
-// Функция для интеграции с YooKassa
-function buyWithYooKassa(product) {
-  // Получаем выбранные опции
-  const selectedVariant = document.querySelector('input[name="variant"]:checked');
-  const selectedPeriod = document.querySelector('input[name="period"]:checked');
-  const selectedEdition = document.querySelector('input[name="edition"]:checked');
-  
-  // Формируем описание товара
-  let description = product.title;
-  if (selectedVariant) {
-    description += ` - ${selectedVariant.nextElementSibling.textContent}`;
-  }
-  if (selectedPeriod) {
-    description += ` - ${selectedPeriod.nextElementSibling.textContent}`;
-  }
-  if (selectedEdition) {
-    description += ` - ${selectedEdition.nextElementSibling.textContent}`;
-  }
-  
-  // Определяем цену
-  let price = product.price;
-  if (selectedPeriod && selectedPeriod.value !== 'period-1') {
-    // Ищем период в данных товара для получения цены
-    const periodData = product.periods.find(p => p.id === selectedPeriod.value);
-    if (periodData) {
-      price = periodData.price;
-    }
-  }
-  if (selectedEdition && selectedEdition.value !== 'edition-1') {
-    // Ищем издание в данных товара для получения цены
-    const editionData = product.editions.find(e => e.id === selectedEdition.value);
-    if (editionData) {
-      price = editionData.price;
-    }
-  }
-  
-  // Показываем информацию о покупке с выбором режима
-  const confirmMessage = `Подтвердите покупку:\n\nТовар: ${description}\nЦена: ${price} ₽\n\nВыберите режим:\n1. Реальная оплата (YooKassa)\n2. Демо-режим (тестирование)\n\n💡 Если застрянете на странице оплаты, используйте кнопку "Назад" в Telegram.`;
-  
-  if (confirm(confirmMessage)) {
-    // Спрашиваем пользователя о режиме
-    const useDemo = confirm('Выберите режим:\n\nOK - Реальная оплата\nОтмена - Демо-режим (рекомендуется для тестирования)');
-    
-    if (useDemo) {
-      // Реальная оплата
-      const shopId = '1125098';
-      const encodedDescription = encodeURIComponent(description);
-      const successUrl = encodeURIComponent(window.location.origin + '/success.html');
-      const failUrl = encodeURIComponent(window.location.origin + '/fail.html');
-      
-      // Формируем ссылку на YooMoney QuickPay (рабочий вариант)
-      const yooKassaUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=${encodedDescription}&targets-hint=&default-sum=${price}&button-text=11&payment-type-choice=on&mobile-payment-type-choice=on&hint=&successURL=${successUrl}&failURL=${failUrl}&quickpay=shop&account=${shopId}`;
-      
-      // Открываем страницу оплаты в новом окне/вкладке
-      // Это лучше работает с навигацией в Telegram WebView
-      if (window.Telegram && window.Telegram.WebApp) {
-        // В Telegram WebView используем window.location.href
-        window.location.href = yooKassaUrl;
-      } else {
-        // В обычном браузере открываем в новой вкладке
-        window.open(yooKassaUrl, '_blank');
-      }
-    } else {
-      // Демо-режим - показываем страницу успеха
-      alert('Демо-режим: Имитация успешной оплаты!');
-      window.location.href = '/success.html';
-    }
-  }
-}
-
-// Функция для инициализации обработчика кнопки "Купить"
-function initBuyButton() {
-  const buyButton = document.querySelector('.add-to-cart');
-  if (!buyButton) return;
-  
-  buyButton.addEventListener('click', () => {
-    const productId = getUrlParameter('product');
-    const product = getProductById(productId);
-    
-    if (product) {
-      buyWithYooKassa(product);
-    } else {
-      alert('Ошибка: товар не найден');
-    }
-  });
-}
-
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   const productId = getUrlParameter('product');
@@ -1122,7 +1035,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initCheckoutPanel();
       initModal();
-      initBuyButton(); // Добавляем инициализацию кнопки "Купить"
     }, 100);
   }
   
