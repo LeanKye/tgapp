@@ -28,15 +28,36 @@ class CategoryPage {
 
   initMenu() {
     const menuButton = document.getElementById('menu-button');
-
-    const menu = document.getElementById('menu');
+    this.menu = document.getElementById('menu');
     const menuOverlay = document.getElementById('menu-overlay');
 
+    // Функция для позиционирования меню относительно хедера
+    const positionMenuRelativeToHeader = () => {
+      const headerContainer = document.querySelector('.header-container');
+      if (headerContainer) {
+        const headerRect = headerContainer.getBoundingClientRect();
+        const headerBottom = headerRect.bottom;
+        
+        // Устанавливаем позицию меню относительно нижней границы хедера
+        this.menu.style.top = `${headerBottom + 8}px`; // 8px отступ от хедера
+      }
+    };
+
     const toggleMenu = () => {
-      const isClosing = !menu.classList.contains('menu-closed');
+      const isClosing = !this.menu.classList.contains('menu-closed');
       
-      menu.classList.toggle('menu-closed');
+      // Если открываем меню и поиск активен, закрываем поиск
+      if (!isClosing && this.isSearchActive) {
+        this.deactivateSearch();
+      }
+      
+      this.menu.classList.toggle('menu-closed');
       menuOverlay.classList.toggle('menu-closed');
+      
+      // Позиционируем меню относительно хедера
+      if (!isClosing) {
+        positionMenuRelativeToHeader();
+      }
       
       // Управление прокруткой страницы
       if (isClosing) {
@@ -46,19 +67,36 @@ class CategoryPage {
       }
     };
 
-    const closeMenu = () => {
-      menu.classList.add('menu-closed');
+    // Сохраняем функцию closeMenu как метод класса
+    this.closeMenu = () => {
+      this.menu.classList.add('menu-closed');
       menuOverlay.classList.add('menu-closed');
+      // Сбрасываем позицию меню
+      this.menu.style.top = '';
       document.body.style.overflow = '';
     };
 
     if (menuButton) menuButton.addEventListener('click', toggleMenu);
-    if (menuOverlay) menuOverlay.addEventListener('click', closeMenu);
+    if (menuOverlay) menuOverlay.addEventListener('click', this.closeMenu);
 
     // Закрытие меню клавишей Escape
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !menu.classList.contains('menu-closed')) {
-        closeMenu();
+      if (e.key === 'Escape' && !this.menu.classList.contains('menu-closed')) {
+        this.closeMenu();
+      }
+    });
+
+    // Обновляем позицию меню при скролле, если оно открыто
+    document.addEventListener('scroll', () => {
+      if (!this.menu.classList.contains('menu-closed')) {
+        positionMenuRelativeToHeader();
+      }
+    });
+
+    // Обновляем позицию меню при изменении размера окна, если оно открыто
+    window.addEventListener('resize', () => {
+      if (!this.menu.classList.contains('menu-closed')) {
+        positionMenuRelativeToHeader();
       }
     });
 
@@ -69,7 +107,7 @@ class CategoryPage {
         const category = item.getAttribute('data-category');
         // Если мы уже на странице этой категории, просто закрываем меню
         if (category === this.currentCategory) {
-          closeMenu();
+          this.closeMenu();
         } else {
           window.location.href = `category.html?category=${encodeURIComponent(category)}`;
         }
@@ -128,18 +166,26 @@ class CategoryPage {
     // Обработчик для скролла - если пользователь пытается скроллить, закрываем поиск
     document.addEventListener('wheel', (e) => {
       if (this.isSearchActive) {
+        // Разрешаем скролл внутри search-dropdown
+        if (e.target.closest('.search-dropdown')) {
+          return;
+        }
         e.preventDefault();
         this.deactivateSearch();
       }
     }, { passive: false });
     
-      // Обработчик для touch событий на мобильных устройствах
-  document.addEventListener('touchmove', (e) => {
-    if (this.isSearchActive) {
-      e.preventDefault();
-      this.deactivateSearch();
-    }
-  }, { passive: false });
+    // Обработчик для touch событий на мобильных устройствах
+    document.addEventListener('touchmove', (e) => {
+      if (this.isSearchActive) {
+        // Разрешаем скролл внутри search-dropdown
+        if (e.target.closest('.search-dropdown')) {
+          return;
+        }
+        e.preventDefault();
+        this.deactivateSearch();
+      }
+    }, { passive: false });
   
   // Обработчик для блокировки всех кликов при активном поиске
   document.addEventListener('click', (e) => {
@@ -233,6 +279,11 @@ class CategoryPage {
   }
 
   activateSearch() {
+    // Закрываем меню если оно открыто
+    if (this.menu && !this.menu.classList.contains('menu-closed')) {
+      this.closeMenu();
+    }
+    
     this.isSearchActive = true;
     document.body.classList.add('search-active');
     const searchOverlay = document.getElementById('search-overlay');

@@ -32,7 +32,7 @@ npm run preview
 
 ## Структура проекта
 
-- `index.html` - главная страница (каталог)
+- `index.html` - главная страница
 - `category.html` - страница категории
 - `product.html` - страница товара
 - `src/` - исходные файлы (стили, скрипты, данные)
@@ -41,10 +41,9 @@ npm run preview
 ## Автоматический деплой
 
 Настроен GitHub Actions workflow для автоматического деплоя на GitHub Pages:
-- `.github/workflows/pages.yml` - основной workflow
-- `.github/workflows/deploy.yml` - альтернативный workflow
+- `.github/workflows/deploy.yml` - workflow
 
 Деплой происходит автоматически при каждом пуше в main ветку.
 
 ---
-Создано с ❤️ by LeanKye
+Создано с ❤️ by LeanQ

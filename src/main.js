@@ -8,8 +8,21 @@ const menuOverlay = document.getElementById('menu-overlay')
 const toggleMenu = () => {
   const isClosing = !menu.classList.contains('menu-closed');
   
+  // Если открываем меню и поиск активен, закрываем поиск
+  if (!isClosing && document.body.classList.contains('search-active')) {
+    // Находим экземпляр SearchManager и закрываем поиск
+    if (window.searchManager) {
+      window.searchManager.deactivateSearch();
+    }
+  }
+  
   menu.classList.toggle('menu-closed');
   menuOverlay.classList.toggle('menu-closed');
+  
+  // Позиционируем меню относительно хедера
+  if (!isClosing) {
+    positionMenuRelativeToHeader();
+  }
   
   // Управление прокруткой страницы
   if (isClosing) {
@@ -21,9 +34,23 @@ const toggleMenu = () => {
   }
 }
 
+// Функция для позиционирования меню относительно хедера
+const positionMenuRelativeToHeader = () => {
+  const headerContainer = document.querySelector('.header-container');
+  if (headerContainer) {
+    const headerRect = headerContainer.getBoundingClientRect();
+    const headerBottom = headerRect.bottom;
+    
+    // Устанавливаем позицию меню относительно нижней границы хедера
+    menu.style.top = `${headerBottom + 8}px`; // 8px отступ от хедера
+  }
+}
+
 const closeMenu = () => {
   menu.classList.add('menu-closed');
   menuOverlay.classList.add('menu-closed');
+  // Сбрасываем позицию меню
+  menu.style.top = '';
   // Включаем прокрутку при закрытии
   document.body.style.overflow = '';
 }
@@ -36,6 +63,20 @@ menuOverlay.addEventListener('click', closeMenu)
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && !menu.classList.contains('menu-closed')) {
     closeMenu();
+  }
+})
+
+// Обновляем позицию меню при скролле, если оно открыто
+document.addEventListener('scroll', () => {
+  if (!menu.classList.contains('menu-closed')) {
+    positionMenuRelativeToHeader();
+  }
+})
+
+// Обновляем позицию меню при изменении размера окна, если оно открыто
+window.addEventListener('resize', () => {
+  if (!menu.classList.contains('menu-closed')) {
+    positionMenuRelativeToHeader();
   }
 })
 
@@ -632,6 +673,10 @@ class SearchManager {
       // Обработчик для скролла - если пользователь пытается скроллить, закрываем поиск
   document.addEventListener('wheel', (e) => {
     if (this.isSearchActive) {
+      // Разрешаем скролл внутри search-dropdown
+      if (e.target.closest('.search-dropdown')) {
+        return;
+      }
       e.preventDefault();
       this.deactivateSearch();
     }
@@ -640,6 +685,10 @@ class SearchManager {
   // Обработчик для touch событий на мобильных устройствах
   document.addEventListener('touchmove', (e) => {
     if (this.isSearchActive) {
+      // Разрешаем скролл внутри search-dropdown
+      if (e.target.closest('.search-dropdown')) {
+        return;
+      }
       e.preventDefault();
       this.deactivateSearch();
     }
@@ -804,6 +853,12 @@ class SearchManager {
   }
 
   activateSearch() {
+    // Закрываем меню если оно открыто
+    const menu = document.getElementById('menu');
+    if (menu && !menu.classList.contains('menu-closed')) {
+      closeMenu();
+    }
+    
     this.isSearchActive = true;
     document.body.classList.add('search-active');
     const searchOverlay = document.getElementById('search-overlay');
@@ -1052,6 +1107,8 @@ class ToggleSwitches {
 document.addEventListener('DOMContentLoaded', () => {
   const slider = new BannerSlider();
   const searchManager = new SearchManager();
+  // Сохраняем экземпляр SearchManager в глобальной переменной для доступа из других функций
+  window.searchManager = searchManager;
   const psPlusManager = new PSPlusManager();
   const clickBlocker = new ClickBlocker();
   
