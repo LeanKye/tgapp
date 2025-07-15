@@ -94,13 +94,25 @@ class TelegramWebApp {
       
       // Удаляем предыдущие обработчики
       this.tg.BackButton.offClick();
+      
+      // Добавляем обработчик для закрытия WebView при долгом нажатии
+      let backButtonTimer = null;
       this.tg.BackButton.onClick(() => {
-        // Проверяем, можем ли мы вернуться назад в истории
-        if (window.history.length > 1) {
-          window.history.back();
+        if (backButtonTimer) {
+          clearTimeout(backButtonTimer);
+          backButtonTimer = null;
+          // Долгое нажатие - закрываем WebView
+          this.tg.close();
         } else {
-          // Если нет истории, возвращаемся на главную
-          window.location.href = './';
+          backButtonTimer = setTimeout(() => {
+            backButtonTimer = null;
+            // Короткое нажатие - возвращаемся назад
+            if (window.history.length > 1) {
+              window.history.back();
+            } else {
+              window.location.href = './';
+            }
+          }, 200);
         }
       });
     }

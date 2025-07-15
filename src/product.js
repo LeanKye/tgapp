@@ -1059,27 +1059,36 @@ function buyWithYooKassa(product) {
     }
   }
   
-  // Показываем информацию о покупке
-  const confirmMessage = `Подтвердите покупку:\n\nТовар: ${description}\nЦена: ${price} ₽\n\nВы будете перенаправлены на страницу оплаты YooKassa.`;
+  // Показываем информацию о покупке с выбором режима
+  const confirmMessage = `Подтвердите покупку:\n\nТовар: ${description}\nЦена: ${price} ₽\n\nВыберите режим:\n1. Реальная оплата (YooKassa)\n2. Демо-режим (тестирование)\n\n💡 Если застрянете на странице оплаты, используйте кнопку "Назад" в Telegram.`;
   
   if (confirm(confirmMessage)) {
-    // Параметры для YooKassa
-    const shopId = '1125098';
-    const encodedDescription = encodeURIComponent(description);
-    const successUrl = encodeURIComponent(window.location.origin + '/success.html');
-    const failUrl = encodeURIComponent(window.location.origin + '/fail.html');
+    // Спрашиваем пользователя о режиме
+    const useDemo = confirm('Выберите режим:\n\nOK - Реальная оплата\nОтмена - Демо-режим (рекомендуется для тестирования)');
     
-    // Формируем ссылку на YooKassa Checkout
-    const yooKassaUrl = `https://yoomoney.ru/checkout/payments/v2/contract?orderId=${Date.now()}&sum=${price}&targets=${encodedDescription}&payment-type-choice=on&mobile-payment-type-choice=on&successURL=${successUrl}&failURL=${failUrl}&quickpay=shop&account=${shopId}`;
-    
-    // Открываем страницу оплаты в новом окне/вкладке
-    // Это лучше работает с навигацией в Telegram WebView
-    if (window.Telegram && window.Telegram.WebApp) {
-      // В Telegram WebView используем window.location.href
-      window.location.href = yooKassaUrl;
+    if (useDemo) {
+      // Реальная оплата
+      const shopId = '1125098';
+      const encodedDescription = encodeURIComponent(description);
+      const successUrl = encodeURIComponent(window.location.origin + '/success.html');
+      const failUrl = encodeURIComponent(window.location.origin + '/fail.html');
+      
+      // Формируем ссылку на YooMoney QuickPay (рабочий вариант)
+      const yooKassaUrl = `https://yoomoney.ru/quickpay/shop-widget?writer=seller&targets=${encodedDescription}&targets-hint=&default-sum=${price}&button-text=11&payment-type-choice=on&mobile-payment-type-choice=on&hint=&successURL=${successUrl}&failURL=${failUrl}&quickpay=shop&account=${shopId}`;
+      
+      // Открываем страницу оплаты в новом окне/вкладке
+      // Это лучше работает с навигацией в Telegram WebView
+      if (window.Telegram && window.Telegram.WebApp) {
+        // В Telegram WebView используем window.location.href
+        window.location.href = yooKassaUrl;
+      } else {
+        // В обычном браузере открываем в новой вкладке
+        window.open(yooKassaUrl, '_blank');
+      }
     } else {
-      // В обычном браузере открываем в новой вкладке
-      window.open(yooKassaUrl, '_blank');
+      // Демо-режим - показываем страницу успеха
+      alert('Демо-режим: Имитация успешной оплаты!');
+      window.location.href = '/success.html';
     }
   }
 }
