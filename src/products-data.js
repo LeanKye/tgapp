@@ -970,7 +970,7 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
+      formattedPrice = '\u2009' + formattedPrice; // Тонкий пробел для компактности
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }

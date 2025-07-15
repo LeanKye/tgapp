@@ -597,10 +597,12 @@ body:has(.product)::before {
   align-items: center;
   justify-content: flex-start;
   flex-shrink: 0;
+  gap: 8px;
+  width: 100%;
 }
 
 .logo h1 {
-  font-size: 4px;
+  font-size: 18px;
   font-weight: 600;
   color: #29A5FF;
   margin: 0;
@@ -608,6 +610,56 @@ body:has(.product)::before {
   white-space: nowrap;
   user-select: none;
   -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+.version-badge {
+  font-size: 10px;
+  font-weight: 500;
+  color: #666666;
+  background-color: #2f2f2f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  text-transform: uppercase;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0;
+}
+
+.support-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  margin-left: auto;
+  margin-right: 0;
+}
+
+.support-btn {
+  font-size: 12px;
+  font-weight: 500;
+  color: #29A5FF;
+  background-color: transparent;
+  border: 1px solid #29A5FF;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+  white-space: nowrap;
+}
+
+@media (hover: hover) {
+  .support-btn:hover {
+    background-color: #29A5FF;
+    color: white;
+  }
+}
+
+.support-btn:active {
+  transform: scale(0.98);
 }
 
 .catalog {
@@ -791,6 +843,14 @@ body:has(.product)::before {
   text-align: center;
   color: #999999;
   font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+@media (hover: hover) {
+  .no-results:hover {
+    background-color: #3f3f3f;
+  }
 }
 
 .menu-button {
@@ -873,6 +933,56 @@ body:has(.logo) .menu {
 .menu-overlay.menu-closed {
   opacity: 0;
   pointer-events: none;
+}
+
+/* Оверлей для поиска */
+.search-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, transparent 0%, transparent 108px, rgba(0, 0, 0, 0.5) 108px);
+  z-index: 10001;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: opacity;
+}
+
+/* Специальные стили для страницы категорий (хедер ниже без логотипа) */
+body:not(:has(.logo)) .search-overlay {
+  background: linear-gradient(to bottom, transparent 0%, transparent 76px, rgba(0, 0, 0, 0.5) 76px);
+}
+
+.search-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Блокировка скролла при активном поиске */
+body.search-active {
+  overflow: hidden;
+  height: 100vh;
+  position: fixed;
+  width: 100%;
+  left: 0;
+  top: 0;
+}
+
+/* Поднимаем z-index для поиска когда он активен */
+.search-container.search-active {
+  z-index: 99998;
+}
+
+/* Блокируем интерактивность для всех элементов при активном поиске, кроме хедера */
+body.search-active .banner-item,
+body.search-active .category-card,
+body.search-active .category-product-card,
+body.search-active .toggle-switches,
+body.search-active .banner-slider {
+  pointer-events: none;
+  cursor: default;
 }
 
 
@@ -1417,7 +1527,7 @@ body:has(.logo) .menu {
 
 /* Уменьшенная разрядка для перечеркнутых цен в карточках товаров */
 .category-product-price-old .formatted-price {
-  letter-spacing: 0.05px; /* Еще более компактная разрядка для маленьких перечеркнутых цен */
+  letter-spacing: -0.02px; /* Еще более компактная разрядка для маленьких перечеркнутых цен */
 }
 
 .product-sub {
@@ -1897,7 +2007,7 @@ body:has(.logo) .menu {
 }
 
 .price-old .formatted-price .currency-separator {
-  margin-left: 0.2em; /* Отступ как на Я.Маркете */
+  margin-left: 0.1em; /* Меньший отступ для зачеркнутых цен */
   font-size: 12px !important;
   font-weight: 500 !important;
   color: #737270 !important;
@@ -1906,12 +2016,21 @@ body:has(.logo) .menu {
 /* Уменьшаем символ валюты в карточках товаров */
 .category-product-price-current .formatted-price .currency-separator,
 .category-product-price-old .formatted-price .currency-separator {
-  margin-left: 0.2em; /* Отступ как на Я.Маркете */
+  margin-left: 0.1em; /* Меньший отступ для зачеркнутых цен */
   font-size: 0.8em !important;
 }
 
 /* Адаптивные стили для мобильных */
 @media (max-width: 375px) {
+  .search-overlay {
+    background: linear-gradient(to bottom, transparent 0%, transparent 100px, rgba(0, 0, 0, 0.5) 100px);
+  }
+  
+  /* Страница категорий на мобильных */
+  body:not(:has(.logo)) .search-overlay {
+    background: linear-gradient(to bottom, transparent 0%, transparent 68px, rgba(0, 0, 0, 0.5) 68px);
+  }
+  
   .add-to-cart {
     left: 12px;
     right: 12px;
@@ -1985,6 +2104,16 @@ body:has(.logo) .menu {
   
   .logo h1 {
     font-size: 16px;
+  }
+  
+  .version-badge {
+    font-size: 9px;
+    padding: 2px 4px;
+  }
+  
+  .support-btn {
+    font-size: 11px;
+    padding: 5px 10px;
   }
   
   .header-container {
@@ -2077,6 +2206,15 @@ body:has(.logo) .menu {
 }
 
 @media (max-width: 768px) {
+  .search-overlay {
+    background: linear-gradient(to bottom, transparent 0%, transparent 114px, rgba(0, 0, 0, 0.5) 114px);
+  }
+  
+  /* Страница категорий на планшетах */
+  body:not(:has(.logo)) .search-overlay {
+    background: linear-gradient(to bottom, transparent 0%, transparent 82px, rgba(0, 0, 0, 0.5) 82px);
+  }
+  
   .add-to-cart {
     font-size: 17px;
   }
@@ -2109,9 +2247,21 @@ body:has(.logo) .menu {
     font-size: 17px;
   }
   
+  .version-badge {
+    font-size: 9px;
+    padding: 2px 5px;
+  }
+  
+  .support-btn {
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+  
   .header-container {
     gap: 10px;
   }
+  
+ 
   
   .toggle-switches label {
     font-size: 15px;
@@ -2181,6 +2331,15 @@ body:has(.logo) .menu {
 }
 
 @media (min-width: 1024px) {
+  .search-overlay {
+    background: linear-gradient(to bottom, transparent 0%, transparent 108px, rgba(0, 0, 0, 0.5) 108px);
+  }
+  
+  /* Страница категорий на десктопе */
+  body:not(:has(.logo)) .search-overlay {
+    background: linear-gradient(to bottom, transparent 0%, transparent 76px, rgba(0, 0, 0, 0.5) 76px);
+  }
+  
   .add-to-cart {
     left: 50%;
     right: auto;
@@ -2197,6 +2356,13 @@ body:has(.logo) .menu {
   
   .add-to-cart:active {
     transform: translateX(-50%) translateY(0px);
+  }
+  
+ 
+  
+  .support-btn {
+    font-size: 12px;
+    padding: 6px 12px;
   }
   
   .discount-badge {
@@ -2310,6 +2476,7 @@ body:has(.logo) .menu {
 .toggle-switches-container {
   padding: 0 16px;
   margin-bottom: 16px;
+  margin-top: 20px; /* Отступ от блока "Новинки" до текста "Подписка PS Plus" */
 }
 
 .toggle-switches {

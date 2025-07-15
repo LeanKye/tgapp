@@ -86,6 +86,7 @@ class CategoryPage {
     if (!searchInput) return;
 
     let searchTimeout;
+    this.isSearchActive = false;
 
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -101,12 +102,56 @@ class CategoryPage {
       }, 300);
     });
 
+    // Активируем поиск при фокусе
+    searchInput.addEventListener('focus', () => {
+      this.activateSearch();
+    });
+
     // Скрываем dropdown при клике вне поиска
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.search-container')) {
+      if (!e.target.closest('.search-container') && !e.target.closest('.header-container')) {
         this.hideSearchDropdown();
+        if (this.isSearchActive) {
+          this.deactivateSearch();
+        }
       }
     });
+    
+    // Обработчик для закрытия поиска при клике на оверлей
+    const searchOverlay = document.getElementById('search-overlay');
+    if (searchOverlay) {
+      searchOverlay.addEventListener('click', () => {
+        this.deactivateSearch();
+      });
+    }
+    
+    // Обработчик для скролла - если пользователь пытается скроллить, закрываем поиск
+    document.addEventListener('wheel', (e) => {
+      if (this.isSearchActive) {
+        e.preventDefault();
+        this.deactivateSearch();
+      }
+    }, { passive: false });
+    
+      // Обработчик для touch событий на мобильных устройствах
+  document.addEventListener('touchmove', (e) => {
+    if (this.isSearchActive) {
+      e.preventDefault();
+      this.deactivateSearch();
+    }
+  }, { passive: false });
+  
+  // Обработчик для блокировки всех кликов при активном поиске
+  document.addEventListener('click', (e) => {
+    if (this.isSearchActive) {
+      // Разрешаем клики только внутри header-container (включая поиск)
+      if (!e.target.closest('.header-container')) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.deactivateSearch();
+      }
+    }
+  }, { capture: true });
   }
 
   performSearch(query) {
@@ -170,12 +215,52 @@ class CategoryPage {
 
     dropdown.innerHTML = '<div class="no-results">Товары не найдены</div>';
     dropdown.classList.add('show');
+    
+    // Добавляем обработчик клика для сброса поиска
+    const noResultsElement = dropdown.querySelector('.no-results');
+    if (noResultsElement) {
+      noResultsElement.addEventListener('click', () => {
+        this.deactivateSearch(); // Полностью закрываем поиск с затемнением
+      });
+    }
   }
 
   hideSearchDropdown() {
     const dropdown = document.getElementById('search-dropdown');
     if (dropdown) {
       dropdown.classList.remove('show');
+    }
+  }
+
+  activateSearch() {
+    this.isSearchActive = true;
+    document.body.classList.add('search-active');
+    const searchOverlay = document.getElementById('search-overlay');
+    if (searchOverlay) {
+      searchOverlay.classList.add('show');
+    }
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+      searchContainer.classList.add('search-active');
+    }
+  }
+
+  deactivateSearch() {
+    this.isSearchActive = false;
+    document.body.classList.remove('search-active');
+    const searchOverlay = document.getElementById('search-overlay');
+    if (searchOverlay) {
+      searchOverlay.classList.remove('show');
+    }
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+      searchContainer.classList.remove('search-active');
+    }
+    this.hideSearchDropdown();
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.blur();
     }
   }
 

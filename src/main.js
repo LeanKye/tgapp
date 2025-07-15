@@ -579,6 +579,7 @@ class SearchManager {
     this.selectedIndex = -1;
     this.currentResults = [];
     this.searchTimeout = null;
+    this.isSearchActive = false;
     
     this.init();
   }
@@ -596,8 +597,11 @@ class SearchManager {
 
     // Скрываем dropdown при клике вне его
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.search-container')) {
+      if (!e.target.closest('.search-container') && !e.target.closest('.header-container')) {
         this.hideDropdown();
+        if (this.isSearchActive) {
+          this.deactivateSearch();
+        }
       }
     });
 
@@ -608,12 +612,50 @@ class SearchManager {
         closeMenu();
       }
       
+      this.activateSearch();
+      
       if (this.searchInput.value.trim()) {
         this.handleInput(this.searchInput.value);
       } else {
         this.showNoResults();
       }
     });
+    
+    // Обработчик для закрытия поиска при клике на оверлей
+    const searchOverlay = document.getElementById('search-overlay');
+    if (searchOverlay) {
+      searchOverlay.addEventListener('click', () => {
+        this.deactivateSearch();
+      });
+    }
+    
+      // Обработчик для скролла - если пользователь пытается скроллить, закрываем поиск
+  document.addEventListener('wheel', (e) => {
+    if (this.isSearchActive) {
+      e.preventDefault();
+      this.deactivateSearch();
+    }
+  }, { passive: false });
+  
+  // Обработчик для touch событий на мобильных устройствах
+  document.addEventListener('touchmove', (e) => {
+    if (this.isSearchActive) {
+      e.preventDefault();
+      this.deactivateSearch();
+    }
+  }, { passive: false });
+  
+  // Обработчик для блокировки всех кликов при активном поиске
+  document.addEventListener('click', (e) => {
+    if (this.isSearchActive) {
+      // Разрешаем клики только внутри header-container (включая поиск)
+      if (!e.target.closest('.header-container')) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.deactivateSearch();
+      }
+    }
+  }, { capture: true });
   }
 
   handleInput(query) {
@@ -690,8 +732,7 @@ class SearchManager {
     const noResultsElement = this.searchDropdown.querySelector('.no-results');
     if (noResultsElement) {
       noResultsElement.addEventListener('click', () => {
-        this.searchInput.value = ''; // Очищаем поле
-        this.hideDropdown(); // Закрываем поиск
+        this.deactivateSearch(); // Полностью закрываем поиск с затемнением
       });
     }
   }
@@ -729,8 +770,7 @@ class SearchManager {
         break;
         
       case 'Escape':
-        this.hideDropdown();
-        this.searchInput.blur();
+        this.deactivateSearch();
         break;
     }
   }
@@ -761,6 +801,35 @@ class SearchManager {
   hideDropdown() {
     this.searchDropdown.classList.remove('show');
     this.selectedIndex = -1;
+  }
+
+  activateSearch() {
+    this.isSearchActive = true;
+    document.body.classList.add('search-active');
+    const searchOverlay = document.getElementById('search-overlay');
+    if (searchOverlay) {
+      searchOverlay.classList.add('show');
+    }
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+      searchContainer.classList.add('search-active');
+    }
+  }
+
+  deactivateSearch() {
+    this.isSearchActive = false;
+    document.body.classList.remove('search-active');
+    const searchOverlay = document.getElementById('search-overlay');
+    if (searchOverlay) {
+      searchOverlay.classList.remove('show');
+    }
+    const searchContainer = document.querySelector('.search-container');
+    if (searchContainer) {
+      searchContainer.classList.remove('search-active');
+    }
+    this.hideDropdown();
+    this.searchInput.value = '';
+    this.searchInput.blur();
   }
 }
 
@@ -994,6 +1063,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
     // Инициализируем навигацию из бургер меню
   initMenuNavigation();
+
+  // Обработчик для кнопки поддержки проекта
+  const supportButton = document.querySelector('.support-btn');
+  if (supportButton) {
+    supportButton.addEventListener('click', () => {
+      // Здесь будет логика для поддержки проекта
+    });
+  }
 
   // Дополнительная проверка позиции слайдера товаров после полной загрузки
   setTimeout(() => {
