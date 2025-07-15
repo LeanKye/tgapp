@@ -126,7 +126,13 @@
         function goBack() {
             // Если мы в Telegram WebView, используем его API
             if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.close();
+                // Сначала пытаемся вернуться назад в истории
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // Если нет истории, закрываем WebView
+                    window.Telegram.WebApp.close();
+                }
             } else {
                 // Иначе возвращаемся на главную страницу
                 window.location.href = '/';

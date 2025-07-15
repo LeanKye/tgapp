@@ -20,6 +20,7 @@
 - **Метод оплаты**: YooKassa Checkout через форму оплаты
 - **Безопасность**: Используются только публичные параметры (без секретных ключей)
 - **Совместимость**: Работает в браузере и Telegram WebView
+- **Навигация**: Исправлена работа кнопки "Назад" в Telegram WebView
 
 ## Структура файлов
 
@@ -54,11 +55,10 @@
 ## Параметры YooKassa
 
 ```javascript
-const yooKassaUrl = `https://yoomoney.ru/quickpay/shop-widget?
-  writer=seller&
+const yooKassaUrl = `https://yoomoney.ru/checkout/payments/v2/contract?
+  orderId=${Date.now()}&
+  sum=${price}&
   targets=${encodedDescription}&
-  default-sum=${price}&
-  button-text=11&
   payment-type-choice=on&
   mobile-payment-type-choice=on&
   successURL=${successUrl}&
@@ -66,6 +66,13 @@ const yooKassaUrl = `https://yoomoney.ru/quickpay/shop-widget?
   quickpay=shop&
   account=${shopId}`;
 ```
+
+### Примечание о YooMoney vs YooKassa
+
+YooMoney и YooKassa - это одна и та же компания:
+- **YooMoney** - бренд для физических лиц
+- **YooKassa** - бренд для бизнеса
+- Оба используют одинаковую платёжную систему
 
 ## Тестирование
 
@@ -115,12 +122,25 @@ const yooKassaUrl = `https://yoomoney.ru/quickpay/shop-widget?
    ```
 4. **Обработайте уведомления** о платежах через вебхуки
 
+## Решённые проблемы
+
+### ✅ YooMoney vs YooKassa
+- **Проблема**: Перенаправление на YooMoney вместо YooKassa
+- **Решение**: Обновлена ссылка на современный YooKassa Checkout
+- **Результат**: Более современный интерфейс оплаты
+
+### ✅ Кнопка "Назад" в Telegram
+- **Проблема**: Кнопка "Назад" в хедере Telegram не работала
+- **Решение**: Добавлена правильная обработка навигации с `window.history.back()`
+- **Результат**: Корректная работа навигации в Telegram WebView
+
 ## Поддержка
 
 При возникновении вопросов:
 1. Проверьте консоль браузера на ошибки
 2. Убедитесь, что все файлы загружены
 3. Проверьте корректность URL параметров
+4. Убедитесь, что Telegram WebApp SDK загружен
 
 ---
 
