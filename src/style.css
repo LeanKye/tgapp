@@ -2736,4 +2736,343 @@ body.modal-open {
   }
 }
 
+/* Стили для модального окна Robokassa */
+.robokassa-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 20000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  height: 100vh;
+  height: 100dvh;
+  width: 100vw;
+  overflow: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.robokassa-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.robokassa-modal {
+  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  border-radius: 20px;
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow: hidden;
+  transform: scale(0.9) translateY(20px);
+  transition: all 0.3s ease;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.robokassa-modal-overlay.show .robokassa-modal {
+  transform: scale(1) translateY(0);
+}
+
+.robokassa-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.robokassa-modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.robokassa-modal-close {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.robokassa-modal-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.robokassa-modal-body {
+  padding: 20px 24px;
+  overflow-y: auto;
+  max-height: 60vh;
+  max-height: 60dvh;
+}
+
+.payment-info {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.payment-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.payment-item:last-child {
+  margin-bottom: 0;
+}
+
+.payment-item span:first-child {
+  color: #888;
+}
+
+.payment-item span:last-child {
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.payment-methods h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.payment-method {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.payment-method:last-child {
+  margin-bottom: 0;
+}
+
+.payment-method:hover {
+  border-color: rgba(41, 165, 255, 0.5);
+  background: rgba(41, 165, 255, 0.05);
+}
+
+.payment-method.selected {
+  border-color: #29A5FF;
+  background: rgba(41, 165, 255, 0.1);
+}
+
+.method-icon {
+  font-size: 24px;
+  margin-right: 16px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.method-info {
+  flex: 1;
+}
+
+.method-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 4px;
+}
+
+.method-description {
+  font-size: 12px;
+  color: #888;
+}
+
+.robokassa-modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.robokassa-btn {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.robokassa-btn-primary {
+  background: linear-gradient(135deg, #29A5FF, #1E88E5);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(41, 165, 255, 0.3);
+}
+
+.robokassa-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1E88E5, #1565C0);
+  box-shadow: 0 6px 16px rgba(41, 165, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.robokassa-btn-primary:disabled {
+  background: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.robokassa-btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.robokassa-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+  .robokassa-modal-overlay {
+    padding: 8px;
+  }
+  
+  .robokassa-modal {
+    border-radius: 16px;
+  }
+  
+  .robokassa-modal-header {
+    padding: 16px 20px 12px;
+  }
+  
+  .robokassa-modal-header h3 {
+    font-size: 18px;
+  }
+  
+  .robokassa-modal-body {
+    padding: 16px 20px;
+  }
+  
+  .payment-info {
+    padding: 12px;
+  }
+  
+  .payment-method {
+    padding: 12px;
+  }
+  
+  .method-icon {
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    margin-right: 12px;
+  }
+  
+  .method-name {
+    font-size: 14px;
+  }
+  
+  .method-description {
+    font-size: 11px;
+  }
+  
+  .robokassa-modal-footer {
+    padding: 16px 20px;
+    gap: 8px;
+  }
+  
+  .robokassa-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Анимации для модального окна */
+@keyframes robokassaFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes robokassaFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+}
+
+.robokassa-modal-overlay.show .robokassa-modal {
+  animation: robokassaFadeIn 0.3s ease forwards;
+}
+
+.robokassa-modal-overlay:not(.show) .robokassa-modal {
+  animation: robokassaFadeOut 0.3s ease forwards;
+}
+
+/* Анимации для уведомлений */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideOutUp {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100%);
+  }
+}
+
+
 

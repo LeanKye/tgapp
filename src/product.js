@@ -1,5 +1,6 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple } from './products-data.js'
+import { robokassa } from './robokassa.js'
 
 // Функция для получения параметров URL
 function getUrlParameter(name) {
@@ -1023,6 +1024,206 @@ function initModal() {
   });
 }
 
+// Функции для работы с оплатой
+function initPayment() {
+  const buyButton = document.querySelector('.add-to-cart');
+  if (!buyButton) return;
+
+  buyButton.addEventListener('click', handleBuyClick);
+}
+
+// Обработчик клика по кнопке "Купить"
+async function handleBuyClick() {
+  const productId = getUrlParameter('product');
+  const product = getProductById(productId);
+  
+  if (!product) {
+    showError('Товар не найден');
+    return;
+  }
+
+  // Получаем выбранные опции
+  const selectedOptions = getSelectedOptions();
+  if (!selectedOptions) {
+    showError('Пожалуйста, выберите все необходимые опции');
+    return;
+  }
+
+  // Рассчитываем итоговую цену
+  const finalPrice = calculateFinalPrice(product, selectedOptions);
+  
+  // Создаем данные заказа
+  const orderData = {
+    orderId: generateOrderId(),
+    amount: finalPrice,
+    description: `${product.title} - ${selectedOptions.variant}, ${selectedOptions.period}, ${selectedOptions.edition}`,
+    email: '', // Можно добавить поле для email
+    culture: 'ru',
+    encoding: 'utf-8'
+  };
+
+  // Получаем кнопку и сохраняем оригинальный текст
+  const buyButton = document.querySelector('.add-to-cart');
+  if (!buyButton) {
+    showError('Кнопка покупки не найдена');
+    return;
+  }
+  const originalText = buyButton.textContent;
+
+  try {
+    // Показываем индикатор загрузки
+    buyButton.textContent = 'Подготовка...';
+    buyButton.disabled = true;
+
+    // Создаем платеж
+    const paymentData = robokassa.createPayment(orderData);
+    
+    // Открываем модальное окно оплаты
+    const result = await robokassa.openPaymentModal(paymentData);
+    
+    // Обрабатываем успешную оплату
+    handlePaymentSuccess(result, product, selectedOptions);
+    
+  } catch (error) {
+    console.error('Ошибка оплаты:', error);
+    
+    if (error.message === 'Payment cancelled') {
+      showMessage('Оплата отменена');
+    } else {
+      showError('Произошла ошибка при обработке платежа');
+    }
+  } finally {
+    // Восстанавливаем кнопку
+    if (buyButton) {
+      buyButton.textContent = originalText || 'Купить';
+      buyButton.disabled = false;
+    }
+  }
+}
+
+// Получение выбранных опций
+function getSelectedOptions() {
+  const variantInput = document.querySelector('input[name="variant"]:checked');
+  const periodInput = document.querySelector('input[name="period"]:checked');
+  const editionInput = document.querySelector('input[name="edition"]:checked');
+
+  if (!variantInput || !periodInput || !editionInput) {
+    return null;
+  }
+
+  const productId = getUrlParameter('product');
+  const product = getProductById(productId);
+  
+  if (!product) return null;
+
+  const variant = product.variants.find(v => v.id === variantInput.value);
+  const period = product.periods.find(p => p.id === periodInput.value);
+  const edition = product.editions.find(e => e.id === editionInput.value);
+
+  return {
+    variant: variant ? variant.name : 'Неизвестно',
+    period: period ? period.name : 'Неизвестно',
+    edition: edition ? edition.name : 'Неизвестно',
+    variantId: variantInput.value,
+    periodId: periodInput.value,
+    editionId: editionInput.value
+  };
+}
+
+// Расчет итоговой цены
+function calculateFinalPrice(product, selectedOptions) {
+  let basePrice = product.price;
+  
+  // Находим выбранные опции и их цены
+  const period = product.periods.find(p => p.id === selectedOptions.periodId);
+  const edition = product.editions.find(e => e.id === selectedOptions.editionId);
+  
+  if (period && period.price) {
+    basePrice = period.price;
+  }
+  
+  if (edition && edition.price) {
+    basePrice = edition.price;
+  }
+  
+  return basePrice;
+}
+
+// Генерация ID заказа
+function generateOrderId() {
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 1000);
+  return `ORDER_${timestamp}_${random}`;
+}
+
+// Обработка успешной оплаты
+function handlePaymentSuccess(result, product, selectedOptions) {
+  // Показываем уведомление об успешной оплате
+  showSuccess(`✅ Оплата прошла успешно! Заказ #${result.orderId}`);
+  
+  // Здесь можно добавить логику для:
+  // - Сохранения заказа в базу данных
+  // - Отправки уведомления пользователю
+  // - Отправки данных в Telegram Bot API
+  
+  console.log('Платеж успешен:', {
+    result,
+    product,
+    selectedOptions
+  });
+  
+  // НЕ перенаправляем на главную - пользователь остается на странице товара
+  // Если нужно перенаправление, раскомментируйте код ниже:
+  // setTimeout(() => {
+  //   window.location.href = '/';
+  // }, 3000);
+}
+
+// Показ сообщений
+function showMessage(message, type = 'info') {
+  // Создаем уведомление
+  const notification = document.createElement('div');
+  notification.className = `notification notification-${type}`;
+  notification.textContent = message;
+  
+  // Добавляем стили
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 30000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: slideInDown 0.3s ease;
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Удаляем через 3 секунды
+  setTimeout(() => {
+    notification.style.animation = 'slideOutUp 0.3s ease';
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}
+
+function showSuccess(message) {
+  showMessage(message, 'success');
+}
+
+function showError(message) {
+  showMessage(message, 'error');
+}
+
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
   const productId = getUrlParameter('product');
@@ -1035,6 +1236,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initCheckoutPanel();
       initModal();
+      initPayment(); // Добавляем инициализацию оплаты
     }, 100);
   }
   
