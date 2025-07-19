@@ -2755,8 +2755,10 @@ body.modal-open {
   height: 100vh;
   height: 100dvh;
   width: 100vw;
+  width: 100%;
   overflow: hidden;
   -webkit-overflow-scrolling: touch;
+  box-sizing: border-box;
 }
 
 .robokassa-modal-overlay.show {
@@ -2776,6 +2778,8 @@ body.modal-open {
   transition: all 0.3s ease;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  margin: 0 auto;
 }
 
 .robokassa-modal-overlay.show .robokassa-modal {
@@ -2968,10 +2972,15 @@ body.modal-open {
 @media (max-width: 480px) {
   .robokassa-modal-overlay {
     padding: 8px;
+    align-items: center;
+    justify-content: center;
   }
   
   .robokassa-modal {
     border-radius: 16px;
+    max-width: calc(100vw - 16px);
+    width: 100%;
+    margin: 0;
   }
   
   .robokassa-modal-header {
@@ -3020,6 +3029,30 @@ body.modal-open {
   }
 }
 
+/* Дополнительные исправления для очень маленьких экранов */
+@media (max-width: 360px) {
+  .robokassa-modal-overlay {
+    padding: 4px;
+  }
+  
+  .robokassa-modal {
+    max-width: calc(100vw - 8px);
+    border-radius: 12px;
+  }
+  
+  .robokassa-modal-header {
+    padding: 12px 16px 8px;
+  }
+  
+  .robokassa-modal-body {
+    padding: 12px 16px;
+  }
+  
+  .robokassa-modal-footer {
+    padding: 12px 16px;
+  }
+}
+
 /* Анимации для модального окна */
 @keyframes robokassaFadeIn {
   from {
@@ -3049,6 +3082,44 @@ body.modal-open {
 
 .robokassa-modal-overlay:not(.show) .robokassa-modal {
   animation: robokassaFadeOut 0.3s ease forwards;
+}
+
+/* Исправления для мобильных устройств */
+@media (max-width: 768px) {
+  .robokassa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+  
+  .robokassa-modal {
+    max-width: calc(100vw - 32px);
+    width: 100%;
+    margin: 0;
+    box-sizing: border-box;
+  }
+}
+
+/* Исправления для очень маленьких экранов */
+@media (max-width: 375px) {
+  .robokassa-modal-overlay {
+    padding: 8px;
+  }
+  
+  .robokassa-modal {
+    max-width: calc(100vw - 16px);
+  }
 }
 
 /* Анимации для уведомлений */
