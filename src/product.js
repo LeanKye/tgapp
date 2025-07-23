@@ -560,12 +560,10 @@ function initCheckoutPanel() {
     // Временно показываем выбранный вариант
     const tempText = checkoutHeaderText.textContent;
     checkoutHeaderText.textContent = `✓ ${selectedVariant}`;
-    checkoutHeaderText.style.color = '#15EA61';
     
     // Убираем анимацию через короткое время
     setTimeout(() => {
       checkoutContainer.classList.remove('selection-made');
-      checkoutHeaderText.style.color = '';
     }, 500);
   }
   
