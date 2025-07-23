@@ -1971,7 +1971,7 @@ body.search-active .banner-slider {
 
 /* Стили для форматирования цен как на Яндекс Маркете */
 .formatted-price {
-  letter-spacing: 0.1px; /* Еще более уменьшенный отступ между разрядами */
+  letter-spacing: 0.1px; /* Уменьшенный отступ между разрядами */
 }
 
 .formatted-price .currency-separator {
