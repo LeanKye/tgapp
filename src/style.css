@@ -642,8 +642,8 @@ body:has(.product)::before {
   color: white;
   background-color: transparent;
   border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
@@ -656,7 +656,6 @@ body:has(.product)::before {
 
 @media (hover: hover) {
   .support-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
     color: white;
   }
 }
@@ -1291,15 +1290,10 @@ body.search-active .banner-slider {
   font-size: 17px;
   font-weight: 600;
   margin-bottom: 16px;
-  padding-left: 16px;
+  padding-left: 0;
   padding-right: 16px;
   display: flex;
   align-items: center;
-}
-
-.category-title:has(img) {
-  padding-left: 0;
-  margin-left: 0px;
 }
 
 /* Убираем двойные отступы для заголовков внутри catalog, так как контейнеры уже имеют отступы */
@@ -2096,7 +2090,7 @@ body.search-active .banner-slider {
   
   .support-btn {
     font-size: 11px;
-    padding: 5px 10px;
+    padding: 0;
     gap: 3px;
   }
   
@@ -2238,7 +2232,7 @@ body.search-active .banner-slider {
   
   .support-btn {
     font-size: 11px;
-    padding: 5px 10px;
+    padding: 0;
     gap: 3px;
   }
   
@@ -2347,7 +2341,7 @@ body.search-active .banner-slider {
   
   .support-btn {
     font-size: 12px;
-    padding: 6px 12px;
+    padding: 0;
     gap: 4px;
   }
   
