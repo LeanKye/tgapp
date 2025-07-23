@@ -3144,5 +3144,423 @@ body.modal-open {
   }
 }
 
+/* Стили для модального окна DonationAlerts */
+.donation-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  backdrop-filter: blur(4px);
+  box-sizing: border-box;
+  padding: 16px;
+}
 
+.donation-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
 
+body.donation-modal-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.donation-modal {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  transform: scale(0.9) translateY(20px);
+  transition: transform 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  margin: auto;
+}
+
+.donation-modal-overlay.show .donation-modal {
+  transform: scale(1) translateY(0);
+}
+
+.donation-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.donation-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.donation-modal-close {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.donation-modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.donation-modal-close:active {
+  transform: scale(0.95);
+}
+
+.donation-modal-body {
+  padding: 24px;
+  max-height: calc(90vh - 80px);
+  overflow-y: auto;
+}
+
+.donation-info {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.donation-info p {
+  margin: 0 0 8px 0;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.donation-description {
+  color: #888 !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
+  line-height: 1.4;
+}
+
+.donation-iframe-container {
+  width: 100%;
+  height: 400px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
+  position: relative;
+}
+
+.donation-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+}
+
+/* Адаптивность для мобильных устройств */
+
+/* Планшеты и средние экраны */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .donation-modal-overlay {
+    padding: 20px;
+  }
+  
+  .donation-modal {
+    width: 85%;
+    max-width: 600px;
+    max-height: 85vh;
+  }
+  
+  .donation-modal-header {
+    padding: 18px 22px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 17px;
+  }
+  
+  .donation-modal-body {
+    padding: 22px;
+    max-height: calc(85vh - 75px);
+  }
+  
+  .donation-iframe-container {
+    height: 380px;
+  }
+  
+  .donation-info p {
+    font-size: 15px;
+  }
+  
+  .donation-description {
+    font-size: 13px !important;
+  }
+}
+
+/* Средние мобильные устройства */
+@media (max-width: 768px) and (min-width: 481px) {
+  .donation-modal-overlay {
+    padding: 16px;
+  }
+  
+  .donation-modal {
+    width: 95%;
+    max-width: 450px;
+    max-height: 90vh;
+  }
+  
+  .donation-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 16px;
+  }
+  
+  .donation-modal-body {
+    padding: 20px;
+    max-height: calc(90vh - 70px);
+  }
+  
+  .donation-iframe-container {
+    height: 350px;
+  }
+  
+  .donation-info p {
+    font-size: 15px;
+  }
+  
+  .donation-description {
+    font-size: 13px !important;
+  }
+}
+
+/* Маленькие мобильные устройства */
+@media (max-width: 480px) and (min-width: 376px) {
+  .donation-modal-overlay {
+    padding: 14px;
+  }
+  
+  .donation-modal {
+    width: 100%;
+    max-height: 92vh;
+  }
+  
+  .donation-modal-header {
+    padding: 15px 18px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 15px;
+  }
+  
+  .donation-modal-body {
+    padding: 18px;
+    max-height: calc(92vh - 65px);
+  }
+  
+  .donation-iframe-container {
+    height: 320px;
+  }
+  
+  .donation-info p {
+    font-size: 14px;
+  }
+  
+  .donation-description {
+    font-size: 12px !important;
+  }
+}
+
+/* Очень маленькие мобильные устройства */
+@media (max-width: 375px) {
+  .donation-modal-overlay {
+    padding: 12px;
+  }
+  
+  .donation-modal {
+    width: 100%;
+    max-height: 95vh;
+  }
+  
+  .donation-modal-header {
+    padding: 14px 16px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 14px;
+  }
+  
+  .donation-modal-body {
+    padding: 16px;
+    max-height: calc(95vh - 60px);
+  }
+  
+  .donation-iframe-container {
+    height: 280px;
+  }
+  
+  .donation-info p {
+    font-size: 13px;
+  }
+  
+  .donation-description {
+    font-size: 11px !important;
+  }
+}
+
+/* Ландшафтная ориентация на мобильных */
+@media (max-height: 500px) and (orientation: landscape) {
+  .donation-modal-overlay {
+    padding: 8px;
+  }
+  
+  .donation-modal {
+    max-height: 98vh;
+    width: 95%;
+    max-width: 600px;
+  }
+  
+  .donation-modal-header {
+    padding: 12px 18px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 14px;
+  }
+  
+  .donation-modal-body {
+    padding: 14px 18px;
+    max-height: calc(98vh - 50px);
+  }
+  
+  .donation-iframe-container {
+    height: 200px;
+  }
+  
+  .donation-info {
+    margin-bottom: 12px;
+  }
+  
+  .donation-info p {
+    font-size: 12px;
+    margin: 0 0 4px 0;
+  }
+  
+  .donation-description {
+    font-size: 10px !important;
+  }
+}
+
+/* Большие экраны */
+@media (min-width: 1025px) {
+  .donation-modal-overlay {
+    padding: 24px;
+  }
+  
+  .donation-modal {
+    width: 80%;
+    max-width: 550px;
+    max-height: 80vh;
+  }
+  
+  .donation-modal-header {
+    padding: 22px 26px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 19px;
+  }
+  
+  .donation-modal-body {
+    padding: 26px;
+    max-height: calc(80vh - 85px);
+  }
+  
+  .donation-iframe-container {
+    height: 420px;
+  }
+  
+  .donation-info p {
+    font-size: 17px;
+  }
+  
+  .donation-description {
+    font-size: 15px !important;
+  }
+}
+
+/* Анимации для модального окна */
+@keyframes donationModalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes donationModalFadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+}
+
+.donation-modal-overlay.show .donation-modal {
+  animation: donationModalFadeIn 0.3s ease forwards;
+}
+
+.donation-modal-overlay:not(.show) .donation-modal {
+  animation: donationModalFadeOut 0.3s ease forwards;
+}
+
+/* Поддержка высокого DPI */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .donation-modal {
+    border-width: 0.5px;
+  }
+  
+  .donation-iframe-container {
+    border-width: 0.5px;
+  }
+}
+
+/* Улучшения для устройств с сенсорным экраном */
+@media (hover: none) and (pointer: coarse) {
+  .donation-modal-close {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .donation-modal-header h3 {
+    font-size: 16px;
+  }
+}
