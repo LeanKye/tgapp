@@ -639,9 +639,9 @@ body:has(.product)::before {
 .support-btn {
   font-size: 12px;
   font-weight: 500;
-  color: #29A5FF;
+  color: white;
   background-color: transparent;
-  border: 1px solid #29A5FF;
+  border: none;
   padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
@@ -649,11 +649,14 @@ body:has(.product)::before {
   user-select: none;
   -webkit-user-select: none;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 @media (hover: hover) {
   .support-btn:hover {
-    background-color: #29A5FF;
+    background-color: rgba(255, 255, 255, 0.1);
     color: white;
   }
 }
@@ -2094,6 +2097,7 @@ body.search-active .banner-slider {
   .support-btn {
     font-size: 11px;
     padding: 5px 10px;
+    gap: 3px;
   }
   
   .header-container {
@@ -2235,6 +2239,7 @@ body.search-active .banner-slider {
   .support-btn {
     font-size: 11px;
     padding: 5px 10px;
+    gap: 3px;
   }
   
   .header-container {
@@ -2343,6 +2348,7 @@ body.search-active .banner-slider {
   .support-btn {
     font-size: 12px;
     padding: 6px 12px;
+    gap: 4px;
   }
   
   .discount-badge {
