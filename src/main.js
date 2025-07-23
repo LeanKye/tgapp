@@ -1,6 +1,5 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
-import DonationModal from './donation-modal.js'
 
 const menuButton = document.getElementById('menu-button');
 const menu = document.getElementById('menu')
@@ -1122,8 +1121,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализируем навигацию из бургер меню
   initMenuNavigation();
 
-  // Инициализируем модальное окно для поддержки проекта
-  const donationModal = new DonationModal();
+  // Обработчик для кнопки поддержки проекта
+  const supportButton = document.querySelector('.support-btn');
+  if (supportButton) {
+    supportButton.addEventListener('click', () => {
+      // Здесь будет логика для поддержки проекта
+    });
+  }
 
   // Дополнительная проверка позиции слайдера товаров после полной загрузки
   setTimeout(() => {
