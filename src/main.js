@@ -783,6 +783,22 @@ class SearchManager {
       noResultsElement.addEventListener('click', () => {
         this.deactivateSearch(); // Полностью закрываем поиск с затемнением
       });
+      
+      // Блокируем скролл для элемента "Товары не найдены" на мобильных устройствах
+      noResultsElement.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+      
+      noResultsElement.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+      
+      noResultsElement.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
     }
   }
 
@@ -845,11 +861,25 @@ class SearchManager {
 
   showDropdown() {
     this.searchDropdown.classList.add('show');
+    
+    // Если показывается "Товары не найдены", блокируем скролл для всего dropdown
+    const noResultsElement = this.searchDropdown.querySelector('.no-results');
+    if (noResultsElement) {
+      this.searchDropdown.style.overflow = 'hidden';
+      this.searchDropdown.style.touchAction = 'none';
+    } else {
+      this.searchDropdown.style.overflow = '';
+      this.searchDropdown.style.touchAction = '';
+    }
   }
 
   hideDropdown() {
     this.searchDropdown.classList.remove('show');
     this.selectedIndex = -1;
+    
+    // Сбрасываем стили блокировки скролла
+    this.searchDropdown.style.overflow = '';
+    this.searchDropdown.style.touchAction = '';
   }
 
   activateSearch() {

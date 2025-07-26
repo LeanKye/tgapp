@@ -791,6 +791,12 @@ body:has(.product)::before {
   display: block;
 }
 
+/* Блокируем скролл в dropdown когда показывается "Товары не найдены" */
+.search-dropdown:has(.no-results) {
+  overflow: hidden !important;
+  touch-action: none !important;
+}
+
 .search-suggestion {
   padding: 12px 16px;
   cursor: pointer;
@@ -851,11 +857,35 @@ body:has(.product)::before {
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  /* Блокируем скролл на мобильных устройствах */
+  touch-action: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  /* Предотвращаем контекстное меню */
+  -webkit-touch-callout: none;
+  /* Блокируем все жесты */
+  pointer-events: auto;
 }
 
 @media (hover: hover) {
   .no-results:hover {
     background-color: #3f3f3f;
+  }
+}
+
+/* Дополнительные стили для мобильных устройств */
+@media (hover: none) and (pointer: coarse) {
+  .no-results {
+    /* Полная блокировка скролла на мобильных устройствах */
+    touch-action: none !important;
+    overscroll-behavior: none;
+    /* Предотвращаем bounce эффект */
+    -webkit-overflow-scrolling: auto;
+    /* Блокируем все жесты */
+    pointer-events: auto;
   }
 }
 
@@ -2094,6 +2124,19 @@ body.search-active .banner-slider {
     gap: 3px;
   }
   
+  /* Дополнительная блокировка скролла для "Товары не найдены" на маленьких экранах */
+  .no-results {
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
+  
+  .search-dropdown:has(.no-results) {
+    overflow: hidden !important;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+  }
+  
   .header-container {
     gap: 8px;
   }
@@ -2238,6 +2281,18 @@ body.search-active .banner-slider {
   
   .header-container {
     gap: 10px;
+  }
+  
+  /* Блокировка скролла для "Товары не найдены" на планшетах */
+  .no-results {
+    touch-action: none !important;
+    overscroll-behavior: none !important;
+  }
+  
+  .search-dropdown:has(.no-results) {
+    overflow: hidden !important;
+    touch-action: none !important;
+    overscroll-behavior: none !important;
   }
   
  
