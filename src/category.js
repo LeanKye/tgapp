@@ -133,7 +133,6 @@ class CategoryPage {
       searchTimeout = setTimeout(() => {
         if (query.length === 0) {
           this.hideSearchDropdown();
-          this.showAllProducts();
         } else {
           this.performSearch(query);
         }
@@ -207,7 +206,6 @@ class CategoryPage {
     );
 
     this.filteredProducts = searchResults;
-    this.displayProducts(searchResults);
 
     if (searchResults.length > 0) {
       this.showSearchDropdown(searchResults.slice(0, 5)); // Показываем до 5 результатов
@@ -228,6 +226,10 @@ class CategoryPage {
     });
 
     dropdown.classList.add('show');
+    
+    // Сбрасываем стили блокировки скролла для dropdown с результатами
+    dropdown.style.overflow = '';
+    dropdown.style.touchAction = '';
   }
 
   createSearchSuggestion(product) {
@@ -262,12 +264,32 @@ class CategoryPage {
     dropdown.innerHTML = '<div class="no-results">Товары не найдены</div>';
     dropdown.classList.add('show');
     
+    // Блокируем скролл для dropdown когда показывается "Товары не найдены"
+    dropdown.style.overflow = 'hidden';
+    dropdown.style.touchAction = 'none';
+    
     // Добавляем обработчик клика для сброса поиска
     const noResultsElement = dropdown.querySelector('.no-results');
     if (noResultsElement) {
       noResultsElement.addEventListener('click', () => {
         this.deactivateSearch(); // Полностью закрываем поиск с затемнением
       });
+      
+      // Блокируем скролл для элемента "Товары не найдены" на мобильных устройствах
+      noResultsElement.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+      
+      noResultsElement.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
+      
+      noResultsElement.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }, { passive: false });
     }
   }
 
@@ -275,6 +297,10 @@ class CategoryPage {
     const dropdown = document.getElementById('search-dropdown');
     if (dropdown) {
       dropdown.classList.remove('show');
+      
+      // Сбрасываем стили блокировки скролла
+      dropdown.style.overflow = '';
+      dropdown.style.touchAction = '';
     }
   }
 
@@ -313,6 +339,8 @@ class CategoryPage {
       searchInput.value = '';
       searchInput.blur();
     }
+    // Убеждаемся, что все товары категории отображаются
+    this.displayProducts(this.currentProducts);
   }
 
   showAllProducts() {

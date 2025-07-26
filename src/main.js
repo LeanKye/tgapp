@@ -1151,13 +1151,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Инициализируем навигацию из бургер меню
   initMenuNavigation();
 
-  // Обработчик для кнопки поддержки проекта
-  const supportButton = document.querySelector('.support-btn');
-  if (supportButton) {
-    supportButton.addEventListener('click', () => {
-      // Здесь будет логика для поддержки проекта
-    });
-  }
+  // Обработчик для кнопки поддержки проекта удалён
 
   // Дополнительная проверка позиции слайдера товаров после полной загрузки
   setTimeout(() => {

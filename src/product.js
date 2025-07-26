@@ -1,5 +1,5 @@
 import './style.css'
-import { getProductById, formatPrice, formatPriceSimple } from './products-data.js'
+import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import { robokassa } from './robokassa.js'
 
 // Функция для получения параметров URL
@@ -73,20 +73,8 @@ function renderProduct(product) {
   document.querySelector('.price-value').innerHTML = formatPrice(product.price);
   
   if (product.oldPrice) {
-    // Форматируем старую цену так чтобы символ валюты не был перечеркнут
-    const priceStr = product.oldPrice.toString();
-    let formattedPrice = '';
-    
-    // Разбиваем число на разряды справа налево
-    for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
-      if (count > 0 && count % 3 === 0) {
-        formattedPrice = ' ' + formattedPrice;
-      }
-      formattedPrice = priceStr[i] + formattedPrice;
-    }
-    
-    // Устанавливаем HTML с перечеркнутым числом но неперечеркнутой валютой
-    document.querySelector('.price-old').innerHTML = `<span style="text-decoration: line-through;">${formattedPrice}</span> <span style="font-size: 0.8em;">₽</span>`;
+    // Используем функцию formatPriceCard для единообразного форматирования
+    document.querySelector('.price-old').innerHTML = formatPriceCard(product.oldPrice, '₽', true);
     document.querySelector('.price-old').style.display = 'inline';
   } else {
     document.querySelector('.price-old').style.display = 'none';

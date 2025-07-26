@@ -627,42 +627,7 @@ body:has(.product)::before {
   flex-shrink: 0;
 }
 
-.support-button {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-shrink: 0;
-  margin-left: auto;
-  margin-right: 0;
-}
-
-.support-btn {
-  font-size: 12px;
-  font-weight: 500;
-  color: white;
-  background-color: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-  -webkit-user-select: none;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-@media (hover: hover) {
-  .support-btn:hover {
-    color: white;
-  }
-}
-
-.support-btn:active {
-  transform: scale(0.98);
-}
+/* Удалены стили .support-button и .support-btn */
 
 .catalog {
   padding-inline: 0;
@@ -913,14 +878,14 @@ body:has(.product)::before {
   z-index: 1000;
   transform: translateX(0);
   opacity: 1;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease;
   will-change: transform, opacity;
   border-radius: 16px 0 0 0;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 .menu-closed {
-  transform: translateX(100%) translateY(-20px);
+  transform: translateX(100%);
   opacity: 0;
   /* Принудительно скрываем закрытое меню */
   visibility: hidden;
@@ -939,7 +904,7 @@ body:has(.product)::before {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
   opacity: 1;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: opacity;
 }
 
@@ -1440,7 +1405,7 @@ body.search-active .banner-slider {
 }
 
 .category-products-grid .category-product-price-old {
-  font-size: clamp(11px, 2vw, 14px);
+  font-size: clamp(12px, 2.24vw, 15.2px);
 }
 
 /* Общие стили для всех карточек товаров */
@@ -1528,7 +1493,7 @@ body.search-active .banner-slider {
 }
 
 .category-product-price-old {
-  font-size: clamp(11px, 2vw, 14px);
+  font-size: clamp(12px, 2.24vw, 15.2px);
   color: #666666;
 }
 
@@ -2018,6 +1983,11 @@ body.search-active .banner-slider {
   font-size: 12px !important;
   font-weight: 500 !important;
   color: #737270 !important;
+}
+
+/* Уменьшенная разрядка для перечеркнутых цен на странице товара */
+.price-old .formatted-price {
+  letter-spacing: -0.02px; /* Компактная разрядка для перечеркнутых цен */
 }
 
 /* Уменьшаем символ валюты в карточках товаров */
@@ -3197,6 +3167,17 @@ body.modal-open {
     opacity: 0;
     transform: translateX(-50%) translateY(-100%);
   }
+}
+
+/* Стили для заголовков подписок */
+.subscription-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: flex;
+  align-items: center;
 }
 
 
