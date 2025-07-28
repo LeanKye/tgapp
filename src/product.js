@@ -1262,7 +1262,8 @@ function initWebMoneyWidget(amount, product, selectedOptions) {
           "lmi_payment_no": orderId,
           "forcePay": true,
           "lmi_currency": "RUB",
-          "lmi_currency_code": "RUB"
+          "lmi_currency_code": "RUB",
+          "test": true
         },
         "style": {
           "theme": "wm",
