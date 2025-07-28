@@ -1,6 +1,5 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
-import { robokassa } from './robokassa.js'
 
 // Функция для получения параметров URL
 function getUrlParameter(name) {
@@ -1038,53 +1037,8 @@ async function handleBuyClick() {
   // Рассчитываем итоговую цену
   const finalPrice = calculateFinalPrice(product, selectedOptions);
   
-  // Создаем данные заказа
-  const orderData = {
-    orderId: generateOrderId(),
-    amount: finalPrice,
-    description: `${product.title} - ${selectedOptions.variant}, ${selectedOptions.period}, ${selectedOptions.edition}`,
-    email: '', // Можно добавить поле для email
-    culture: 'ru',
-    encoding: 'utf-8'
-  };
-
-  // Получаем кнопку и сохраняем оригинальный текст
-  const buyButton = document.querySelector('.add-to-cart');
-  if (!buyButton) {
-    showError('Кнопка покупки не найдена');
-    return;
-  }
-  const originalText = buyButton.textContent;
-
-  try {
-    // Показываем индикатор загрузки
-    buyButton.textContent = 'Подготовка...';
-    buyButton.disabled = true;
-
-    // Создаем платеж
-    const paymentData = robokassa.createPayment(orderData);
-    
-    // Открываем модальное окно оплаты
-    const result = await robokassa.openPaymentModal(paymentData);
-    
-    // Обрабатываем успешную оплату
-    handlePaymentSuccess(result, product, selectedOptions);
-    
-  } catch (error) {
-    console.error('Ошибка оплаты:', error);
-    
-    if (error.message === 'Payment cancelled') {
-      showMessage('Оплата отменена');
-    } else {
-      showError('Произошла ошибка при обработке платежа');
-    }
-  } finally {
-    // Восстанавливаем кнопку
-    if (buyButton) {
-      buyButton.textContent = originalText || 'Купить';
-      buyButton.disabled = false;
-    }
-  }
+  // Открываем модальное окно WebMoney
+  openWebMoneyModal(product, selectedOptions, finalPrice);
 }
 
 // Получение выбранных опций
@@ -1208,6 +1162,158 @@ function showSuccess(message) {
 
 function showError(message) {
   showMessage(message, 'error');
+}
+
+// Функции для работы с модальным окном WebMoney
+function openWebMoneyModal(product, selectedOptions, finalPrice) {
+  // Заполняем данные в модальном окне
+  document.getElementById('modal-product-title').textContent = product.title;
+  document.getElementById('modal-variant').textContent = selectedOptions.variant;
+  document.getElementById('modal-period').textContent = selectedOptions.period;
+  document.getElementById('modal-edition').textContent = selectedOptions.edition;
+  
+  // Форматируем цену для модального окна (простая строка без HTML)
+  const priceStr = finalPrice.toString();
+  let formattedPrice = '';
+  
+  // Разбиваем число на разряды справа налево
+  for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
+    if (count > 0 && count % 3 === 0) {
+      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
+    }
+    formattedPrice = priceStr[i] + formattedPrice;
+  }
+  
+  document.getElementById('modal-price').textContent = `${formattedPrice} ₽`;
+  
+  // Показываем модальное окно
+  const modal = document.getElementById('webmoney-modal');
+  modal.classList.add('show');
+  
+  // Инициализируем WebMoney виджет
+  initWebMoneyWidget(finalPrice, product, selectedOptions);
+  
+  // Удаляем старые обработчики событий
+  const closeBtn = modal.querySelector('.webmoney-modal-close');
+  const oldClickHandler = closeBtn._clickHandler;
+  const oldModalClickHandler = modal._modalClickHandler;
+  
+  if (oldClickHandler) {
+    closeBtn.removeEventListener('click', oldClickHandler);
+  }
+  if (oldModalClickHandler) {
+    modal.removeEventListener('click', oldModalClickHandler);
+  }
+  
+  // Добавляем новые обработчики
+  closeBtn._clickHandler = closeWebMoneyModal;
+  modal._modalClickHandler = (e) => {
+    if (e.target === modal) {
+      closeWebMoneyModal();
+    }
+  };
+  
+  closeBtn.addEventListener('click', closeBtn._clickHandler);
+  modal.addEventListener('click', modal._modalClickHandler);
+}
+
+function closeWebMoneyModal() {
+  const modal = document.getElementById('webmoney-modal');
+  modal.classList.remove('show');
+  
+  // Очищаем виджет
+  const widgetContainer = document.getElementById('wm-widget');
+  widgetContainer.innerHTML = '';
+}
+
+function initWebMoneyWidget(amount, product, selectedOptions) {
+  // Очищаем контейнер
+  const widgetContainer = document.getElementById('wm-widget');
+  widgetContainer.innerHTML = '';
+  
+  // Создаем описание заказа
+  const description = `${product.title} - ${selectedOptions.variant}, ${selectedOptions.period}, ${selectedOptions.edition}`;
+  
+  // Генерируем ID заказа
+  const orderId = generateOrderId();
+  
+  // Убеждаемся, что amount является числом
+  const numericAmount = Number(amount);
+  
+  // Добавляем отладочную информацию
+  console.log('WebMoney Widget Debug:', {
+    amount: amount,
+    numericAmount: numericAmount,
+    amountType: typeof amount,
+    description: description,
+    orderId: orderId,
+    product: product.title
+  });
+  
+  // Функция для создания виджета
+  function createWidget() {
+    if (window.webmoney && window.webmoney.widgets) {
+      const widgetConfig = {
+        "data": {
+          "amount": numericAmount,
+          "purse": "T231993574772",
+          "desc": description,
+          "paymentType": "wm",
+          "lmi_payment_no": orderId,
+          "forcePay": true,
+          "lmi_currency": "RUB",
+          "lmi_currency_code": "RUB"
+        },
+        "style": {
+          "theme": "wm",
+          "showAmount": true,
+          "titleNum": 1,
+          "title": "",
+          "design": "flat"
+        },
+        "lang": "ru"
+      };
+      
+      console.log('WebMoney Widget Config:', widgetConfig);
+      
+      window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', function (data) {
+        // Обрабатываем успешную оплату
+        const result = {
+          orderId: orderId,
+          amount: numericAmount,
+          description: description,
+          webmoneyData: data
+        };
+        
+        closeWebMoneyModal();
+        handlePaymentSuccess(result, product, selectedOptions);
+      }).mount('wm-widget');
+    } else {
+      // Если WebMoney виджет не загружен, показываем ошибку
+      widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
+    }
+  }
+  
+  // Проверяем, загружен ли WebMoney виджет
+  if (window.webmoney && window.webmoney.widgets) {
+    createWidget();
+  } else {
+    // Ждем загрузки WebMoney виджета
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    const checkWebMoney = setInterval(() => {
+      attempts++;
+      
+      if (window.webmoney && window.webmoney.widgets) {
+        clearInterval(checkWebMoney);
+        createWidget();
+      } else if (attempts >= maxAttempts) {
+        clearInterval(checkWebMoney);
+        widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
+      }
+    }, 500);
+  }
 }
 
 // Инициализация при загрузке страницы

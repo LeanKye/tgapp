@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script type='text/javascript' src='https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6'></script>
     <title>Product</title>
 </head>
 
@@ -81,6 +82,43 @@
         </div>
     </div>
     <button class="add-to-cart reset-Button">Купить</button>
+    
+    <!-- Модальное окно для WebMoney -->
+    <div id="webmoney-modal" class="webmoney-modal-overlay">
+        <div class="webmoney-modal">
+            <div class="webmoney-modal-header">
+                <h3>Оплата через WebMoney</h3>
+                <button class="webmoney-modal-close">&times;</button>
+            </div>
+            <div class="webmoney-modal-body">
+                <div class="payment-details">
+                    <div class="payment-item">
+                        <span>Товар:</span>
+                        <span id="modal-product-title">-</span>
+                    </div>
+                    <div class="payment-item">
+                        <span>Способ оформления:</span>
+                        <span id="modal-variant">-</span>
+                    </div>
+                    <div class="payment-item">
+                        <span>Период:</span>
+                        <span id="modal-period">-</span>
+                    </div>
+                    <div class="payment-item">
+                        <span>План:</span>
+                        <span id="modal-edition">-</span>
+                    </div>
+                    <div class="payment-item total">
+                        <span>Итого:</span>
+                        <span id="modal-price">-</span>
+                    </div>
+                </div>
+                <div class="webmoney-widget-container">
+                    <div id="wm-widget"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <script type="module" src="/src/telegram-webapp.js"></script>
     <script type="module" src="/src/bounce-scroll.js"></script>
