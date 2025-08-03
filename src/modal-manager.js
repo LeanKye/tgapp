@@ -550,10 +550,38 @@ class ModalManager {
       console.log('WebMoney виджет уже загружен, создаем виджет');
       createWidget();
     } else {
-      console.log('WebMoney виджет не загружен, ждем загрузки...');
+      console.log('WebMoney виджет не загружен, показываем fallback кнопку и пытаемся загрузить...');
+      
+      // Сразу показываем fallback кнопку, чтобы пользователь не ждал
+      createFallbackButton();
+      
+      // Попытка принудительной загрузки WebMoney скрипта
+      if (!window.webmoney) {
+        console.log('Попытка принудительной загрузки WebMoney скрипта');
+        const script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
+        script.onload = () => {
+          console.log('WebMoney скрипт загружен принудительно');
+          setTimeout(() => {
+            if (window.webmoney && window.webmoney.widgets) {
+              console.log('WebMoney виджет доступен после принудительной загрузки');
+              // Заменяем fallback кнопку на WebMoney виджет
+              createWidget();
+            } else {
+              console.log('WebMoney виджет все еще недоступен после принудительной загрузки');
+            }
+          }, 1000);
+        };
+        script.onerror = () => {
+          console.error('Ошибка принудительной загрузки WebMoney скрипта');
+        };
+        document.head.appendChild(script);
+      }
+      
       // Ждем загрузки WebMoney виджета
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 15; // Увеличиваем количество попыток
       
       const checkWebMoney = setInterval(() => {
         attempts++;
@@ -561,14 +589,13 @@ class ModalManager {
         
         if (window.webmoney && window.webmoney.widgets) {
           clearInterval(checkWebMoney);
-          console.log('WebMoney виджет загружен, создаем виджет');
+          console.log('WebMoney виджет загружен, заменяем fallback кнопку');
           createWidget();
         } else if (attempts >= maxAttempts) {
           clearInterval(checkWebMoney);
           console.error('Превышено максимальное количество попыток загрузки WebMoney виджета');
-          createFallbackButton();
         }
-      }, 500);
+      }, 300); // Уменьшаем интервал
     }
   }
 
