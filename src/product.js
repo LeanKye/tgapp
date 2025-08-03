@@ -1,5 +1,8 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
+import ModalManager from './modal-manager.js'
+
+
 
 // Функция для получения параметров URL
 function getUrlParameter(name) {
@@ -60,7 +63,7 @@ function renderProduct(product) {
     
     // Добавляем обработчик клика по лейблу
     labelDiv.addEventListener('click', () => {
-      openModal(label);
+      openLabelModal(label);
     });
     
     labelsContainer.appendChild(labelDiv);
@@ -882,131 +885,15 @@ function initImageSlider() {
   }
 }
 
-// Функции для работы с модальными окнами
-function getLabelInfo(labelText) {
-  const labelData = {
-    'Гарантия': {
-      title: 'Гарантия качества',
-      description: 'Мы предоставляем гарантию на все цифровые товары. В случае возникновения проблем с работоспособностью продукта, мы бесплатно заменим его или вернем деньги в течение 30 дней с момента покупки.',
-      icon: '🛡️',
-      iconClass: 'guarantee'
-    },
-    'Лицензия': {
-      title: 'Официальная лицензия',
-      description: 'Все продукты поставляются с официальными лицензиями от производителя. Вы получаете полностью легальный и активированный продукт с возможностью получения обновлений и технической поддержки.',
-      icon: '📜',
-      iconClass: 'license'
-    },
-    'Нужен VPN': {
-      title: 'Требуется VPN',
-      description: 'Для активации и использования данного продукта может потребоваться VPN-соединение. Это связано с региональными ограничениями производителя. Рекомендуем использовать надежные VPN-сервисы.',
-      icon: '🌐',
-      iconClass: 'vpn'
-    }
-  };
+// Глобальная переменная для ModalManager
+let modalManager;
 
-  return labelData[labelText] || {
-    title: 'Информация',
-    description: 'Дополнительная информация о данном продукте.',
-    icon: '💡',
-    iconClass: 'guarantee'
-  };
-}
-
-function createModal() {
-  if (document.getElementById('label-modal')) {
-    return;
-  }
-
-  const modalHTML = `
-    <div id="label-modal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <div id="modal-icon" class="modal-icon">💡</div>
-          <h3 id="modal-title" class="modal-title">Информация</h3>
-        </div>
-        <div class="modal-body">
-          <p id="modal-text" class="modal-text">Загрузка...</p>
-        </div>
-        <div class="modal-footer">
-          <button id="modal-close" class="modal-close">Понятно</button>
-        </div>
-      </div>
-    </div>
-  `;
-
-  document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-function openModal(labelText) {
-  createModal();
-
-  const modal = document.getElementById('label-modal');
-  const icon = document.getElementById('modal-icon');
-  const title = document.getElementById('modal-title');
-  const text = document.getElementById('modal-text');
-
-  const labelInfo = getLabelInfo(labelText);
+// Функция для открытия модального окна с лейблом
+function openLabelModal(labelText) {
+  if (!modalManager) return;
   
-  // Обновляем содержимое модального окна
-  icon.textContent = labelInfo.icon;
-  icon.className = `modal-icon ${labelInfo.iconClass}`;
-  title.textContent = labelInfo.title;
-  text.textContent = labelInfo.description;
-
-  // Сохраняем текущую позицию скролла
-  const scrollY = window.scrollY;
-  
-  // Блокируем прокрутку страницы и фиксируем позицию
-  document.body.classList.add('modal-open');
-  document.body.style.top = `-${scrollY}px`;
-
-  // Показываем модальное окно
-  modal.classList.add('show');
-}
-
-function closeModal() {
-  const modal = document.getElementById('label-modal');
-  if (!modal) return;
-
-  // Получаем сохраненную позицию скролла
-  const scrollY = document.body.style.top;
-  
-  // Убираем блокировку прокрутки и фиксацию позиции
-  document.body.classList.remove('modal-open');
-  document.body.style.top = '';
-
-  // Восстанавливаем позицию скролла
-  if (scrollY) {
-    window.scrollTo(0, parseInt(scrollY || '0') * -1);
-  }
-
-  // Скрываем модальное окно
-  modal.classList.remove('show');
-}
-
-function initModal() {
-  createModal();
-
-  const modal = document.getElementById('label-modal');
-  const closeBtn = document.getElementById('modal-close');
-
-  // Закрытие по кнопке
-  closeBtn.addEventListener('click', closeModal);
-
-  // Закрытие по клику на фон
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-
-  // Закрытие по клавише Escape
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modal.classList.contains('show')) {
-      closeModal();
-    }
-  });
+  const labelInfo = modalManager.getLabelInfo(labelText);
+  modalManager.openModal('label-modal', { labelInfo });
 }
 
 // Функции для работы с оплатой
@@ -1023,14 +910,14 @@ async function handleBuyClick() {
   const product = getProductById(productId);
   
   if (!product) {
-    showError('Товар не найден');
+    modalManager?.showError('Товар не найден');
     return;
   }
 
   // Получаем выбранные опции
   const selectedOptions = getSelectedOptions();
   if (!selectedOptions) {
-    showError('Пожалуйста, выберите все необходимые опции');
+    modalManager?.showError('Пожалуйста, выберите все необходимые опции');
     return;
   }
 
@@ -1166,161 +1053,35 @@ function showError(message) {
 
 // Функции для работы с модальным окном WebMoney
 function openWebMoneyModal(product, selectedOptions, finalPrice) {
-  // Заполняем данные в модальном окне
-  document.getElementById('modal-product-title').textContent = product.title;
-  document.getElementById('modal-variant').textContent = selectedOptions.variant;
-  document.getElementById('modal-period').textContent = selectedOptions.period;
-  document.getElementById('modal-edition').textContent = selectedOptions.edition;
-  
-  // Форматируем цену для модального окна (простая строка без HTML)
-  const priceStr = finalPrice.toString();
-  let formattedPrice = '';
-  
-  // Разбиваем число на разряды справа налево
-  for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
-    if (count > 0 && count % 3 === 0) {
-      formattedPrice = ' ' + formattedPrice; // Обычный пробел между разрядами
-    }
-    formattedPrice = priceStr[i] + formattedPrice;
+  if (!modalManager) {
+    return;
   }
   
-  document.getElementById('modal-price').textContent = `${formattedPrice} ₽`;
+  // Используем функцию formatPrice для единообразного форматирования
+  const formattedPriceHTML = formatPrice(finalPrice);
   
-  // Показываем модальное окно
-  const modal = document.getElementById('webmoney-modal');
-  modal.classList.add('show');
-  
-  // Инициализируем WebMoney виджет
-  initWebMoneyWidget(finalPrice, product, selectedOptions);
-  
-  // Удаляем старые обработчики событий
-  const closeBtn = modal.querySelector('.webmoney-modal-close');
-  const oldClickHandler = closeBtn._clickHandler;
-  const oldModalClickHandler = modal._modalClickHandler;
-  
-  if (oldClickHandler) {
-    closeBtn.removeEventListener('click', oldClickHandler);
-  }
-  if (oldModalClickHandler) {
-    modal.removeEventListener('click', oldModalClickHandler);
-  }
-  
-  // Добавляем новые обработчики
-  closeBtn._clickHandler = closeWebMoneyModal;
-  modal._modalClickHandler = (e) => {
-    if (e.target === modal) {
-      closeWebMoneyModal();
-    }
+  const paymentData = {
+    productTitle: product.title,
+    variant: selectedOptions.variant,
+    period: selectedOptions.period,
+    edition: selectedOptions.edition,
+    price: formattedPriceHTML,
+    amount: finalPrice
   };
   
-  closeBtn.addEventListener('click', closeBtn._clickHandler);
-  modal.addEventListener('click', modal._modalClickHandler);
+  modalManager.openModal('webmoney-modal', { paymentData });
 }
 
-function closeWebMoneyModal() {
-  const modal = document.getElementById('webmoney-modal');
-  modal.classList.remove('show');
-  
-  // Очищаем виджет
-  const widgetContainer = document.getElementById('wm-widget');
-  widgetContainer.innerHTML = '';
-}
 
-function initWebMoneyWidget(amount, product, selectedOptions) {
-  // Очищаем контейнер
-  const widgetContainer = document.getElementById('wm-widget');
-  widgetContainer.innerHTML = '';
-  
-  // Создаем описание заказа
-  const description = `${product.title} - ${selectedOptions.variant}, ${selectedOptions.period}, ${selectedOptions.edition}`;
-  
-  // Генерируем ID заказа
-  const orderId = generateOrderId();
-  
-  // Убеждаемся, что amount является числом
-  const numericAmount = Number(amount);
-  
-  // Добавляем отладочную информацию
-  console.log('WebMoney Widget Debug:', {
-    amount: amount,
-    numericAmount: numericAmount,
-    amountType: typeof amount,
-    description: description,
-    orderId: orderId,
-    product: product.title
-  });
-  
-  // Функция для создания виджета
-  function createWidget() {
-    if (window.webmoney && window.webmoney.widgets) {
-      const widgetConfig = {
-        "data": {
-          "amount": numericAmount,
-          "purse": "T231993574772",
-          "desc": description,
-          "paymentType": "wm",
-          "lmi_payment_no": orderId,
-          "forcePay": true,
-          "lmi_currency": "RUB",
-          "lmi_currency_code": "RUB",
-          "test": true
-        },
-        "style": {
-          "theme": "wm",
-          "showAmount": true,
-          "titleNum": 1,
-          "title": "",
-          "design": "flat"
-        },
-        "lang": "ru"
-      };
-      
-      console.log('WebMoney Widget Config:', widgetConfig);
-      
-      window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', function (data) {
-        // Обрабатываем успешную оплату
-        const result = {
-          orderId: orderId,
-          amount: numericAmount,
-          description: description,
-          webmoneyData: data
-        };
-        
-        closeWebMoneyModal();
-        handlePaymentSuccess(result, product, selectedOptions);
-      }).mount('wm-widget');
-    } else {
-      // Если WebMoney виджет не загружен, показываем ошибку
-      widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
-    }
-  }
-  
-  // Проверяем, загружен ли WebMoney виджет
-  if (window.webmoney && window.webmoney.widgets) {
-    createWidget();
-  } else {
-    // Ждем загрузки WebMoney виджета
-    let attempts = 0;
-    const maxAttempts = 10;
-    
-    const checkWebMoney = setInterval(() => {
-      attempts++;
-      
-      if (window.webmoney && window.webmoney.widgets) {
-        clearInterval(checkWebMoney);
-        createWidget();
-      } else if (attempts >= maxAttempts) {
-        clearInterval(checkWebMoney);
-        widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
-      }
-    }, 500);
-  }
-}
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
+  // Инициализируем ModalManager
+  modalManager = new ModalManager();
+  
   const productId = getUrlParameter('product');
   const product = getProductById(productId);
+  
   renderProduct(product);
   
   // Инициализируем компоненты после отрисовки продукта
@@ -1328,7 +1089,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Небольшая задержка чтобы DOM успел обновиться
     setTimeout(() => {
       initCheckoutPanel();
-      initModal();
       initPayment(); // Добавляем инициализацию оплаты
     }, 100);
   }

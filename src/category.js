@@ -79,6 +79,17 @@ class CategoryPage {
     if (menuButton) menuButton.addEventListener('click', toggleMenu);
     if (menuOverlay) menuOverlay.addEventListener('click', this.closeMenu);
 
+    // Закрытие меню при клике на хедер (кроме самой кнопки меню)
+    const headerContainer = document.querySelector('.header-container');
+    if (headerContainer) {
+      headerContainer.addEventListener('click', (e) => {
+        // Если клик не на кнопку меню и меню открыто
+        if (!e.target.closest('#menu-button') && !this.menu.classList.contains('menu-closed')) {
+          this.closeMenu();
+        }
+      });
+    }
+
     // Закрытие меню клавишей Escape
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !this.menu.classList.contains('menu-closed')) {
@@ -159,6 +170,17 @@ class CategoryPage {
     if (searchOverlay) {
       searchOverlay.addEventListener('click', () => {
         this.deactivateSearch();
+      });
+    }
+    
+    // Обработчик для закрытия поиска при клике на хедер (кроме самого поисковика)
+    const headerContainer = document.querySelector('.header-container');
+    if (headerContainer) {
+      headerContainer.addEventListener('click', (e) => {
+        // Если клик не на сам поисковик и поиск активен
+        if (!e.target.closest('.search-container') && this.isSearchActive) {
+          this.deactivateSearch();
+        }
       });
     }
     

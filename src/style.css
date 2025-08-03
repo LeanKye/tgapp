@@ -1482,7 +1482,7 @@ body.search-active .banner-slider {
 .category-product-price {
   font-size: 10px;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: clamp(4px, 0.8vw, 8px);
 }
 
@@ -2597,14 +2597,14 @@ body.modal-open {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  background: #1a1a1a;
   border-radius: 20px 20px 0 0;
   padding: 24px;
   max-height: 70vh;
   max-height: 70dvh; /* Динамическая высота viewport для мобильных */
   overflow-y: auto;
   transform: translateY(100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   /* Обеспечиваем правильное позиционирование внизу экрана */
   margin-bottom: 0;
@@ -2616,10 +2616,46 @@ body.modal-open {
   box-sizing: border-box;
   width: 100%;
   max-width: 100vw;
+  /* Поддержка перетаскивания */
+  will-change: transform;
+  /* Предотвращаем выделение текста при перетаскивании */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Улучшенная производительность */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .modal-overlay.show .modal-content {
   transform: translateY(0);
+}
+
+/* Состояние перетаскивания */
+.modal-overlay.dragging .modal-content {
+  transition: none;
+}
+
+/* Индикатор перетаскивания */
+.modal-content::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.modal-overlay.show .modal-content::before {
+  opacity: 1;
+}
+
+.modal-overlay.dragging .modal-content::before {
+  opacity: 0.6;
 }
 
 .modal-header {
@@ -2641,17 +2677,17 @@ body.modal-open {
 }
 
 .modal-icon.guarantee {
-  background: linear-gradient(135deg, #4CAF50, #45a049);
+  background: #4CAF50;
   color: white;
 }
 
 .modal-icon.license {
-  background: linear-gradient(135deg, #2196F3, #1976D2);
+  background: #2196F3;
   color: white;
 }
 
 .modal-icon.vpn {
-  background: linear-gradient(135deg, #FF9800, #F57C00);
+  background: #FF9800;
   color: white;
 }
 
@@ -2678,22 +2714,29 @@ body.modal-open {
   background: #29A5FF;
   color: white;
   border: none;
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 14px;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
+  /* Стилизация как кнопка "Купить" */
+  height: 46px;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
 }
 
 @media (hover: hover) {
   .modal-close:hover {
     background: #1E90FF;
+    transform: translateY(-2px);
+    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
   }
 }
 
 .modal-close:active {
   background: #1976D2;
+  transform: translateY(0px);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2);
 }
 
 /* Адаптация для мобильных */
@@ -2796,7 +2839,7 @@ body.modal-open {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+  background: #1a1a1a;
   border-radius: 20px 20px 0 0;
   max-width: 100%;
   width: 100%;
@@ -2804,18 +2847,33 @@ body.modal-open {
   max-height: 90dvh;
   overflow: hidden;
   transform: translateY(100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-sizing: border-box;
   margin: 0;
-  /* Учитываем безопасную зону iOS */
-  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+  /* Уменьшенный отступ снизу для правильного позиционирования кнопки */
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  /* Поддержка перетаскивания */
+  will-change: transform;
+  /* Предотвращаем выделение текста при перетаскивании */
+  -webkit-user-select: none;
+  user-select: none;
+  /* Улучшенная производительность */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .webmoney-modal-overlay.show .webmoney-modal {
   transform: translateY(0);
 }
+
+/* Состояние перетаскивания для WebMoney */
+.webmoney-modal-overlay.dragging .webmoney-modal {
+  transition: none;
+}
+
+
 
 .webmoney-modal-header {
   display: flex;
@@ -2823,6 +2881,7 @@ body.modal-open {
   justify-content: space-between;
   padding: 20px 24px 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
 .webmoney-modal-header h3 {
@@ -2833,19 +2892,24 @@ body.modal-open {
 }
 
 .webmoney-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 24px;
   background: none;
   border: none;
-  color: #888;
-  font-size: 24px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 28px;
+  font-weight: 300;
   cursor: pointer;
   padding: 0;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 8px;
   transition: all 0.2s ease;
+  line-height: 1;
 }
 
 .webmoney-modal-close:hover {
@@ -2853,8 +2917,15 @@ body.modal-open {
   color: #ffffff;
 }
 
+.webmoney-modal-close:active {
+  background: rgba(255, 255, 255, 0.15);
+  transform: scale(0.95);
+}
+
 .webmoney-modal-body {
   padding: 20px 24px;
+  padding-bottom: 0;
+  margin-bottom: -7px;
   overflow-y: auto;
   max-height: 60vh;
   max-height: 60dvh;
@@ -2900,15 +2971,30 @@ body.modal-open {
   color: #29A5FF;
 }
 
+/* Белый цвет для цены в WebMoney модальном окне */
+.webmoney-modal .payment-details .payment-item.total {
+  color: white;
+}
+
+.webmoney-modal .payment-details .payment-item.total .formatted-price {
+  color: white;
+}
+
+.webmoney-modal .payment-details .payment-item.total .currency-separator {
+  color: white;
+}
+
 .webmoney-widget-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 80px;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 16px;
+  min-height: 46px;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  padding: 0;
+  /* Добавляем отступ сверху чтобы опустить кнопку ниже */
+  margin-top: 20px;
 }
 
 #wm-widget {
@@ -2923,13 +3009,54 @@ body.modal-open {
 #wm-widget iframe,
 #wm-widget div {
   width: 100% !important;
-  min-width: 280px !important;
-  max-width: 400px !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
   height: auto !important;
-  min-height: 50px !important;
+  min-height: 46px !important;
   border: none !important;
   border-radius: 8px !important;
   background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Стилизация кнопки WebMoney как кнопка "Понятно" */
+#wm-widget button,
+#wm-widget input[type="submit"],
+#wm-widget .wm-button,
+#wm-widget .wm-pay-button {
+  background: #29A5FF !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 14px !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  height: 46px !important;
+  width: 100% !important;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3) !important;
+  transition: all 0.2s ease !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#wm-widget button:hover,
+#wm-widget input[type="submit"]:hover,
+#wm-widget .wm-button:hover,
+#wm-widget .wm-pay-button:hover {
+  background: #1E90FF !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4) !important;
+}
+
+#wm-widget button:active,
+#wm-widget input[type="submit"]:active,
+#wm-widget .wm-button:active,
+#wm-widget .wm-pay-button:active {
+  background: #1976D2 !important;
+  transform: translateY(0px) !important;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2) !important;
 }
 
 /* Адаптивность для мобильных устройств */
@@ -2972,15 +3099,17 @@ body.modal-open {
   }
   
   .webmoney-widget-container {
-    padding: 12px;
-    min-height: 70px;
+    padding: 0;
+    min-height: 46px;
+    margin-top: 12px;
   }
   
   #wm-widget iframe,
   #wm-widget div {
-    min-width: 240px !important;
+    min-width: 100% !important;
     max-width: 100% !important;
-    min-height: 45px !important;
+    min-height: 46px !important;
+    border-radius: 8px !important;
   }
 }
 
@@ -3016,14 +3145,16 @@ body.modal-open {
   }
   
   .webmoney-widget-container {
-    padding: 10px;
-    min-height: 60px;
+    padding: 0;
+    min-height: 46px;
+    margin-top: 10px;
   }
   
   #wm-widget iframe,
   #wm-widget div {
-    min-width: 200px !important;
-    min-height: 40px !important;
+    min-width: 100% !important;
+    min-height: 46px !important;
+    border-radius: 8px !important;
   }
 }
 
@@ -3035,15 +3166,17 @@ body.modal-open {
   }
   
   .webmoney-widget-container {
-    padding: 18px;
-    min-height: 85px;
+    padding: 0;
+    min-height: 46px;
+    margin-top: 14px;
   }
   
   #wm-widget iframe,
   #wm-widget div {
-    min-width: 300px !important;
-    max-width: 450px !important;
-    min-height: 55px !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 46px !important;
+    border-radius: 8px !important;
   }
 }
 
@@ -3055,15 +3188,17 @@ body.modal-open {
   }
   
   .webmoney-widget-container {
-    padding: 20px;
-    min-height: 90px;
+    padding: 0;
+    min-height: 46px;
+    margin-top: 16px;
   }
   
   #wm-widget iframe,
   #wm-widget div {
-    min-width: 320px !important;
-    max-width: 500px !important;
-    min-height: 60px !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    min-height: 46px !important;
+    border-radius: 8px !important;
   }
 }
 
