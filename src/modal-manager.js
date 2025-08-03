@@ -472,20 +472,25 @@ class ModalManager {
           "lang": "ru"
         };
         
-        window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', (data) => {
-          // Обрабатываем успешную оплату
-          const result = {
-            orderId: orderId,
-            amount: numericAmount,
-            description: description,
-            webmoneyData: data
-          };
-          
-          this.closeModal('webmoney-modal');
-          this.handlePaymentSuccess(result, paymentData);
-        }).mount('wm-widget');
+        try {
+          window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', (data) => {
+            // Обрабатываем успешную оплату
+            const result = {
+              orderId: orderId,
+              amount: numericAmount,
+              description: description,
+              webmoneyData: data
+            };
+            
+            this.closeModal('webmoney-modal');
+            this.handlePaymentSuccess(result, paymentData);
+          }).mount('wm-widget');
+        } catch (error) {
+          console.error('Ошибка создания WebMoney виджета:', error);
+          this.showFallbackButton(widgetContainer, numericAmount, description, orderId, paymentData);
+        }
       } else {
-        widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
+        this.showFallbackButton(widgetContainer, numericAmount, description, orderId, paymentData);
       }
     };
     
@@ -495,7 +500,7 @@ class ModalManager {
     } else {
       // Ждем загрузки WebMoney виджета
       let attempts = 0;
-      const maxAttempts = 10;
+      const maxAttempts = 15; // Увеличиваем количество попыток
       
       const checkWebMoney = setInterval(() => {
         attempts++;
@@ -505,9 +510,54 @@ class ModalManager {
           createWidget();
         } else if (attempts >= maxAttempts) {
           clearInterval(checkWebMoney);
-          widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
+          this.showFallbackButton(widgetContainer, numericAmount, description, orderId, paymentData);
         }
-      }, 500);
+      }, 300); // Уменьшаем интервал для более быстрой проверки
+    }
+  }
+
+  // Показ резервной кнопки если WebMoney виджет не загрузился
+  showFallbackButton(widgetContainer, amount, description, orderId, paymentData) {
+    const formattedAmount = new Intl.NumberFormat('ru-RU', {
+      style: 'currency',
+      currency: 'RUB',
+      minimumFractionDigits: 0
+    }).format(amount);
+
+    widgetContainer.innerHTML = `
+      <button id="fallback-pay-button" style="
+        background: #29A5FF;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 16px;
+        font-size: 16px;
+        font-weight: 600;
+        height: 60px;
+        width: 100%;
+        box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        💳 Оплатить ${formattedAmount}
+      </button>
+    `;
+
+    // Добавляем обработчик для резервной кнопки
+    const fallbackButton = document.getElementById('fallback-pay-button');
+    if (fallbackButton) {
+      fallbackButton.addEventListener('click', () => {
+        // Показываем уведомление о том, что нужно использовать WebMoney
+        this.showError('Для оплаты необходимо использовать WebMoney. Пожалуйста, убедитесь, что у вас установлено приложение WebMoney.');
+        
+        // Можно также попробовать открыть WebMoney приложение
+        if (window.Telegram && window.Telegram.WebApp) {
+          window.Telegram.WebApp.openTelegramLink('https://t.me/webmoney_bot');
+        }
+      });
     }
   }
 
