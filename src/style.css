@@ -2988,15 +2988,13 @@ body.modal-open {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 60px;
+  min-height: 46px;
   background: transparent;
   border-radius: 0;
   border: none;
   padding: 0;
   /* Добавляем отступ сверху чтобы опустить кнопку ниже */
   margin-top: 20px;
-  /* Добавляем отступ снизу для лучшего позиционирования */
-  margin-bottom: 8px;
 }
 
 #wm-widget {
@@ -3014,7 +3012,7 @@ body.modal-open {
   min-width: 100% !important;
   max-width: 100% !important;
   height: auto !important;
-  min-height: 60px !important;
+  min-height: 46px !important;
   border: none !important;
   border-radius: 8px !important;
   background: transparent !important;
@@ -3030,10 +3028,10 @@ body.modal-open {
   color: white !important;
   border: none !important;
   border-radius: 8px !important;
-  padding: 16px !important;
-  font-size: 16px !important;
+  padding: 14px !important;
+  font-size: 18px !important;
   font-weight: 600 !important;
-  height: 60px !important;
+  height: 46px !important;
   width: 100% !important;
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3) !important;
   transition: all 0.2s ease !important;
@@ -3061,37 +3059,6 @@ body.modal-open {
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2) !important;
 }
 
-/* Стили для резервной кнопки */
-#fallback-pay-button {
-  background: #29A5FF !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 16px !important;
-  font-size: 16px !important;
-  font-weight: 600 !important;
-  height: 60px !important;
-  width: 100% !important;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3) !important;
-  transition: all 0.2s ease !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-#fallback-pay-button:hover {
-  background: #1E90FF !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4) !important;
-}
-
-#fallback-pay-button:active {
-  background: #1976D2 !important;
-  transform: translateY(0px) !important;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2) !important;
-}
-
 /* Адаптивность для мобильных устройств */
 @media (max-width: 480px) {
   .webmoney-modal-overlay {
@@ -3103,10 +3070,8 @@ body.modal-open {
     max-width: 100vw;
     width: 100%;
     margin: 0;
-    max-height: 90vh;
-    max-height: 90dvh;
-    /* Увеличиваем отступ снизу для лучшего позиционирования */
-    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    max-height: 85vh;
+    max-height: 85dvh;
   }
   
   .webmoney-modal-header {
@@ -3119,8 +3084,6 @@ body.modal-open {
   
   .webmoney-modal-body {
     padding: 16px 20px;
-    /* Увеличиваем отступ снизу */
-    padding-bottom: 24px;
   }
   
   .payment-details {
@@ -3137,38 +3100,24 @@ body.modal-open {
   
   .webmoney-widget-container {
     padding: 0;
-    min-height: 60px;
-    margin-top: 16px;
-    /* Добавляем отступ снизу для кнопки */
-    margin-bottom: 16px;
+    min-height: 46px;
+    margin-top: 12px;
   }
   
   #wm-widget iframe,
   #wm-widget div {
     min-width: 100% !important;
     max-width: 100% !important;
-    min-height: 60px !important;
+    min-height: 46px !important;
     border-radius: 8px !important;
-  }
-  
-  /* Улучшенные стили для кнопки WebMoney на мобильных */
-  #wm-widget button,
-  #wm-widget input[type="submit"],
-  #wm-widget .wm-button,
-  #wm-widget .wm-pay-button {
-    min-height: 60px !important;
-    font-size: 16px !important;
-    padding: 16px !important;
   }
 }
 
 /* Адаптивность для очень маленьких экранов */
 @media (max-width: 375px) {
   .webmoney-modal {
-    max-height: 85vh;
-    max-height: 85dvh;
-    /* Увеличиваем отступ снизу */
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    max-height: 80vh;
+    max-height: 80dvh;
   }
   
   .webmoney-modal-header {
@@ -3181,8 +3130,6 @@ body.modal-open {
   
   .webmoney-modal-body {
     padding: 14px 16px;
-    /* Увеличиваем отступ снизу */
-    padding-bottom: 20px;
   }
   
   .payment-details {
@@ -3199,27 +3146,15 @@ body.modal-open {
   
   .webmoney-widget-container {
     padding: 0;
-    min-height: 56px;
-    margin-top: 12px;
-    /* Добавляем отступ снизу для кнопки */
-    margin-bottom: 12px;
+    min-height: 46px;
+    margin-top: 10px;
   }
   
   #wm-widget iframe,
   #wm-widget div {
     min-width: 100% !important;
-    min-height: 56px !important;
+    min-height: 46px !important;
     border-radius: 8px !important;
-  }
-  
-  /* Улучшенные стили для кнопки WebMoney на очень маленьких экранах */
-  #wm-widget button,
-  #wm-widget input[type="submit"],
-  #wm-widget .wm-button,
-  #wm-widget .wm-pay-button {
-    min-height: 56px !important;
-    font-size: 15px !important;
-    padding: 14px !important;
   }
 }
 

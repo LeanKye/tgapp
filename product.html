@@ -9,7 +9,21 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type='text/javascript' src='https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6'></script>
+    <script type='text/javascript' src='https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6' onerror="console.error('Ошибка загрузки WebMoney скрипта')" onload="console.log('WebMoney скрипт успешно загружен')"></script>
+    <script>
+      // Альтернативная загрузка WebMoney скрипта если основной не загрузился
+      setTimeout(() => {
+        if (!window.webmoney) {
+          console.log('Попытка альтернативной загрузки WebMoney скрипта');
+          const script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
+          script.onload = () => console.log('WebMoney скрипт загружен альтернативным способом');
+          script.onerror = () => console.error('Ошибка альтернативной загрузки WebMoney скрипта');
+          document.head.appendChild(script);
+        }
+      }, 2000);
+    </script>
     <title>Product</title>
 </head>
 
