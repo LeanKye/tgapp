@@ -555,9 +555,63 @@ class ModalManager {
       // Сразу показываем fallback кнопку, чтобы пользователь не ждал
       createFallbackButton();
       
-      // Попытка принудительной загрузки WebMoney скрипта
-      if (!window.webmoney) {
-        console.log('Попытка принудительной загрузки WebMoney скрипта');
+          // Попытка принудительной загрузки WebMoney скрипта
+    if (!window.webmoney) {
+      console.log('Попытка принудительной загрузки WebMoney скрипта');
+      
+      // Проверяем, находимся ли мы в мобильном приложении Telegram
+      const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      console.log('Окружение:', {
+        isTelegramWebApp,
+        isMobile,
+        userAgent: navigator.userAgent
+      });
+      
+      // Для мобильных устройств в Telegram используем альтернативный подход
+      if (isTelegramWebApp && isMobile) {
+        console.log('Обнаружено мобильное приложение Telegram, используем альтернативную загрузку');
+        
+        // Попытка 1: Стандартная загрузка
+        const script1 = document.createElement('script');
+        script1.type = 'text/javascript';
+        script1.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
+        script1.onload = () => {
+          console.log('WebMoney скрипт загружен стандартным способом');
+          setTimeout(() => {
+            if (window.webmoney && window.webmoney.widgets) {
+              console.log('WebMoney виджет доступен после стандартной загрузки');
+              createWidget();
+            } else {
+              console.log('WebMoney виджет недоступен после стандартной загрузки');
+            }
+          }, 1000);
+        };
+        script1.onerror = () => {
+          console.log('Стандартная загрузка не удалась, пробуем альтернативные методы');
+          
+          // Попытка 2: Загрузка с другими параметрами
+          const script2 = document.createElement('script');
+          script2.type = 'text/javascript';
+          script2.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js';
+          script2.onload = () => {
+            console.log('WebMoney скрипт загружен без версии');
+            setTimeout(() => {
+              if (window.webmoney && window.webmoney.widgets) {
+                console.log('WebMoney виджет доступен после загрузки без версии');
+                createWidget();
+              }
+            }, 1000);
+          };
+          script2.onerror = () => {
+            console.log('Все попытки загрузки WebMoney скрипта не удались');
+          };
+          document.head.appendChild(script2);
+        };
+        document.head.appendChild(script1);
+      } else {
+        // Для десктопа используем стандартный подход
         const script = document.createElement('script');
         script.type = 'text/javascript';
         script.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
@@ -578,6 +632,7 @@ class ModalManager {
         };
         document.head.appendChild(script);
       }
+    }
       
       // Ждем загрузки WebMoney виджета
       let attempts = 0;

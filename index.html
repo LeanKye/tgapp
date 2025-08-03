@@ -17,6 +17,69 @@
       widgets: !!(window.webmoney && window.webmoney.widgets)
     });
     
+    // Проверяем окружение
+    const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    console.log('Окружение:', {
+      isTelegramWebApp,
+      isMobile,
+      userAgent: navigator.userAgent
+    });
+    
+    // Функция для загрузки WebMoney скрипта
+    function loadWebMoneyScript() {
+      if (!window.webmoney) {
+        console.log('Попытка загрузки WebMoney скрипта');
+        
+        if (isTelegramWebApp && isMobile) {
+          console.log('Мобильное приложение Telegram - используем специальную загрузку');
+          
+          // Попытка 1: Стандартная загрузка
+          const script1 = document.createElement('script');
+          script1.type = 'text/javascript';
+          script1.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
+          script1.onload = () => {
+            console.log('WebMoney скрипт загружен для мобильного Telegram');
+            console.log('WebMoney после загрузки:', {
+              webmoney: !!window.webmoney,
+              widgets: !!(window.webmoney && window.webmoney.widgets)
+            });
+          };
+          script1.onerror = () => {
+            console.log('Стандартная загрузка не удалась для мобильного Telegram');
+            
+            // Попытка 2: Без версии
+            const script2 = document.createElement('script');
+            script2.type = 'text/javascript';
+            script2.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js';
+            script2.onload = () => {
+              console.log('WebMoney скрипт загружен без версии для мобильного Telegram');
+            };
+            script2.onerror = () => {
+              console.log('Все попытки загрузки WebMoney для мобильного Telegram не удались');
+            };
+            document.head.appendChild(script2);
+          };
+          document.head.appendChild(script1);
+        } else {
+          // Стандартная загрузка для десктопа
+          const script = document.createElement('script');
+          script.type = 'text/javascript';
+          script.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
+          script.onload = () => {
+            console.log('WebMoney скрипт загружен альтернативным способом');
+            console.log('WebMoney после альтернативной загрузки:', {
+              webmoney: !!window.webmoney,
+              widgets: !!(window.webmoney && window.webmoney.widgets)
+            });
+          };
+          script.onerror = () => console.error('Ошибка альтернативной загрузки WebMoney скрипта');
+          document.head.appendChild(script);
+        }
+      }
+    }
+    
     // Альтернативная загрузка WebMoney скрипта если основной не загрузился
     setTimeout(() => {
       console.log('Проверка WebMoney через 2 секунды:', {
@@ -24,21 +87,7 @@
         widgets: !!(window.webmoney && window.webmoney.widgets)
       });
       
-      if (!window.webmoney) {
-        console.log('Попытка альтернативной загрузки WebMoney скрипта');
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
-        script.onload = () => {
-          console.log('WebMoney скрипт загружен альтернативным способом');
-          console.log('WebMoney после альтернативной загрузки:', {
-            webmoney: !!window.webmoney,
-            widgets: !!(window.webmoney && window.webmoney.widgets)
-          });
-        };
-        script.onerror = () => console.error('Ошибка альтернативной загрузки WebMoney скрипта');
-        document.head.appendChild(script);
-      }
+      loadWebMoneyScript();
     }, 2000);
     
     // Дополнительная проверка через 5 секунд
