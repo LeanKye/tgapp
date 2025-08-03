@@ -447,52 +447,6 @@ class ModalManager {
     // Убеждаемся, что amount является числом
     const numericAmount = Number(paymentData.amount);
     
-    // Добавляем отладочную информацию
-    console.log('Инициализация WebMoney виджета:', {
-      paymentData,
-      orderId,
-      numericAmount,
-      webmoneyAvailable: !!window.webmoney,
-      widgetsAvailable: !!(window.webmoney && window.webmoney.widgets)
-    });
-    
-    // Функция для создания fallback кнопки
-    const createFallbackButton = () => {
-      widgetContainer.innerHTML = `
-        <div style="color: #888; text-align: center; padding: 20px;">
-          <div style="margin-bottom: 15px;">Ошибка загрузки платежного виджета</div>
-          <button id="fallback-pay-button" style="
-            background: #007AFF;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            width: 100%;
-            max-width: 200px;
-          ">Оплатить ${numericAmount} ₽</button>
-        </div>
-      `;
-      
-      // Добавляем обработчик для fallback кнопки
-      const fallbackButton = document.getElementById('fallback-pay-button');
-      if (fallbackButton) {
-        fallbackButton.addEventListener('click', () => {
-          const result = {
-            orderId: orderId,
-            amount: numericAmount,
-            description: description,
-            webmoneyData: { fallback: true }
-          };
-          
-          this.closeModal('webmoney-modal');
-          this.handlePaymentSuccess(result, paymentData);
-        });
-      }
-    };
-    
     // Функция для создания виджета
     const createWidget = () => {
       if (window.webmoney && window.webmoney.widgets) {
@@ -518,139 +472,42 @@ class ModalManager {
           "lang": "ru"
         };
         
-        console.log('Создание WebMoney виджета с конфигурацией:', widgetConfig);
-        
-        try {
-          window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', (data) => {
-            // Обрабатываем успешную оплату
-            const result = {
-              orderId: orderId,
-              amount: numericAmount,
-              description: description,
-              webmoneyData: data
-            };
-            
-            this.closeModal('webmoney-modal');
-            this.handlePaymentSuccess(result, paymentData);
-          }).mount('wm-widget');
+        window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', (data) => {
+          // Обрабатываем успешную оплату
+          const result = {
+            orderId: orderId,
+            amount: numericAmount,
+            description: description,
+            webmoneyData: data
+          };
           
-          console.log('WebMoney виджет успешно создан и смонтирован');
-        } catch (error) {
-          console.error('Ошибка при создании WebMoney виджета:', error);
-          createFallbackButton();
-        }
+          this.closeModal('webmoney-modal');
+          this.handlePaymentSuccess(result, paymentData);
+        }).mount('wm-widget');
       } else {
-        console.warn('WebMoney виджет недоступен');
-        createFallbackButton();
+        widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
       }
     };
     
     // Проверяем, загружен ли WebMoney виджет
     if (window.webmoney && window.webmoney.widgets) {
-      console.log('WebMoney виджет уже загружен, создаем виджет');
       createWidget();
     } else {
-      console.log('WebMoney виджет не загружен, показываем fallback кнопку и пытаемся загрузить...');
-      
-      // Сразу показываем fallback кнопку, чтобы пользователь не ждал
-      createFallbackButton();
-      
-          // Попытка принудительной загрузки WebMoney скрипта
-    if (!window.webmoney) {
-      console.log('Попытка принудительной загрузки WebMoney скрипта');
-      
-      // Проверяем, находимся ли мы в мобильном приложении Telegram
-      const isTelegramWebApp = window.Telegram && window.Telegram.WebApp;
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
-      console.log('Окружение:', {
-        isTelegramWebApp,
-        isMobile,
-        userAgent: navigator.userAgent
-      });
-      
-      // Для мобильных устройств в Telegram используем альтернативный подход
-      if (isTelegramWebApp && isMobile) {
-        console.log('Обнаружено мобильное приложение Telegram, используем альтернативную загрузку');
-        
-        // Попытка 1: Стандартная загрузка
-        const script1 = document.createElement('script');
-        script1.type = 'text/javascript';
-        script1.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
-        script1.onload = () => {
-          console.log('WebMoney скрипт загружен стандартным способом');
-          setTimeout(() => {
-            if (window.webmoney && window.webmoney.widgets) {
-              console.log('WebMoney виджет доступен после стандартной загрузки');
-              createWidget();
-            } else {
-              console.log('WebMoney виджет недоступен после стандартной загрузки');
-            }
-          }, 1000);
-        };
-        script1.onerror = () => {
-          console.log('Стандартная загрузка не удалась, пробуем альтернативные методы');
-          
-          // Попытка 2: Загрузка с другими параметрами
-          const script2 = document.createElement('script');
-          script2.type = 'text/javascript';
-          script2.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js';
-          script2.onload = () => {
-            console.log('WebMoney скрипт загружен без версии');
-            setTimeout(() => {
-              if (window.webmoney && window.webmoney.widgets) {
-                console.log('WebMoney виджет доступен после загрузки без версии');
-                createWidget();
-              }
-            }, 1000);
-          };
-          script2.onerror = () => {
-            console.log('Все попытки загрузки WebMoney скрипта не удались');
-          };
-          document.head.appendChild(script2);
-        };
-        document.head.appendChild(script1);
-      } else {
-        // Для десктопа используем стандартный подход
-        const script = document.createElement('script');
-        script.type = 'text/javascript';
-        script.src = 'https://merchant.web.money/conf/lib/widgets/wmApp.js?v=1.6';
-        script.onload = () => {
-          console.log('WebMoney скрипт загружен принудительно');
-          setTimeout(() => {
-            if (window.webmoney && window.webmoney.widgets) {
-              console.log('WebMoney виджет доступен после принудительной загрузки');
-              // Заменяем fallback кнопку на WebMoney виджет
-              createWidget();
-            } else {
-              console.log('WebMoney виджет все еще недоступен после принудительной загрузки');
-            }
-          }, 1000);
-        };
-        script.onerror = () => {
-          console.error('Ошибка принудительной загрузки WebMoney скрипта');
-        };
-        document.head.appendChild(script);
-      }
-    }
-      
       // Ждем загрузки WebMoney виджета
       let attempts = 0;
-      const maxAttempts = 15; // Увеличиваем количество попыток
+      const maxAttempts = 10;
       
       const checkWebMoney = setInterval(() => {
         attempts++;
-        console.log(`Попытка ${attempts}/${maxAttempts} загрузки WebMoney виджета`);
         
         if (window.webmoney && window.webmoney.widgets) {
           clearInterval(checkWebMoney);
-          console.log('WebMoney виджет загружен, заменяем fallback кнопку');
           createWidget();
         } else if (attempts >= maxAttempts) {
           clearInterval(checkWebMoney);
-          console.error('Превышено максимальное количество попыток загрузки WebMoney виджета');
+          widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
         }
-      }, 300); // Уменьшаем интервал
+      }, 500);
     }
   }
 
