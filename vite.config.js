@@ -9,7 +9,8 @@ export default defineConfig({
       input: {
         main: resolve(fileURLToPath(new URL('.', import.meta.url)), 'index.html'),
         category: resolve(fileURLToPath(new URL('.', import.meta.url)), 'category.html'),
-        product: resolve(fileURLToPath(new URL('.', import.meta.url)), 'product.html')
+        product: resolve(fileURLToPath(new URL('.', import.meta.url)), 'product.html'),
+        info: resolve(fileURLToPath(new URL('.', import.meta.url)), 'info.html')
       }
     }
   }
