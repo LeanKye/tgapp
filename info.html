@@ -176,7 +176,62 @@
                 document.body.classList.remove('preload');
                 document.body.classList.add('loaded');
             }, 100);
+            
+            // Инициализируем динамический заголовок
+            initDynamicHeader();
         });
+
+        function initDynamicHeader() {
+            const headerTitle = document.querySelector('.info-header h1');
+            const sections = document.querySelectorAll('main section');
+            
+            // Названия разделов
+            const sectionTitles = {
+                'privacy': 'Политика конфиденциальности',
+                'agreement': 'Лицензионное соглашение', 
+                'contacts': 'Контакты',
+                'about': 'О нас'
+            };
+
+            // Настраиваем Intersection Observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px', // Более точное определение видимого раздела
+                threshold: 0
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        const newTitle = sectionTitles[sectionId] || 'Информация';
+                        
+                        // Плавно меняем заголовок
+                        headerTitle.style.opacity = '0.5';
+                        setTimeout(() => {
+                            headerTitle.textContent = newTitle;
+                            headerTitle.style.opacity = '1';
+                        }, 150);
+                    }
+                });
+            }, observerOptions);
+
+            // Наблюдаем за всеми разделами
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Устанавливаем начальный заголовок при загрузке
+            const firstVisibleSection = Array.from(sections).find(section => {
+                const rect = section.getBoundingClientRect();
+                return rect.top < window.innerHeight * 0.5 && rect.bottom > 0;
+            });
+
+            if (firstVisibleSection) {
+                const initialTitle = sectionTitles[firstVisibleSection.id] || 'Информация';
+                headerTitle.textContent = initialTitle;
+            }
+        }
     </script>
 </body>
 </html>

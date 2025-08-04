@@ -1012,6 +1012,7 @@ body.info-page {
     font-size: 22px;
     color: var(--header-color);
     margin: 0;
+    transition: opacity 0.3s ease-in-out;
 }
 
 .info-page main {
