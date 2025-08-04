@@ -3039,7 +3039,7 @@ body.modal-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px 16px;
+  padding: 16px 24px 8px;
   position: relative;
 }
 
@@ -3083,7 +3083,7 @@ body.modal-open {
 }
 
 .webmoney-modal-body {
-  padding: 16px 24px;
+  padding: 8px 24px;
   padding-bottom: 0;
   margin-bottom: 0;
   overflow-y: auto;
@@ -3282,7 +3282,7 @@ body.modal-open {
 
   
   .webmoney-modal-header {
-    padding: 16px 20px 16px;
+    padding: 16px 20px 8px;
   }
   
   .webmoney-modal-header h3 {
@@ -3324,7 +3324,7 @@ body.modal-open {
   }
   
   .webmoney-modal-header {
-    padding: 16px 16px 16px;
+    padding: 16px 16px 8px;
   }
   
   .webmoney-modal-header h3 {
@@ -3332,7 +3332,7 @@ body.modal-open {
   }
   
   .webmoney-modal-body {
-    padding: 16px 16px;
+    padding: 8px 16px;
     padding-bottom: 0;
   }
   
