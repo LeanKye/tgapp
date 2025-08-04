@@ -68,6 +68,8 @@ class TelegramWebApp {
       return 'categories';
     } else if (path.includes('product.html')) {
       return 'product';
+    } else if (path.includes('info.html')) {
+      return 'info';
     } else {
       return 'home';
     }
