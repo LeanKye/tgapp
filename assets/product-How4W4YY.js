@@ -1,4 +1,4 @@
-import"./style-CqyL8Gch.js";import{a as x,f as B,e as k,h as D}from"./products-data-CdHFDYeL.js";class P{constructor(){this.activeModal=null,this.isDragging=!1,this.startY=0,this.currentY=0,this.startTime=0,this.velocity=0,this.modalHeight=0,this.screenHeight=0,this.closeThreshold=.15,this.velocityThreshold=.3,this.init()}init(){this.createLabelModal(),this.createWebMoneyModal()}createLabelModal(){if(document.getElementById("label-modal"))return;document.body.insertAdjacentHTML("beforeend",`
+import"./style-CAtUKalo.js";import{a as x,f as B,e as k,h as D}from"./products-data-CdHFDYeL.js";class P{constructor(){this.activeModal=null,this.isDragging=!1,this.startY=0,this.currentY=0,this.startTime=0,this.velocity=0,this.modalHeight=0,this.screenHeight=0,this.closeThreshold=.15,this.velocityThreshold=.3,this.init()}init(){this.createLabelModal(),this.createWebMoneyModal()}createLabelModal(){if(document.getElementById("label-modal"))return;document.body.insertAdjacentHTML("beforeend",`
       <div id="label-modal" class="modal-overlay">
         <div class="modal-content">
           <div class="modal-header">
