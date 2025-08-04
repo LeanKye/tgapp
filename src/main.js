@@ -178,17 +178,7 @@ function createCategoryCard(category, index) {
   return card;
 }
 
-// Навигация из бургер меню
-function initMenuNavigation() {
-  const menuItems = document.querySelectorAll('.menu-item');
-  
-  menuItems.forEach(item => {
-    item.addEventListener('click', () => {
-      const categoryName = item.textContent.trim();
-      window.location.href = `category.html?category=${encodeURIComponent(categoryName)}`;
-    });
-  });
-}
+
 
 // Функциональность баннер-слайдера с виртуальной циклической прокруткой
 class BannerSlider {
@@ -1170,8 +1160,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Рендерим категории на главной странице
   renderCategories();
   
-    // Инициализируем навигацию из бургер меню
-  initMenuNavigation();
+  
 
   // Обработчик для кнопки поддержки проекта удалён
 

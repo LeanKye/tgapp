@@ -83,6 +83,9 @@ class ModalManager {
             <div class="webmoney-widget-container">
               <div id="wm-widget"></div>
             </div>
+            <div class="payment-agreement-text">
+              Нажимая на кнопку, вы соглашаетесь с <a href="info.html#privacy" target="_blank">Политикой конфиденциальности</a>, а также с <a href="info.html#agreement" target="_blank">Лицензионным соглашением</a>
+            </div>
           </div>
         </div>
       </div>
