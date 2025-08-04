@@ -3001,8 +3001,10 @@ body.modal-open {
   border-radius: 20px 20px 0 0;
   max-width: 100%;
   width: 100%;
-  max-height: 90vh;
-  max-height: 90dvh;
+  /* Делаем высоту адаптивной к контенту */
+  height: auto;
+  max-height: 70vh;
+  max-height: 70dvh;
   overflow: hidden;
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -3010,8 +3012,8 @@ body.modal-open {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-sizing: border-box;
   margin: 0;
-  /* Уменьшенный отступ снизу для правильного позиционирования кнопки */
-  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  /* Минимальный отступ снизу */
+  padding-bottom: env(safe-area-inset-bottom);
   /* Поддержка перетаскивания */
   will-change: transform;
   /* Предотвращаем выделение текста при перетаскивании */
@@ -3249,43 +3251,47 @@ body.modal-open {
   }
   
   .webmoney-modal-body {
-    padding-bottom: 20px;
+    /* Убираем padding снизу чтобы контент был ближе к низу */
+    padding-bottom: 0;
     margin-bottom: 0;
+    /* Уменьшаем максимальную высоту для мобильных */
+    max-height: auto;
+    overflow-y: visible;
   }
   
   .webmoney-widget-container {
-    /* Убираем лишний отступ сверху на мобильных */
-    margin-top: 0;
-    /* Добавляем отступ снизу для кнопки */
+    /* Убираем все отступы */
+    margin-top: 8px;
     margin-bottom: 0;
+    padding: 0;
   }
   
-  /* Фиксируем позицию кнопки и текста внизу модального окна */
-  .webmoney-modal .webmoney-modal-body {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  /* Прижимаем контент к низу модального окна */
+  .webmoney-modal {
+    /* Уменьшаем высоту модального окна на мобильных */
+    max-height: auto;
   }
   
   .webmoney-modal .payment-details {
-    flex-shrink: 0;
+    /* Уменьшаем отступы внутри деталей платежа */
+    padding: 12px;
+    margin-bottom: 12px;
   }
   
-  .webmoney-modal .webmoney-widget-container,
-  .webmoney-modal .payment-agreement-text {
-    margin-top: auto;
-  }
-  
-  .webmoney-modal .webmoney-widget-container {
-    padding-top: 16px;
+  .payment-agreement-text {
+    /* Уменьшаем отступы для текста соглашения */
+    font-size: 11px;
+    padding: 8px 16px 16px;
+    margin-top: 8px;
   }
   .webmoney-modal {
     border-radius: 16px 16px 0 0;
     max-width: 100vw;
     width: 100%;
     margin: 0;
-    max-height: 85vh;
-    max-height: 85dvh;
+    /* Делаем модальное окно компактнее */
+    max-height: auto;
+    height: auto;
   }
   
   .webmoney-modal-header {
@@ -3296,13 +3302,9 @@ body.modal-open {
     font-size: 18px;
   }
   
-  .webmoney-modal-body {
-    padding: 16px 20px;
-  }
+  /* Убираем дублирующий стиль, он уже определен выше */
   
-  .payment-details {
-    padding: 12px;
-  }
+  /* Стиль payment-details уже определен выше */
   
   .payment-details .payment-item {
     font-size: 13px;
