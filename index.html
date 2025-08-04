@@ -10,14 +10,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <title>App</title>
-  <script type="module" crossorigin src="/tgapp/assets/main-BRZOpPge.js"></script>
-  <link rel="modulepreload" crossorigin href="/tgapp/assets/products-data--MUGIqBM.js">
-  <link rel="stylesheet" crossorigin href="/tgapp/assets/products-data-BvjYAKpI.css">
+  <script type="module" crossorigin src="/tgapp/assets/main-k5uwLf5Q.js"></script>
+  <link rel="modulepreload" crossorigin href="/tgapp/assets/products-data-CMze36qp.js">
+  <link rel="stylesheet" crossorigin href="/tgapp/assets/style-Bmni-rVL.css">
 </head>
 
 <body class="preload">
   <div class="catalog">
     <div class="header-container">
+      <div class="logo">
+        <h1>Hooli</h1>
+        <span class="version-badge">0.1 BETA</span>
+        
+        <!-- support-button удалён -->
+      </div>
       <div class="search">
         <div class="search-container">
           <div class="input-container">
@@ -33,7 +39,7 @@
           </div>
         </div>
         <button id="menu-button" class="menu-button reset-Button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <svg fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </button>
@@ -43,36 +49,12 @@
     <div class="container">
       <div class="banner-slider-container">
         <div class="banner-slider" id="bannerSlider">
-          <div class="banner-item active">
-            <div class="banner-content">
-              <h3>Скидка 50%</h3>
-              <p>На все игры PlayStation</p>
-            </div>
-          </div>
-          <div class="banner-item">
-            <div class="banner-content">
-              <h3>Новинки</h3>
-              <p>Лучшие игры месяца</p>
-            </div>
-          </div>
-          <div class="banner-item">
-            <div class="banner-content">
-              <h3>Подписки</h3>
-              <p>Выгодные предложения</p>
-            </div>
-          </div>
-          <div class="banner-item">
-            <div class="banner-content">
-              <h3>Акция</h3>
-              <p>Ограниченное время</p>
-            </div>
-          </div>
+          <!-- Баннеры будут добавлены динамически через JavaScript -->
         </div>
       </div>
     </div>
     <div class="container">
       <div class="category-title">
-        <img src="data:image/svg+xml,%3csvg%20width='24'%20height='26'%20viewBox='0%200%2024%2026'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M6.66316%2011.1526C6.17895%2011.1526%205.81558%2010.9371%205.57305%2010.5059C5.33137%2010.0739%205.33684%209.64737%205.58947%209.22632L10.2947%201.55264C10.5474%201.15264%2010.9053%200.952637%2011.3684%200.952637C11.8316%200.952637%2012.1895%201.15264%2012.4421%201.55264L17.1474%209.22632C17.4%209.64737%2017.4051%2010.0739%2017.1625%2010.5059C16.9208%2010.9371%2016.5579%2011.1526%2016.0737%2011.1526H6.66316ZM18.3158%2025.0474C16.7368%2025.0474%2015.3945%2024.495%2014.2888%2023.3901C13.184%2022.2844%2012.6316%2020.9421%2012.6316%2019.3632C12.6316%2017.7842%2013.184%2016.4419%2014.2888%2015.3362C15.3945%2014.2314%2016.7368%2013.679%2018.3158%2013.679C19.8947%2013.679%2021.2371%2014.2314%2022.3427%2015.3362C23.4476%2016.4419%2024%2017.7842%2024%2019.3632C24%2020.9421%2023.4476%2022.2844%2022.3427%2023.3901C21.2371%2024.495%2019.8947%2025.0474%2018.3158%2025.0474ZM1.26316%2024.4158C0.905263%2024.4158%200.605474%2024.2945%200.36379%2024.052C0.121263%2023.8103%200%2023.5105%200%2023.1526V15.5737C0%2015.2158%200.121263%2014.9156%200.36379%2014.6731C0.605474%2014.4314%200.905263%2014.3105%201.26316%2014.3105H8.8421C9.2%2014.3105%209.50021%2014.4314%209.74274%2014.6731C9.98442%2014.9156%2010.1053%2015.2158%2010.1053%2015.5737V23.1526C10.1053%2023.5105%209.98442%2023.8103%209.74274%2024.052C9.50021%2024.2945%209.2%2024.4158%208.8421%2024.4158H1.26316Z'%20fill='%2329A5FF'/%3e%3c/svg%3e" alt="" width="24" height="24" style="margin-right: 8px;">
         Категории
       </div>
       <div class="categories-grid" id="categories-grid">
@@ -81,54 +63,29 @@
     </div>
     <div class="container">
       <div class="category-title">
-        <img src="data:image/svg+xml,%3csvg%20width='24'%20height='24'%20viewBox='0%200%2024%2024'%20fill='none'%20xmlns='http://www.w3.org/2000/svg'%3e%3cpath%20d='M24%2011.9943L21.3382%208.8065L21.7091%204.58672L17.7709%203.64644L15.7091%200L12%201.67415L8.29091%200L6.22909%203.64644L2.29091%204.57525L2.66182%208.79503L0%2011.9943L2.66182%2015.182L2.29091%2019.4133L6.22909%2020.3536L8.29091%2024L12%2022.3144L15.7091%2023.9885L17.7709%2020.3421L21.7091%2019.4018L21.3382%2015.182L24%2011.9943ZM13.0909%2017.7277H10.9091V15.4343H13.0909V17.7277ZM13.0909%2013.1409H10.9091V6.26087H13.0909V13.1409Z'%20fill='%2329A5FF'/%3e%3c/svg%3e" alt="" width="24" height="24" style="margin-right: 8px;">
         Новинки
       </div>
       <div class="category-products-slider">
         <!-- Карточки товаров будут добавлены динамически через JavaScript -->
       </div>
     </div>
-    <div>
-      <div class="category-title">Подписка PS Plus</div>
+    <div style="margin-top: 20px;">
+      <div class="subscription-title">Подписка PS Plus</div>
       <div class="toggle-switches-container">
         <div class="toggle-switches" id="ps-plus-switches">
           <div class="toggle-switch-slider"></div>
           <input type="radio" name="ps-plus-period" id="ps-plus-period-1" value="1-month" checked>
-          <label for="ps-plus-period-1">1 Месяц</label>
+          <label for="ps-plus-period-1">1 мес</label>
           <input type="radio" name="ps-plus-period" id="ps-plus-period-2" value="2-months">
-          <label for="ps-plus-period-2">2 Месяца</label>
+          <label for="ps-plus-period-2">2 мес</label>
           <input type="radio" name="ps-plus-period" id="ps-plus-period-3" value="3-months">
-          <label for="ps-plus-period-3">3 Месяца</label>
+          <label for="ps-plus-period-3">3 мес</label>
         </div>
       </div>
-      <div class="container product-sub">
-        <img src="">
-        <div>
-          <div>
-            Essential
-          </div>
-          <div>960</div>
-        </div>
+      <div id="ps-plus-products-container">
+        <!-- Карточки PS Plus будут добавлены динамически -->
       </div>
-      <div class="container product-sub">
-        <img src="">
-        <div>
-          <div>
-            Essential
-          </div>
-          <div>960</div>
-        </div>
-      </div>
-      <div class="container product-sub">
-        <img src="">
-        <div>
-          <div>
-            Essential
-          </div>
-          <div>960</div>
-        </div>
-      </div>
-      <div class="category-title">Подписка EA Play</div>
+      <div class="subscription-title">Подписка EA Play</div>
       <div class="container product-sub">
         <img src="">
         <div>
@@ -160,23 +117,16 @@
     <!-- Темный фон за меню -->
     <div class="menu-overlay menu-closed" id="menu-overlay"></div>
     
+    <!-- Оверлей для поиска -->
+    <div class="search-overlay" id="search-overlay"></div>
+    
     <!-- Меню -->
     <div class="menu menu-closed" id="menu">
-      <div class="menu-top">
-        <div class="menu-title">
-          Категории
-        </div>
-        <button class="reset-Button" id="close-menu-button">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
-      </div>
-      <div class="menu-item">Adobe</div>
-      <div class="menu-item">Нейросети</div>
-      <div class="menu-item">Игры</div>
-      <div class="menu-item">Подписки</div>
-      <div class="menu-item">Антивирусы</div>
+
+      <a href="info.html#privacy" class="menu-item">Политика конфиденциальности</a>
+      <a href="info.html#agreement" class="menu-item">Лицензионное соглашение</a>
+      <a href="info.html#contacts" class="menu-item">Контакты</a>
+      <a href="info.html#about" class="menu-item">О нас</a>
     </div>
   </div>
   <script>
