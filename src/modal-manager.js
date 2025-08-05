@@ -193,13 +193,9 @@ class ModalManager {
       if (shouldClose) {
         this.closeDragModal(modal, content, deltaY);
       } else {
-        // Возвращаем модальное окно в исходное положение
-        content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        content.style.transform = 'translateY(0)';
-        
-        setTimeout(() => {
-          modal.classList.remove('dragging');
-        }, 300);
+        // Возвращаем модальное окно в исходное положение с JavaScript анимацией
+        modal.classList.remove('dragging');
+        this.animateModalReturn(modal, content, deltaY);
       }
     };
 
@@ -260,13 +256,9 @@ class ModalManager {
       if (shouldClose) {
         this.closeDragModal(modal, content, deltaY);
       } else {
-        // Возвращаем модальное окно в исходное положение
-        content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        content.style.transform = 'translateY(0)';
-        
-        setTimeout(() => {
-          modal.classList.remove('dragging');
-        }, 300);
+        // Возвращаем модальное окно в исходное положение с JavaScript анимацией
+        modal.classList.remove('dragging');
+        this.animateModalReturn(modal, content, deltaY);
       }
       
       document.removeEventListener('mousemove', handleMouseMove);
@@ -373,24 +365,14 @@ class ModalManager {
     document.body.classList.add('modal-open');
     document.body.style.overflow = 'hidden';
 
-    // Сбрасываем прозрачность и трансформацию
-    modal.style.opacity = '1';
-    modal.style.transition = '';
-    const content = modal.querySelector('.modal-content, .checkout-modal');
-    if (content) {
-      content.style.transform = '';
-      content.style.transition = '';
-    }
-
-    // Показываем модальное окно
-    modal.classList.add('show');
-
     // Убеждаемся, что обработчики событий подключены
     this.setupModalEvents(modalId);
 
-    // Дополнительная настройка для модального окна оформления
-    if (modalId === 'checkout-modal' && data.paymentData) {
-      // Дополнительные действия при необходимости
+    // Показываем модальное окно с анимацией
+    if (modalId === 'checkout-modal') {
+      this.animateCheckoutModalOpen(modal);
+    } else if (modalId === 'label-modal') {
+      this.animateLabelModalOpen(modal);
     }
   }
 
@@ -406,52 +388,208 @@ class ModalManager {
       return;
     }
 
-    // Помечаем модальное окно как закрывающееся
-    modal.classList.add('closing');
-
-    // Сразу убираем блокировку прокрутки
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-
-    // Скрываем модальное окно
-    modal.classList.remove('show');
-
-    // Сбрасываем трансформацию и прозрачность
-    const content = modal.querySelector('.modal-content, .checkout-modal');
-    if (content) {
-      content.style.transform = '';
-      content.style.transition = '';
-    }
-    modal.style.opacity = '';
-    modal.style.transition = '';
-
-    // Очищаем данные модального окна оформления если нужно
+    // Для всех модальных окон используем JavaScript анимации
     if (modalId === 'checkout-modal') {
-      this.currentPaymentData = null;
+      this.animateCheckoutModalClose(modal);
+    } else if (modalId === 'label-modal') {
+      this.animateLabelModalClose(modal);
     }
-
-    this.activeModal = null;
-    modal.classList.remove('closing');
   }
 
-  // Закрытие модального окна через drag (перетаскивание)
-  closeDragModal(modal, content, currentDeltaY) {
+  // JavaScript анимация открытия модального окна лейблов
+  animateLabelModalOpen(modal) {
+    const content = modal.querySelector('.modal-content');
+    if (!content) return;
+
+    // Показываем оверлей и подготавливаем контент
+    modal.classList.add('show');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    
+    // Устанавливаем начальное состояние
+    content.style.transform = 'translateY(100%)';
+    content.style.transition = 'none';
+    
+    // Запускаем анимацию
+    const duration = 300;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease out cubic)
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      // Анимируем transform
+      const translateY = (1 - easeProgress) * 100;
+      content.style.transform = `translateY(${translateY}%)`;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена
+        content.style.transform = 'translateY(0)';
+        content.style.transition = '';
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
+
+  // JavaScript анимация закрытия модального окна лейблов - только transform, "уезжает вниз"
+  animateLabelModalClose(modal) {
+    const content = modal.querySelector('.modal-content');
+    if (!content) return;
+
     // Проверяем, не закрывается ли уже модальное окно
     if (modal.classList.contains('closing')) {
       return;
     }
 
-    // Помечаем модальное окно как закрывающееся
+    // Помечаем как закрывающееся
     modal.classList.add('closing');
-
+    modal.classList.remove('dragging');
+    
     // Сразу убираем блокировку прокрутки
     document.body.classList.remove('modal-open');
     document.body.style.overflow = '';
+    
+    // Запускаем анимацию закрытия
+    const duration = 300;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease in cubic)
+      const easeProgress = Math.pow(progress, 3);
+      
+      // Анимируем только transform - "уезжает вниз"
+      const translateY = easeProgress * 100;
+      content.style.transform = `translateY(${translateY}%)`;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена - полностью скрываем модальное окно
+        modal.classList.remove('show');
+        modal.classList.remove('closing');
+        modal.style.opacity = '';
+        modal.style.visibility = '';
+        content.style.transform = '';
+        content.style.transition = '';
+        
+        this.activeModal = null;
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
 
-    // Плавно анимируем закрытие из текущей позиции
+  // JavaScript анимация открытия модального окна оформления заказа - КОПИЯ анимации лейблов
+  animateCheckoutModalOpen(modal) {
+    const content = modal.querySelector('.checkout-modal');
+    if (!content) return;
+
+    // Показываем оверлей и подготавливаем контент
+    modal.classList.add('show');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    
+    // Устанавливаем начальное состояние
+    content.style.transform = 'translateY(100%)';
+    content.style.transition = 'none';
+    
+    // Запускаем анимацию
+    const duration = 300;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease out cubic)
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      // Анимируем transform
+      const translateY = (1 - easeProgress) * 100;
+      content.style.transform = `translateY(${translateY}%)`;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена
+        content.style.transform = 'translateY(0)';
+        content.style.transition = '';
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
+
+  // JavaScript анимация закрытия модального окна оформления заказа - КОПИЯ анимации лейблов
+  animateCheckoutModalClose(modal) {
+    const content = modal.querySelector('.checkout-modal');
+    if (!content) return;
+
+    // Проверяем, не закрывается ли уже модальное окно
+    if (modal.classList.contains('closing')) {
+      return;
+    }
+
+    // Помечаем как закрывающееся
+    modal.classList.add('closing');
+    modal.classList.remove('dragging');
+    
+    // Сразу убираем блокировку прокрутки
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    // Запускаем анимацию закрытия
+    const duration = 300;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease in cubic)
+      const easeProgress = Math.pow(progress, 3);
+      
+      // Анимируем только transform - "уезжает вниз"
+      const translateY = easeProgress * 100;
+      content.style.transform = `translateY(${translateY}%)`;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена - полностью скрываем модальное окно
+        modal.classList.remove('show');
+        modal.classList.remove('closing');
+        modal.style.opacity = '';
+        modal.style.visibility = '';
+        content.style.transform = '';
+        content.style.transition = '';
+        
+        // Очищаем данные для checkout-modal
+        if (modal.id === 'checkout-modal') {
+          this.currentPaymentData = null;
+        }
+        
+        this.activeModal = null;
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }
+
+  // Анимация возврата модального окна в исходное положение
+  animateModalReturn(modal, content, currentDeltaY) {
     const startY = currentDeltaY;
-    const endY = window.innerHeight;
-    const duration = 300; // 300ms как в CSS анимации
+    const endY = 0;
+    const duration = 250; // Чуть быстрее для возврата
     const startTime = Date.now();
 
     const animate = () => {
@@ -464,19 +602,64 @@ class ModalManager {
       const currentY = startY + (endY - startY) * easeProgress;
       
       content.style.setProperty('transform', `translateY(${currentY}px)`, 'important');
+      // Не меняем opacity - оставляем как есть для консистентности
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена - возвращаем в нормальное состояние
+        content.style.transform = 'translateY(0)';
+        content.style.transition = '';
+        // Не сбрасываем opacity - оставляем модальное окно полностью видимым
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  // Закрытие модального окна через drag (перетаскивание) - единообразно для всех модальных окон
+  closeDragModal(modal, content, currentDeltaY) {
+    // Проверяем, не закрывается ли уже модальное окно
+    if (modal.classList.contains('closing')) {
+      return;
+    }
+
+    // Помечаем модальное окно как закрывающееся и убираем состояние перетаскивания
+    modal.classList.add('closing');
+    modal.classList.remove('dragging');
+
+    // Сразу убираем блокировку прокрутки
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    // Плавно анимируем закрытие из текущей позиции
+    const startY = currentDeltaY;
+    const endY = window.innerHeight;
+    const duration = 300;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease out)
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      const currentY = startY + (endY - startY) * easeProgress;
+      
+      // Анимируем только transform - "уезжает вниз", консистентно с обычным закрытием
+      content.style.setProperty('transform', `translateY(${currentY}px)`, 'important');
       
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         // Анимация завершена - окончательно скрываем модальное окно
         modal.classList.remove('show');
-        modal.classList.remove('dragging');
-        
-        // Сбрасываем все стили
+        modal.classList.remove('closing');
+        modal.style.opacity = '';
+        modal.style.visibility = '';
         content.style.transform = '';
         content.style.transition = '';
-        modal.style.opacity = '';
-        modal.style.transition = '';
         
         // Очищаем данные модального окна оформления если нужно
         if (modal.id === 'checkout-modal') {
@@ -484,7 +667,6 @@ class ModalManager {
         }
         
         this.activeModal = null;
-        modal.classList.remove('closing');
       }
     };
 

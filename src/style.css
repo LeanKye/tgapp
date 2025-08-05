@@ -2727,17 +2727,17 @@ body.modal-open {
   right: 0;
   background: #1a1a1a;
   border-radius: 20px 20px 0 0;
-  padding: 24px;
+  padding: 16px;
   max-height: 70vh;
   max-height: 70dvh; /* Динамическая высота viewport для мобильных */
   overflow-y: auto;
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* transition убран - анимация теперь контролируется JavaScript */
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   /* Обеспечиваем правильное позиционирование внизу экрана */
   margin-bottom: 0;
   /* Учитываем безопасную зону iOS */
-  padding-bottom: 24px;
+  padding-bottom: 16px;
   /* Плавная прокрутка на мобильных */
   -webkit-overflow-scrolling: touch;
   /* Исправляем проблему с выходом за край экрана */
@@ -2754,13 +2754,22 @@ body.modal-open {
   -webkit-backface-visibility: hidden;
 }
 
-.modal-overlay.show .modal-content {
-  transform: translateY(0);
-}
+/* .modal-overlay.show .modal-content анимация теперь в JavaScript */
 
 /* Состояние перетаскивания */
 .modal-overlay.dragging .modal-content {
-  transition: none;
+  transition: none !important;
+  will-change: transform;
+}
+
+/* Состояние закрытия модального окна */
+.modal-overlay.closing {
+  transition: none !important;
+}
+
+.modal-overlay.closing .modal-content {
+  transition: none !important;
+  will-change: transform;
 }
 
 /* Индикатор перетаскивания */
@@ -2844,7 +2853,7 @@ body.modal-open {
   border: none;
   border-radius: 8px;
   padding: 14px;
-  font-size: 18px;
+  font-size: 16px; /* Уменьшили на 2 размера с 18px до 16px */
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2892,7 +2901,7 @@ body.modal-open {
   }
   
   .modal-content {
-    padding: 20px;
+    padding: 16px;
     max-height: 80vh;
     max-height: 80dvh;
     /* Дополнительная фиксация внизу экрана */
@@ -2943,7 +2952,7 @@ body.modal-open {
   
   .modal-close {
     padding: 12px;
-    font-size: 18px;
+    font-size: 16px;
   }
 }
 
@@ -2959,6 +2968,10 @@ body.modal-open {
   
   .modal-text {
     font-size: 14px;
+  }
+  
+  .modal-close {
+    font-size: 16px;
   }
 }
 
@@ -3008,12 +3021,13 @@ body.modal-open {
   max-height: 70dvh;
   overflow: hidden;
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* transition убран - анимация теперь контролируется JavaScript */
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   margin: 0;
+  padding: 16px;
   /* Минимальный отступ снизу */
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
   /* Поддержка перетаскивания */
   will-change: transform;
   /* Предотвращаем выделение текста при перетаскивании */
@@ -3024,15 +3038,22 @@ body.modal-open {
   -webkit-backface-visibility: hidden;
 }
 
-.checkout-modal-overlay.show .checkout-modal {
-  transform: translateY(0);
-}
+/* .checkout-modal-overlay.show .checkout-modal анимация теперь в JavaScript */
 
 /* Состояние перетаскивания для модального окна оформления */
 .checkout-modal-overlay.dragging .checkout-modal {
-  transition: none;
-  /* Позволяем JavaScript управлять transform во время перетаскивания */
-  transform: none !important;
+  transition: none !important;
+  will-change: transform;
+}
+
+/* Состояние закрытия модального окна оформления */
+.checkout-modal-overlay.closing {
+  transition: none !important;
+}
+
+.checkout-modal-overlay.closing .checkout-modal {
+  transition: none !important;
+  will-change: transform;
 }
 
 /* Дополнительные стили для улучшения перетаскивания */
@@ -3040,6 +3061,8 @@ body.modal-open {
   /* Отключаем выделение текста при перетаскивании */
   -webkit-user-select: none;
   user-select: none;
+  /* Блокируем все CSS анимации и переходы */
+  transition: none !important;
 }
 
 /* Индикатор перетаскивания для модального окна оформления */
@@ -3072,7 +3095,8 @@ body.modal-open {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px 8px;
+  padding: 0;
+  margin-bottom: 16px;
   position: relative;
 }
 
@@ -3086,7 +3110,7 @@ body.modal-open {
 .checkout-modal-close {
   position: absolute;
   top: 50%;
-  right: 24px;
+  right: 0;
   transform: translateY(-50%);
   background: none;
   border: none;
@@ -3097,7 +3121,7 @@ body.modal-open {
   padding: 0;
   width: 40px;
   height: 40px;
-  display: flex;
+  display: none; /* Скрываем кнопку крестик */
   align-items: center;
   justify-content: center;
   border-radius: 8px;
@@ -3116,7 +3140,7 @@ body.modal-open {
 }
 
 .checkout-modal-body {
-  padding: 8px 24px;
+  padding: 0;
   padding-bottom: 0;
   margin-bottom: 0;
   overflow-y: auto;
@@ -3128,7 +3152,7 @@ body.modal-open {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 16px;
-  margin-bottom: 0;
+  margin-bottom: 16px;
 }
 
 .payment-details .payment-item {
@@ -3186,8 +3210,7 @@ body.modal-open {
   border-radius: 0;
   border: none;
   padding: 0;
-  /* Добавляем отступ сверху чтобы опустить кнопку ниже */
-  margin-top: 16px;
+  margin-bottom: 16px;
 }
 
 .checkout-button {
@@ -3196,7 +3219,7 @@ body.modal-open {
   border: none;
   border-radius: 8px;
   padding: 0;
-  font-size: 18px;
+  font-size: 16px; /* Уменьшили на 2 размера с 18px до 16px */
   font-weight: 600;
   height: 46px;
   width: 100%;
@@ -3223,11 +3246,15 @@ body.modal-open {
 
 /* Стили для текста соглашения */
 .payment-agreement-text {
-  text-align: left;
+  text-align: justify;
   font-size: 13px;
   color: #888;
-  padding: 16px 0 16px;
+  padding: 0;
+  margin: 0;
   line-height: 1.5;
+  width: 100%;
+  word-spacing: normal;
+  text-align-last: left;
 }
 
 .payment-agreement-text a {
@@ -3249,11 +3276,13 @@ body.modal-open {
   
   .payment-agreement-text {
     font-size: 12px;
-    padding: 16px 0 16px;
+    padding: 0;
+    margin: 0;
   }
   
   .checkout-modal-body {
     /* Убираем padding снизу чтобы контент был ближе к низу */
+    padding: 0;
     padding-bottom: 0;
     margin-bottom: 0;
     /* Уменьшаем максимальную высоту для мобильных */
@@ -3281,7 +3310,8 @@ body.modal-open {
   }
   
   .checkout-modal-header {
-    padding: 16px 20px 8px;
+    padding: 8px 0 8px;
+    margin-bottom: 16px;
   }
   
   .checkout-modal-header h3 {
@@ -3369,36 +3399,7 @@ body.modal-open {
   }
 }
 
-/* Анимации для модального окна */
-@keyframes checkoutSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes checkoutSlideOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(100%);
-  }
-}
-
-.checkout-modal-overlay.show .checkout-modal {
-  animation: checkoutSlideIn 0.3s ease forwards;
-}
-
-.checkout-modal-overlay:not(.show) .checkout-modal {
-  animation: checkoutSlideOut 0.3s ease forwards;
-}
+/* CSS анимации удалены - теперь используется JavaScript анимация для полного контроля */
 
 /* Анимации для уведомлений */
 @keyframes slideInDown {
