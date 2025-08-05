@@ -2843,7 +2843,7 @@ body.modal-open {
 }
 
 .modal-body {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .modal-text {
@@ -2908,7 +2908,7 @@ body.modal-open {
   }
   
   .modal-content {
-    padding: 12px;
+    padding: 16px;
     max-height: 80vh;
     max-height: 80dvh;
     /* Дополнительная фиксация внизу экрана */
@@ -2966,7 +2966,7 @@ body.modal-open {
 /* Улучшение для очень маленьких экранов */
 @media (max-width: 375px) {
   .modal-content {
-    padding: 8px;
+    padding: 16px;
   }
   
   .modal-title {
@@ -3159,7 +3159,7 @@ body.modal-open {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .payment-details .payment-item {
@@ -3301,8 +3301,8 @@ body.modal-open {
   }
   
   .checkout-button-container {
-    /* Убираем все отступы */
-    margin-top: 8px;
+    /* Достаточный отступ сверху для мобильных */
+    margin-top: 16px;
     margin-bottom: 0;
     padding: 0;
   }
@@ -3311,14 +3311,12 @@ body.modal-open {
   .checkout-modal {
     /* Уменьшаем высоту модального окна на мобильных */
     max-height: auto;
-    /* Уменьшаем отступы для мобильных устройств */
-    padding: 12px;
   }
   
   .checkout-modal .payment-details {
     /* Уменьшаем отступы внутри деталей платежа */
     padding: 12px;
-    margin-bottom: 0;
+    margin-bottom: 12px;
   }
   
   .checkout-modal-header {
@@ -3341,7 +3339,6 @@ body.modal-open {
   .checkout-button-container {
     padding: 0;
     min-height: 46px;
-    margin-top: 16px;
   }
 }
 
@@ -3350,12 +3347,11 @@ body.modal-open {
   .checkout-modal {
     max-height: 80vh;
     max-height: 80dvh;
-    /* Еще больше уменьшаем отступы для очень маленьких экранов */
-    padding: 8px;
   }
   
   .checkout-modal-header {
-    padding: 8px 0 8px;
+    padding: 0;
+    margin-bottom: 16px;
   }
   
   .checkout-modal-header h3 {
@@ -3368,7 +3364,8 @@ body.modal-open {
   }
   
   .payment-details {
-    padding: 10px;
+    padding: 12px;
+    margin-bottom: 16px;
   }
   
   .payment-details .payment-item {
@@ -3382,7 +3379,7 @@ body.modal-open {
   .checkout-button-container {
     padding: 0;
     min-height: 46px;
-    margin-top: 16px;
+    margin-top: 0;
   }
 }
 
@@ -3396,7 +3393,6 @@ body.modal-open {
   .checkout-button-container {
     padding: 0;
     min-height: 46px;
-    margin-top: 14px;
   }
 }
 
@@ -3409,7 +3405,6 @@ body.modal-open {
   .checkout-button-container {
     padding: 0;
     min-height: 46px;
-    margin-top: 16px;
   }
 }
 
