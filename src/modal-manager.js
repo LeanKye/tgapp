@@ -84,7 +84,7 @@ class ModalManager {
               <button class="checkout-button" id="checkout-proceed-btn">Перейти к оформлению</button>
             </div>
             <div class="payment-agreement-text">
-              Нажимая на кнопку, вы соглашаетесь с <a href="info.html#privacy" target="_blank">Политикой конфиденциальности</a>, а также с <a href="info.html#agreement" target="_blank">Лицензионным соглашением</a>
+              Нажимая на кнопку, вы соглашаетесь с <a href="info.html#privacy">Политикой конфиденциальности</a>, а также с <a href="info.html#agreement">Лицензионным соглашением</a>
             </div>
           </div>
         </div>
