@@ -89,10 +89,15 @@ function renderProduct(product) {
     document.querySelector('.price-discount').style.display = 'none';
   }
   
-  // Форматируем цену в USDT с разными размерами шрифтов
+  // Форматируем цену в USDT с разными размерами шрифтов или обрабатываем цену для юрлиц
   const priceUsdtElement = document.querySelector('.price-usdt');
   const usdtText = product.priceUSDT;
-  if (usdtText.includes('USDT')) {
+  
+  if (usdtText === 'для юрлиц') {
+    // Вычисляем цену для юрлиц (на 3% дешевле основной цены)
+    const corporatePrice = Math.round(product.price * 0.97); // Скидка 3%
+    priceUsdtElement.innerHTML = `для юрлиц <span class="corporate-price">${formatPriceSimple(corporatePrice)}</span>`;
+  } else if (usdtText.includes('USDT')) {
     const parts = usdtText.split(' USDT');
     priceUsdtElement.innerHTML = `${parts[0]} <span class="usdt-currency">USDT</span>`;
   } else {

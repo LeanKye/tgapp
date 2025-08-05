@@ -565,6 +565,13 @@ body:has(.product)::before {
   color: #CAC9C7;
 }
 
+.price-usdt .corporate-price {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ababab;
+  margin-left: 4px;
+}
+
 .category-products {
   display: grid;
   grid-template-columns: 50% 50%;
@@ -2901,7 +2908,7 @@ body.modal-open {
   }
   
   .modal-content {
-    padding: 16px;
+    padding: 12px;
     max-height: 80vh;
     max-height: 80dvh;
     /* Дополнительная фиксация внизу экрана */
@@ -2959,7 +2966,7 @@ body.modal-open {
 /* Улучшение для очень маленьких экранов */
 @media (max-width: 375px) {
   .modal-content {
-    padding: 16px;
+    padding: 8px;
   }
   
   .modal-title {
@@ -3169,11 +3176,13 @@ body.modal-open {
 
 .payment-details .payment-item span:first-child {
   color: #888;
+  text-align: left;
 }
 
 .payment-details .payment-item span:last-child {
   color: #ffffff;
   font-weight: 500;
+  text-align: left;
 }
 
 .payment-details .payment-item.total {
@@ -3186,6 +3195,7 @@ body.modal-open {
 
 .payment-details .payment-item.total span:last-child {
   color: #29A5FF;
+  text-align: left;
 }
 
 /* Белый цвет для цены в модальном окне оформления */
@@ -3301,6 +3311,8 @@ body.modal-open {
   .checkout-modal {
     /* Уменьшаем высоту модального окна на мобильных */
     max-height: auto;
+    /* Уменьшаем отступы для мобильных устройств */
+    padding: 12px;
   }
   
   .checkout-modal .payment-details {
@@ -3338,10 +3350,12 @@ body.modal-open {
   .checkout-modal {
     max-height: 80vh;
     max-height: 80dvh;
+    /* Еще больше уменьшаем отступы для очень маленьких экранов */
+    padding: 8px;
   }
   
   .checkout-modal-header {
-    padding: 16px 16px 8px;
+    padding: 8px 0 8px;
   }
   
   .checkout-modal-header h3 {
@@ -3349,7 +3363,7 @@ body.modal-open {
   }
   
   .checkout-modal-body {
-    padding: 8px 16px;
+    padding: 0;
     padding-bottom: 0;
   }
   
