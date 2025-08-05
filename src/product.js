@@ -488,16 +488,16 @@ function initCheckoutPanel() {
   const editionGroup = document.getElementById('edition-group');
   
   let isExpanded = false;
-  let selectedVariant = 'Аккаунт'; // Изначально выбранный вариант
+  let selectedVariant = 'Активация'; // Изначально выбранный вариант
   
   // Функция для получения текста выбранного варианта
   function getSelectedVariantText() {
     const checkedInput = variantGroup.querySelector('input[name="variant"]:checked');
     if (checkedInput) {
       const label = variantGroup.querySelector(`label[for="${checkedInput.id}"] span`);
-      return label ? label.textContent.trim() : 'Аккаунт';
+      return label ? label.textContent.trim() : 'Активация';
     }
-    return 'Аккаунт';
+    return 'Активация';
   }
   
   // Функция для обновления текста заголовка
