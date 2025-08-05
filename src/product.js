@@ -924,8 +924,8 @@ async function handleBuyClick() {
   // Рассчитываем итоговую цену
   const finalPrice = calculateFinalPrice(product, selectedOptions);
   
-  // Открываем модальное окно WebMoney
-  openWebMoneyModal(product, selectedOptions, finalPrice);
+  // Открываем модальное окно оформления
+  openCheckoutModal(product, selectedOptions, finalPrice);
 }
 
 // Получение выбранных опций
@@ -1051,8 +1051,8 @@ function showError(message) {
   showMessage(message, 'error');
 }
 
-// Функции для работы с модальным окном WebMoney
-function openWebMoneyModal(product, selectedOptions, finalPrice) {
+// Функции для работы с модальным окном оформления
+function openCheckoutModal(product, selectedOptions, finalPrice) {
   if (!modalManager) {
     return;
   }
@@ -1069,7 +1069,7 @@ function openWebMoneyModal(product, selectedOptions, finalPrice) {
     amount: finalPrice
   };
   
-  modalManager.openModal('webmoney-modal', { paymentData });
+  modalManager.openModal('checkout-modal', { paymentData });
 }
 
 

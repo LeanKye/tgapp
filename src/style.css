@@ -2943,7 +2943,7 @@ body.modal-open {
   
   .modal-close {
     padding: 12px;
-    font-size: 15px;
+    font-size: 18px;
   }
 }
 
@@ -2964,8 +2964,8 @@ body.modal-open {
 
 
 
-/* Стили для модального окна WebMoney */
-.webmoney-modal-overlay {
+/* Стили для модального окна оформления заказа */
+.checkout-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -2988,12 +2988,12 @@ body.modal-open {
   padding: 0;
 }
 
-.webmoney-modal-overlay.show {
+.checkout-modal-overlay.show {
   opacity: 1;
   visibility: visible;
 }
 
-.webmoney-modal {
+.checkout-modal {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -3024,18 +3024,51 @@ body.modal-open {
   -webkit-backface-visibility: hidden;
 }
 
-.webmoney-modal-overlay.show .webmoney-modal {
+.checkout-modal-overlay.show .checkout-modal {
   transform: translateY(0);
 }
 
-/* Состояние перетаскивания для WebMoney */
-.webmoney-modal-overlay.dragging .webmoney-modal {
+/* Состояние перетаскивания для модального окна оформления */
+.checkout-modal-overlay.dragging .checkout-modal {
   transition: none;
+  /* Позволяем JavaScript управлять transform во время перетаскивания */
+  transform: none !important;
+}
+
+/* Дополнительные стили для улучшения перетаскивания */
+.checkout-modal-overlay.dragging {
+  /* Отключаем выделение текста при перетаскивании */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Индикатор перетаскивания для модального окна оформления */
+.checkout-modal::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 1;
+}
+
+.checkout-modal-overlay.show .checkout-modal::before {
+  opacity: 1;
+}
+
+.checkout-modal-overlay.dragging .checkout-modal::before {
+  opacity: 0.6;
 }
 
 
 
-.webmoney-modal-header {
+.checkout-modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3043,14 +3076,14 @@ body.modal-open {
   position: relative;
 }
 
-.webmoney-modal-header h3 {
+.checkout-modal-header h3 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
   color: #ffffff;
 }
 
-.webmoney-modal-close {
+.checkout-modal-close {
   position: absolute;
   top: 50%;
   right: 24px;
@@ -3072,17 +3105,17 @@ body.modal-open {
   line-height: 1;
 }
 
-.webmoney-modal-close:hover {
+.checkout-modal-close:hover {
   background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
 }
 
-.webmoney-modal-close:active {
+.checkout-modal-close:active {
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-50%) scale(0.95);
 }
 
-.webmoney-modal-body {
+.checkout-modal-body {
   padding: 8px 24px;
   padding-bottom: 0;
   margin-bottom: 0;
@@ -3131,20 +3164,20 @@ body.modal-open {
   color: #29A5FF;
 }
 
-/* Белый цвет для цены в WebMoney модальном окне */
-.webmoney-modal .payment-details .payment-item.total {
+/* Белый цвет для цены в модальном окне оформления */
+.checkout-modal .payment-details .payment-item.total {
   color: white;
 }
 
-.webmoney-modal .payment-details .payment-item.total .formatted-price {
+.checkout-modal .payment-details .payment-item.total .formatted-price {
   color: white;
 }
 
-.webmoney-modal .payment-details .payment-item.total .currency-separator {
+.checkout-modal .payment-details .payment-item.total .currency-separator {
   color: white;
 }
 
-.webmoney-widget-container {
+.checkout-button-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -3157,63 +3190,32 @@ body.modal-open {
   margin-top: 16px;
 }
 
-#wm-widget {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.checkout-button {
+  background-color: #29A5FF;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 600;
+  height: 46px;
   width: 100%;
-  min-height: 60px;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
 }
 
-/* Улучшенные стили для кнопки WebMoney */
-#wm-widget iframe,
-#wm-widget div {
-  width: 100% !important;
-  min-width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-  min-height: 46px !important;
-  border: none !important;
-  border-radius: 8px !important;
-  background: transparent !important;
-  box-shadow: none !important;
+.checkout-button:hover {
+  background: #1E90FF;
+  transform: translateY(-2px);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
 }
 
-/* Стилизация кнопки WebMoney как кнопка "Понятно" */
-#wm-widget button,
-#wm-widget input[type="submit"],
-#wm-widget .wm-button,
-#wm-widget .wm-pay-button {
-  background: #29A5FF !important;
-  color: white !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 14px !important;
-  font-size: 18px !important;
-  font-weight: 600 !important;
-  height: 46px !important;
-  width: 100% !important;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3) !important;
-  transition: all 0.2s ease !important;
-  cursor: pointer !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-#wm-widget button:hover,
-#wm-widget input[type="submit"]:hover,
-#wm-widget .wm-button:hover,
-#wm-widget .wm-pay-button:hover {
-  background: #1E90FF !important;
-  transform: translateY(-2px) !important;
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4) !important;
-}
-
-#wm-widget button:active,
-#wm-widget input[type="submit"]:active,
-#wm-widget .wm-button:active,
-#wm-widget .wm-pay-button:active {
+.checkout-button:active {
   background: #1976D2 !important;
   transform: translateY(0px) !important;
   box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2) !important;
@@ -3241,7 +3243,7 @@ body.modal-open {
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 480px) {
-  .webmoney-modal-overlay {
+  .checkout-modal-overlay {
     padding: 0;
   }
   
@@ -3250,7 +3252,7 @@ body.modal-open {
     padding: 16px 0 16px;
   }
   
-  .webmoney-modal-body {
+  .checkout-modal-body {
     /* Убираем padding снизу чтобы контент был ближе к низу */
     padding-bottom: 0;
     margin-bottom: 0;
@@ -3259,7 +3261,7 @@ body.modal-open {
     overflow-y: visible;
   }
   
-  .webmoney-widget-container {
+  .checkout-button-container {
     /* Убираем все отступы */
     margin-top: 8px;
     margin-bottom: 0;
@@ -3267,31 +3269,24 @@ body.modal-open {
   }
   
   /* Прижимаем контент к низу модального окна */
-  .webmoney-modal {
+  .checkout-modal {
     /* Уменьшаем высоту модального окна на мобильных */
     max-height: auto;
   }
   
-  .webmoney-modal .payment-details {
+  .checkout-modal .payment-details {
     /* Уменьшаем отступы внутри деталей платежа */
     padding: 12px;
     margin-bottom: 0;
   }
   
-
-
-  
-  .webmoney-modal-header {
+  .checkout-modal-header {
     padding: 16px 20px 8px;
   }
   
-  .webmoney-modal-header h3 {
+  .checkout-modal-header h3 {
     font-size: 18px;
   }
-  
-  /* Убираем дублирующий стиль, он уже определен выше */
-  
-  /* Стиль payment-details уже определен выше */
   
   .payment-details .payment-item {
     font-size: 13px;
@@ -3301,37 +3296,29 @@ body.modal-open {
     font-size: 15px;
   }
   
-  .webmoney-widget-container {
+  .checkout-button-container {
     padding: 0;
     min-height: 46px;
     margin-top: 16px;
-  }
-  
-  #wm-widget iframe,
-  #wm-widget div {
-    min-width: 100% !important;
-    max-width: 100% !important;
-    min-height: 46px !important;
-    border-radius: 8px !important;
   }
 }
 
 /* Адаптивность для очень маленьких экранов */
 @media (max-width: 375px) {
-  .webmoney-modal {
+  .checkout-modal {
     max-height: 80vh;
     max-height: 80dvh;
   }
   
-  .webmoney-modal-header {
+  .checkout-modal-header {
     padding: 16px 16px 8px;
   }
   
-  .webmoney-modal-header h3 {
+  .checkout-modal-header h3 {
     font-size: 17px;
   }
   
-  .webmoney-modal-body {
+  .checkout-modal-body {
     padding: 8px 16px;
     padding-bottom: 0;
   }
@@ -3348,66 +3335,42 @@ body.modal-open {
     font-size: 14px;
   }
   
-  .webmoney-widget-container {
+  .checkout-button-container {
     padding: 0;
     min-height: 46px;
     margin-top: 16px;
-  }
-  
-  #wm-widget iframe,
-  #wm-widget div {
-    min-width: 100% !important;
-    min-height: 46px !important;
-    border-radius: 8px !important;
   }
 }
 
 /* Адаптивность для планшетов */
 @media (min-width: 481px) and (max-width: 768px) {
-  .webmoney-modal {
+  .checkout-modal {
     max-height: 88vh;
     max-height: 88dvh;
   }
   
-  .webmoney-widget-container {
+  .checkout-button-container {
     padding: 0;
     min-height: 46px;
     margin-top: 14px;
-  }
-  
-  #wm-widget iframe,
-  #wm-widget div {
-    min-width: 100% !important;
-    max-width: 100% !important;
-    min-height: 46px !important;
-    border-radius: 8px !important;
   }
 }
 
 /* Адаптивность для больших экранов */
 @media (min-width: 769px) {
-  .webmoney-modal {
+  .checkout-modal {
     max-height: 85vh;
-    max-height: 85dvh;
   }
   
-  .webmoney-widget-container {
+  .checkout-button-container {
     padding: 0;
     min-height: 46px;
     margin-top: 16px;
   }
-  
-  #wm-widget iframe,
-  #wm-widget div {
-    min-width: 100% !important;
-    max-width: 100% !important;
-    min-height: 46px !important;
-    border-radius: 8px !important;
-  }
 }
 
 /* Анимации для модального окна */
-@keyframes webmoneySlideIn {
+@keyframes checkoutSlideIn {
   from {
     opacity: 0;
     transform: translateY(100%);
@@ -3418,7 +3381,7 @@ body.modal-open {
   }
 }
 
-@keyframes webmoneySlideOut {
+@keyframes checkoutSlideOut {
   from {
     opacity: 1;
     transform: translateY(0);
@@ -3429,12 +3392,12 @@ body.modal-open {
   }
 }
 
-.webmoney-modal-overlay.show .webmoney-modal {
-  animation: webmoneySlideIn 0.3s ease forwards;
+.checkout-modal-overlay.show .checkout-modal {
+  animation: checkoutSlideIn 0.3s ease forwards;
 }
 
-.webmoney-modal-overlay:not(.show) .webmoney-modal {
-  animation: webmoneySlideOut 0.3s ease forwards;
+.checkout-modal-overlay:not(.show) .checkout-modal {
+  animation: checkoutSlideOut 0.3s ease forwards;
 }
 
 /* Анимации для уведомлений */

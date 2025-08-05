@@ -18,7 +18,7 @@ class ModalManager {
   init() {
     // Создаем базовые модальные окна
     this.createLabelModal();
-    this.createWebMoneyModal();
+    this.createCheckoutModal();
   }
 
   // Создание модального окна для лейблов
@@ -46,18 +46,18 @@ class ModalManager {
     this.setupModalEvents('label-modal');
   }
 
-  // Создание модального окна WebMoney
-  createWebMoneyModal() {
-    if (document.getElementById('webmoney-modal')) return;
+  // Создание модального окна оформления
+  createCheckoutModal() {
+    if (document.getElementById('checkout-modal')) return;
 
     const modalHTML = `
-      <div id="webmoney-modal" class="webmoney-modal-overlay">
-        <div class="webmoney-modal">
-          <div class="webmoney-modal-header">
-            <h3>Оплата через WebMoney</h3>
-            <button class="webmoney-modal-close" aria-label="Закрыть">&times;</button>
+      <div id="checkout-modal" class="checkout-modal-overlay">
+        <div class="checkout-modal">
+          <div class="checkout-modal-header">
+            <h3>Оформление заказа</h3>
+            <button class="checkout-modal-close" aria-label="Закрыть">&times;</button>
           </div>
-          <div class="webmoney-modal-body">
+          <div class="checkout-modal-body">
             <div class="payment-details">
               <div class="payment-item">
                 <span>Товар:</span>
@@ -80,8 +80,8 @@ class ModalManager {
                 <span id="modal-price">-</span>
               </div>
             </div>
-            <div class="webmoney-widget-container">
-              <div id="wm-widget"></div>
+            <div class="checkout-button-container">
+              <button class="checkout-button" id="checkout-proceed-btn">Перейти к оформлению</button>
             </div>
             <div class="payment-agreement-text">
               Нажимая на кнопку, вы соглашаетесь с <a href="info.html#privacy" target="_blank">Политикой конфиденциальности</a>, а также с <a href="info.html#agreement" target="_blank">Лицензионным соглашением</a>
@@ -92,13 +92,13 @@ class ModalManager {
     `;
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-    this.setupModalEvents('webmoney-modal');
+    this.setupModalEvents('checkout-modal');
   }
 
   // Настройка событий для модального окна
   setupModalEvents(modalId) {
     const modal = document.getElementById(modalId);
-    const content = modal.querySelector('.modal-content, .webmoney-modal');
+    const content = modal.querySelector('.modal-content, .checkout-modal');
     
     if (!modal || !content) {
       return;
@@ -112,14 +112,14 @@ class ModalManager {
     // Обработчики для закрытия
     this.setupCloseEvents(modal, modalId);
     
-    // Настройка drag событий для обычных модальных окон
-    if (modalId === 'label-modal') {
+    // Настройка drag событий для модальных окон
+    if (modalId === 'label-modal' || modalId === 'checkout-modal') {
       this.setupDragEvents(modal, content);
     }
     
-    // Дополнительные обработчики для WebMoney модального окна
-    if (modalId === 'webmoney-modal') {
-      this.setupWebMoneyCloseEvents(modal);
+    // Дополнительные обработчики для модального окна оформления
+    if (modalId === 'checkout-modal') {
+      this.setupCheckoutEvents(modal);
     }
 
     // Помечаем, что обработчики подключены
@@ -162,11 +162,9 @@ class ModalManager {
       // Ограничиваем движение только вниз
       if (deltaY > 0) {
         const translateY = Math.min(deltaY, window.innerHeight * 0.5);
-        content.style.transform = `translateY(${translateY}px)`;
+        content.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
         
-        // Добавляем визуальную обратную связь - изменение прозрачности
-        const progress = Math.min(deltaY / (window.innerHeight * this.closeThreshold), 1);
-        modal.style.opacity = 1 - (progress * 0.3); // Максимальная прозрачность 0.7
+        // Убираем эффект изменения прозрачности при перетягивании
         
         // Вычисляем скорость
         const now = Date.now();
@@ -193,13 +191,11 @@ class ModalManager {
                          (velocity > this.velocityThreshold && deltaY > 50);
       
       if (shouldClose) {
-        this.closeModal(modal.id);
+        this.closeDragModal(modal, content, deltaY);
       } else {
         // Возвращаем модальное окно в исходное положение
         content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        modal.style.transition = 'opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         content.style.transform = 'translateY(0)';
-        modal.style.opacity = '1';
         
         setTimeout(() => {
           modal.classList.remove('dragging');
@@ -236,11 +232,9 @@ class ModalManager {
       // Ограничиваем движение только вниз
       if (deltaY > 0) {
         const translateY = Math.min(deltaY, window.innerHeight * 0.5);
-        content.style.transform = `translateY(${translateY}px)`;
+        content.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
         
-        // Добавляем визуальную обратную связь - изменение прозрачности
-        const progress = Math.min(deltaY / (window.innerHeight * this.closeThreshold), 1);
-        modal.style.opacity = 1 - (progress * 0.3); // Максимальная прозрачность 0.7
+        // Убираем эффект изменения прозрачности при перетягивании
         
         // Вычисляем скорость
         const now = Date.now();
@@ -264,13 +258,11 @@ class ModalManager {
                          (velocity > this.velocityThreshold && deltaY > 50);
       
       if (shouldClose) {
-        this.closeModal(modal.id);
+        this.closeDragModal(modal, content, deltaY);
       } else {
         // Возвращаем модальное окно в исходное положение
         content.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        modal.style.transition = 'opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         content.style.transform = 'translateY(0)';
-        modal.style.opacity = '1';
         
         setTimeout(() => {
           modal.classList.remove('dragging');
@@ -315,13 +307,21 @@ class ModalManager {
     }
   }
 
-  // Дополнительные обработчики закрытия для WebMoney модального окна
-  setupWebMoneyCloseEvents(modal) {
+  // Дополнительные обработчики для модального окна оформления
+  setupCheckoutEvents(modal) {
     // Закрытие по клику на крестик
-    const closeBtn = modal.querySelector('.webmoney-modal-close');
+    const closeBtn = modal.querySelector('.checkout-modal-close');
     if (closeBtn) {
       closeBtn.addEventListener('click', () => {
-        this.closeModal('webmoney-modal');
+        this.closeModal('checkout-modal');
+      });
+    }
+
+    // Обработчик кнопки "Перейти к оформлению"
+    const checkoutBtn = modal.querySelector('#checkout-proceed-btn');
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener('click', () => {
+        this.handleCheckoutProceed();
       });
     }
   }
@@ -349,8 +349,8 @@ class ModalManager {
       }
     }
 
-    // Заполняем данные для webmoney-modal
-    if (modalId === 'webmoney-modal' && data.paymentData) {
+    // Заполняем данные для checkout-modal
+    if (modalId === 'checkout-modal' && data.paymentData) {
       const productTitle = modal.querySelector('#modal-product-title');
       const variant = modal.querySelector('#modal-variant');
       const period = modal.querySelector('#modal-period');
@@ -364,6 +364,9 @@ class ModalManager {
         edition.textContent = data.paymentData.edition || '-';
         price.innerHTML = data.paymentData.price || '-';
       }
+      
+      // Сохраняем данные для дальнейшего использования
+      this.currentPaymentData = data.paymentData;
     }
 
     // Блокируем прокрутку страницы
@@ -373,7 +376,7 @@ class ModalManager {
     // Сбрасываем прозрачность и трансформацию
     modal.style.opacity = '1';
     modal.style.transition = '';
-    const content = modal.querySelector('.modal-content, .webmoney-modal');
+    const content = modal.querySelector('.modal-content, .checkout-modal');
     if (content) {
       content.style.transform = '';
       content.style.transition = '';
@@ -385,9 +388,9 @@ class ModalManager {
     // Убеждаемся, что обработчики событий подключены
     this.setupModalEvents(modalId);
 
-    // Инициализируем WebMoney виджет если нужно
-    if (modalId === 'webmoney-modal' && data.paymentData) {
-      this.initWebMoneyWidget(data.paymentData);
+    // Дополнительная настройка для модального окна оформления
+    if (modalId === 'checkout-modal' && data.paymentData) {
+      // Дополнительные действия при необходимости
     }
   }
 
@@ -414,7 +417,7 @@ class ModalManager {
     modal.classList.remove('show');
 
     // Сбрасываем трансформацию и прозрачность
-    const content = modal.querySelector('.modal-content, .webmoney-modal');
+    const content = modal.querySelector('.modal-content, .checkout-modal');
     if (content) {
       content.style.transform = '';
       content.style.transition = '';
@@ -422,108 +425,104 @@ class ModalManager {
     modal.style.opacity = '';
     modal.style.transition = '';
 
-    // Очищаем WebMoney виджет если нужно
-    if (modalId === 'webmoney-modal') {
-      const widgetContainer = document.getElementById('wm-widget');
-      if (widgetContainer) {
-        widgetContainer.innerHTML = '';
-      }
+    // Очищаем данные модального окна оформления если нужно
+    if (modalId === 'checkout-modal') {
+      this.currentPaymentData = null;
     }
 
     this.activeModal = null;
     modal.classList.remove('closing');
   }
 
-  // Инициализация WebMoney виджета
-  initWebMoneyWidget(paymentData) {
-    const widgetContainer = document.getElementById('wm-widget');
-    if (!widgetContainer) return;
+  // Закрытие модального окна через drag (перетаскивание)
+  closeDragModal(modal, content, currentDeltaY) {
+    // Проверяем, не закрывается ли уже модальное окно
+    if (modal.classList.contains('closing')) {
+      return;
+    }
 
-    widgetContainer.innerHTML = '';
+    // Помечаем модальное окно как закрывающееся
+    modal.classList.add('closing');
 
-    // Создаем описание заказа
-    const description = `${paymentData.productTitle} - ${paymentData.variant}, ${paymentData.period}, ${paymentData.edition}`;
-    
+    // Сразу убираем блокировку прокрутки
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+
+    // Плавно анимируем закрытие из текущей позиции
+    const startY = currentDeltaY;
+    const endY = window.innerHeight;
+    const duration = 300; // 300ms как в CSS анимации
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease out)
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      const currentY = startY + (endY - startY) * easeProgress;
+      
+      content.style.setProperty('transform', `translateY(${currentY}px)`, 'important');
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена - окончательно скрываем модальное окно
+        modal.classList.remove('show');
+        modal.classList.remove('dragging');
+        
+        // Сбрасываем все стили
+        content.style.transform = '';
+        content.style.transition = '';
+        modal.style.opacity = '';
+        modal.style.transition = '';
+        
+        // Очищаем данные модального окна оформления если нужно
+        if (modal.id === 'checkout-modal') {
+          this.currentPaymentData = null;
+        }
+        
+        this.activeModal = null;
+        modal.classList.remove('closing');
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  // Обработка нажатия кнопки "Перейти к оформлению"
+  handleCheckoutProceed() {
+    if (!this.currentPaymentData) {
+      this.showError('Ошибка: данные заказа не найдены');
+      return;
+    }
+
+    // Закрываем модальное окно
+    this.closeModal('checkout-modal');
+
     // Генерируем ID заказа
     const orderId = this.generateOrderId();
     
-    // Убеждаемся, что amount является числом
-    const numericAmount = Number(paymentData.amount);
+    // Создаем описание заказа
+    const description = `${this.currentPaymentData.productTitle} - ${this.currentPaymentData.variant}, ${this.currentPaymentData.period}, ${this.currentPaymentData.edition}`;
     
-    // Функция для создания виджета
-    const createWidget = () => {
-      if (window.webmoney && window.webmoney.widgets) {
-        const widgetConfig = {
-          "data": {
-            "amount": numericAmount,
-            "purse": "T231993574772",
-            "desc": description,
-            "paymentType": "wm",
-            "lmi_payment_no": orderId,
-            "forcePay": true,
-            "lmi_currency": "RUB",
-            "lmi_currency_code": "RUB",
-            "test": true
-          },
-          "style": {
-            "theme": "wm",
-            "showAmount": true,
-            "titleNum": 1,
-            "title": "",
-            "design": "flat"
-          },
-          "lang": "ru"
-        };
-        
-        window.webmoney.widgets().button.create(widgetConfig).on('paymentComplete', (data) => {
-          // Обрабатываем успешную оплату
-          const result = {
-            orderId: orderId,
-            amount: numericAmount,
-            description: description,
-            webmoneyData: data
-          };
-          
-          this.closeModal('webmoney-modal');
-          this.handlePaymentSuccess(result, paymentData);
-        }).mount('wm-widget');
-      } else {
-        widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
-      }
-    };
+    // Показываем уведомление о переходе к оформлению
+    this.showSuccess(`✅ Переход к оформлению заказа #${orderId}`);
     
-    // Проверяем, загружен ли WebMoney виджет
-    if (window.webmoney && window.webmoney.widgets) {
-      createWidget();
-    } else {
-      // Ждем загрузки WebMoney виджета
-      let attempts = 0;
-      const maxAttempts = 10;
-      
-      const checkWebMoney = setInterval(() => {
-        attempts++;
-        
-        if (window.webmoney && window.webmoney.widgets) {
-          clearInterval(checkWebMoney);
-          createWidget();
-        } else if (attempts >= maxAttempts) {
-          clearInterval(checkWebMoney);
-          widgetContainer.innerHTML = '<div style="color: #888; text-align: center; padding: 20px;">Ошибка загрузки платежного виджета</div>';
-        }
-      }, 500);
-    }
-  }
-
-  // Обработка успешной оплаты
-  handlePaymentSuccess(result, paymentData) {
-    // Показываем уведомление об успешной оплате
-    this.showSuccess(`✅ Оплата прошла успешно! Заказ #${result.orderId}`);
+    // Здесь можно добавить логику для:
+    // - Перенаправления на страницу оформления
+    // - Отправки данных в Telegram Bot API  
+    // - Сохранения заказа в базе данных
     
-    console.log('Платеж успешен:', {
-      result,
-      paymentData
+    console.log('Переход к оформлению заказа:', {
+      orderId,
+      description,
+      paymentData: this.currentPaymentData
     });
   }
+
+
 
   // Генерация ID заказа
   generateOrderId() {
