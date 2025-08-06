@@ -96,7 +96,7 @@ function renderProduct(product) {
   if (usdtText === 'для юрлиц') {
     // Вычисляем цену для юрлиц (на 3% дешевле основной цены)
     const corporatePrice = Math.round(product.price * 0.97); // Скидка 3%
-    priceUsdtElement.innerHTML = `для юрлиц <span class="corporate-price">${formatPriceSimple(corporatePrice)}</span>`;
+    priceUsdtElement.innerHTML = `для юрлиц <span class="corporate-price">${formatPrice(corporatePrice)}</span>`;
   } else if (usdtText.includes('USDT')) {
     const parts = usdtText.split(' USDT');
     priceUsdtElement.innerHTML = `${parts[0]} <span class="usdt-currency">USDT</span>`;

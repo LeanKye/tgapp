@@ -946,7 +946,7 @@ export function formatPrice(price, currency = '₽') {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = '\u2009' + formattedPrice; // Тонкий пробел между разрядами для компактности
+      formattedPrice = '\u200A' + formattedPrice; // Волосяной пробел между разрядами для максимальной компактности
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }
@@ -970,7 +970,7 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   // Разбиваем число на разряды справа налево
   for (let i = priceStr.length - 1, count = 0; i >= 0; i--, count++) {
     if (count > 0 && count % 3 === 0) {
-      formattedPrice = '\u2009' + formattedPrice; // Тонкий пробел для компактности
+      formattedPrice = '\u200A' + formattedPrice; // Волосяной пробел для максимальной компактности
     }
     formattedPrice = priceStr[i] + formattedPrice;
   }

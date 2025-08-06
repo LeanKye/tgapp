@@ -572,6 +572,18 @@ body:has(.product)::before {
   margin-left: 4px;
 }
 
+/* Стили для форматированной цены юрлиц с разрядкой как у основной цены */
+.price-usdt .corporate-price .formatted-price {
+  letter-spacing: 0.1px; /* Такая же разрядка как у основной цены */
+}
+
+.price-usdt .corporate-price .formatted-price .currency-separator {
+  margin-left: 0.2em; /* Отступ как у основной цены */
+  font-size: 0.8em !important; /* Размер символа валюты меньше как у основной цены */
+  font-weight: 500 !important; /* Сохраняем вес шрифта */
+  color: #ababab !important; /* Цвет как у текста "для юрлиц" */
+}
+
 .category-products {
   display: grid;
   grid-template-columns: 50% 50%;
