@@ -3103,6 +3103,7 @@ body.modal-open {
   align-items: center;
   justify-content: space-between;
   padding: 0;
+  padding-top: 4px;
   margin-bottom: 16px;
   position: relative;
 }
@@ -3261,6 +3262,7 @@ body.modal-open {
   color: #888;
   padding: 0;
   margin: 0;
+  margin-top: 16px;
   line-height: 1.5;
   width: 100%;
   word-spacing: normal;
@@ -3288,6 +3290,7 @@ body.modal-open {
     font-size: 12px;
     padding: 0;
     margin: 0;
+    margin-top: 14px;
   }
   
   .checkout-modal-body {
@@ -3320,7 +3323,8 @@ body.modal-open {
   }
   
   .checkout-modal-header {
-    padding: 8px 0 8px;
+    padding: 0;
+    padding-top: 4px;
     margin-bottom: 16px;
   }
   
@@ -3351,6 +3355,7 @@ body.modal-open {
   
   .checkout-modal-header {
     padding: 0;
+    padding-top: 4px;
     margin-bottom: 16px;
   }
   
