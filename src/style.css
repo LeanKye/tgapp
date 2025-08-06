@@ -2807,6 +2807,7 @@ body.modal-open {
   align-items: center;
   gap: 0px;
   margin-bottom: 16px;
+  padding-top: 4px;
 }
 
 .modal-icon {
@@ -3257,7 +3258,7 @@ body.modal-open {
 
 /* Стили для текста соглашения */
 .payment-agreement-text {
-  text-align: justify;
+  text-align: left;
   font-size: 13px;
   color: #888;
   padding: 0;
@@ -3266,7 +3267,6 @@ body.modal-open {
   line-height: 1.5;
   width: 100%;
   word-spacing: normal;
-  text-align-last: left;
 }
 
 .payment-agreement-text a {
