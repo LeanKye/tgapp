@@ -209,6 +209,46 @@ function scrollToSelectedButton(container, selectedElement) {
   }
 }
 
+// Применение визуальных изменений при выборе издания (плана)
+function applyEditionVisuals(product, edition) {
+  if (!product || !edition) return;
+
+  const titleElement = document.querySelector('.title');
+  const swiperWrapper = document.querySelector('.swiper-wrapper');
+  const slider = document.querySelector('.swiper');
+  if (!titleElement || !swiperWrapper || !slider) return;
+
+  const newTitle = (edition.displayTitle && edition.displayTitle.trim())
+    ? edition.displayTitle
+    : `${product.title} — ${edition.name}`;
+
+  // Обновляем заголовок страницы и таба
+  titleElement.textContent = newTitle;
+  document.title = newTitle;
+
+  // Выбираем изображения: специфичные для издания или дефолтные
+  const imagesToUse = Array.isArray(edition.images) && edition.images.length > 0
+    ? edition.images
+    : product.images;
+
+  // Переинициализируем слайдер изображений без перезагрузки страницы
+  swiperWrapper.innerHTML = '';
+  const oldIndicators = document.querySelector('.slider-indicators');
+  if (oldIndicators) oldIndicators.remove();
+  slider.classList.remove('slider-initialized');
+
+  imagesToUse.forEach((image, index) => {
+    const slide = document.createElement('div');
+    slide.className = 'swiper-slide';
+    slide.innerHTML = `<img src="${image}" alt="${newTitle} ${index + 1}" />`;
+    swiperWrapper.appendChild(slide);
+  });
+
+  setTimeout(() => {
+    initImageSlider();
+  }, 10);
+}
+
 function updateVariants(product) {
   const container = document.querySelector('#variant-group');
   container.innerHTML = '';
@@ -303,12 +343,21 @@ function updateEditions(product) {
     // Обновляем цену при выборе издания
     input.addEventListener('change', () => {
       if (input.checked) {
+        // Цена
         document.querySelector('.price-value').innerHTML = formatPrice(edition.price);
+        // Визуальные изменения (заголовок + изображения)
+        applyEditionVisuals(product, edition);
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
       }
     });
   });
+
+  // Применяем визуалы для издания по умолчанию (первого), если указаны спец. данные
+  const defaultEdition = product.editions[0];
+  if (defaultEdition) {
+    applyEditionVisuals(product, defaultEdition);
+  }
 }
 
 function updateTabs(product) {

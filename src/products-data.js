@@ -29,9 +29,27 @@ export const products = {
       { id: 'period-12', name: '12 мес', price: 8000, discount: 'Выгода 33%' }
     ],
     editions: [
-      { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1000 },
-      { id: 'edition-2', name: 'Photoshop + Lightroom', price: 1500 },
-      { id: 'edition-3', name: 'Deluxe', price: 1990 }
+      { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1000,
+        displayTitle: 'Adobe Creative Cloud — Standard',
+        images: [
+          'https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=600&h=400&fit=crop&crop=center',
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center'
+        ]
+      },
+      { id: 'edition-2', name: 'Photoshop + Lightroom', price: 1500,
+        displayTitle: 'Adobe Photoshop + Lightroom',
+        images: [
+          'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop&crop=center',
+          'https://images.unsplash.com/photo-1504805572947-34fad45aed93?w=600&h=400&fit=crop&crop=center'
+        ]
+      },
+      { id: 'edition-3', name: 'Deluxe', price: 1990,
+        displayTitle: 'Adobe Creative Cloud — Deluxe',
+        images: [
+          'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center',
+          'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&h=400&fit=crop&crop=center'
+        ]
+      }
     ],
     description: `Adobe Creative Cloud — это полный набор профессиональных приложений для творчества. 
     Включает Photoshop, Illustrator, InDesign, After Effects, Premiere Pro и многие другие инструменты 
@@ -115,9 +133,24 @@ export const products = {
       { id: 'period-1', name: 'Навсегда', price: 1500 }
     ],
     editions: [
-      { id: 'edition-1', name: 'Standard', price: 1500 },
-      { id: 'edition-2', name: 'Deluxe', price: 2200 },
-      { id: 'edition-3', name: 'Ultimate', price: 2990 }
+      { id: 'edition-1', name: 'Standard', price: 1500,
+        displayTitle: 'Cyberpunk 2077 — Standard',
+        images: [
+          'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400&fit=crop&crop=center'
+        ]
+      },
+      { id: 'edition-2', name: 'Deluxe', price: 2200,
+        displayTitle: 'Cyberpunk 2077 — Deluxe',
+        images: [
+          'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600&h=400&fit=crop&crop=center'
+        ]
+      },
+      { id: 'edition-3', name: 'Ultimate', price: 2990,
+        displayTitle: 'Cyberpunk 2077 — Ultimate',
+        images: [
+          'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&h=400&fit=crop&crop=center'
+        ]
+      }
     ],
     description: `Cyberpunk 2077 — приключенческая ролевая игра с открытым миром, 
     действие которой происходит в мегаполисе Найт-Сити, где власть, роскошь и модификации тела 
@@ -554,8 +587,12 @@ export const products = {
       { id: 'period-1', name: 'Навсегда', price: 2200 }
     ],
     editions: [
-      { id: 'edition-1', name: 'Standard', price: 2200 },
-      { id: 'edition-2', name: 'Deluxe', price: 3000 }
+      { id: 'edition-1', name: 'Standard', price: 2200,
+        displayTitle: 'Hogwarts Legacy — Standard'
+      },
+      { id: 'edition-2', name: 'Deluxe', price: 3000,
+        displayTitle: 'Hogwarts Legacy — Deluxe'
+      }
     ],
     description: `Hogwarts Legacy — приключенческая ролевая игра с открытым миром, действие которой происходит в мире Гарри Поттера в 1800-х годах. Станьте студентом Хогвартса и откройте для себя магический мир.`,
     systemRequirements: `
