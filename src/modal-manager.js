@@ -635,9 +635,10 @@ class ModalManager {
 
   // Анимация возврата модального окна в исходное положение
   animateModalReturn(modal, content, currentDeltaY) {
-    const startY = currentDeltaY;
-    const endY = 0;
-    const duration = 250; // Чуть быстрее для возврата
+    // Возвращаем на ту же длительность/кривую, как и открытие/закрытие
+    const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
+    const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
+    const duration = 300;
     const startTime = Date.now();
 
     const animate = () => {
@@ -646,10 +647,8 @@ class ModalManager {
       
       // Easing function (ease out)
       const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      const currentY = startY + (endY - startY) * easeProgress;
-      
-      content.style.setProperty('transform', `translateY(${currentY}px)`, 'important');
+      const currentPercent = startPercent + (0 - startPercent) * easeProgress;
+      content.style.setProperty('transform', `translateY(${currentPercent}%)`, 'important');
       // Не меняем opacity - оставляем как есть для консистентности
       
       if (progress < 1) {
@@ -678,10 +677,10 @@ class ModalManager {
 
     // Разблокируем скролл после завершения анимации
     
-    // Плавно анимируем закрытие из текущей позиции
-    const startY = currentDeltaY;
-    const endY = window.innerHeight;
-    const duration = 300;
+    // Плавно анимируем закрытие из текущей позиции, используя проценты как в обычной анимации закрытия
+    const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
+    const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
+    const duration = 300; // единая длительность как при закрытии по клику на фон/кнопку
     const startTime = Date.now();
 
     const animate = () => {
@@ -691,10 +690,10 @@ class ModalManager {
       // Easing function (ease out)
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       
-      const currentY = startY + (endY - startY) * easeProgress;
+      const currentPercent = startPercent + (100 - startPercent) * easeProgress;
       
-      // Анимируем только transform - "уезжает вниз", консистентно с обычным закрытием
-      content.style.setProperty('transform', `translateY(${currentY}px)`, 'important');
+      // Анимируем transform в процентах, как в обычном закрытии
+      content.style.setProperty('transform', `translateY(${currentPercent}%)`, 'important');
       
       if (progress < 1) {
         requestAnimationFrame(animate);
