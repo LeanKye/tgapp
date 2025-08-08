@@ -3004,7 +3004,8 @@ body.modal-open {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
+  /* Приводим затемнение к такому же, как у модалки лейблов */
+  background: rgba(0, 0, 0, 0.5);
   z-index: 20000;
   opacity: 0;
   visibility: hidden;

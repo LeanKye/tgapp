@@ -11,8 +11,39 @@ class ModalManager {
     this.screenHeight = 0;
     this.closeThreshold = 0.15; // 15% от высоты экрана для закрытия (более чувствительно)
     this.velocityThreshold = 0.3; // Скорость для закрытия при быстром свайпе (более чувствительно)
+    this.isScrollLocked = false;
+    this.scrollY = 0;
     
     this.init();
+  }
+
+  // Фиксация скролла страницы с сохранением позиции
+  lockScroll() {
+    if (this.isScrollLocked) return;
+    this.scrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.classList.add('modal-open');
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${this.scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    this.isScrollLocked = true;
+  }
+
+  // Снятие фиксации и восстановление позиции скролла
+  unlockScroll() {
+    if (!this.isScrollLocked) return;
+    const scrollY = Math.abs(parseInt(document.body.style.top || '0', 10)) || 0;
+    document.body.classList.remove('modal-open');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    this.isScrollLocked = false;
+    window.scrollTo(0, scrollY);
   }
 
   init() {
@@ -135,6 +166,7 @@ class ModalManager {
     let velocity = 0;
     let lastY = 0;
     let lastTime = 0;
+    let startedInsideScrollable = false;
 
     // Touch события для мобильных устройств
     const handleTouchStart = (e) => {
@@ -146,15 +178,26 @@ class ModalManager {
       startTime = Date.now();
       lastY = startY;
       lastTime = startTime;
+      startedInsideScrollable = false;
       
       content.style.transition = 'none';
       modal.style.transition = 'none';
       modal.style.opacity = '1';
       modal.classList.add('dragging');
+
+      // Если при старте жеста целевой элемент прокручиваемый и он не на самом верху, не инициируем drag модалки
+      const target = e.target.closest('.modal-content, .checkout-modal');
+      if (target) {
+        const scrollable = e.target.closest('.modal-body, .checkout-modal-body, .modal-content, .checkout-modal');
+        if (scrollable && scrollable.scrollHeight > scrollable.clientHeight && scrollable.scrollTop > 0) {
+          startedInsideScrollable = true;
+        }
+      }
     };
 
     const handleTouchMove = (e) => {
       if (!isDragging) return;
+      if (startedInsideScrollable) return; // Даём прокручиваться контенту внутри
       
       currentY = e.touches[0].clientY;
       const deltaY = currentY - startY;
@@ -186,6 +229,13 @@ class ModalManager {
       const deltaTime = Date.now() - startTime;
       const screenHeight = window.innerHeight;
       
+      if (startedInsideScrollable) {
+        // Не было drag модалки — просто ничего не делаем
+        startedInsideScrollable = false;
+        modal.classList.remove('dragging');
+        return;
+      }
+
       // Определяем, нужно ли закрыть модальное окно
       const shouldClose = deltaY > screenHeight * this.closeThreshold || 
                          (velocity > this.velocityThreshold && deltaY > 50);
@@ -209,6 +259,7 @@ class ModalManager {
       startTime = Date.now();
       lastY = startY;
       lastTime = startTime;
+      startedInsideScrollable = false;
       
       content.style.transition = 'none';
       modal.style.transition = 'none';
@@ -361,9 +412,8 @@ class ModalManager {
       this.currentPaymentData = data.paymentData;
     }
 
-    // Блокируем прокрутку страницы
-    document.body.classList.add('modal-open');
-    document.body.style.overflow = 'hidden';
+    // Блокируем прокрутку страницы с сохранением позиции
+    this.lockScroll();
 
     // Убеждаемся, что обработчики событий подключены
     this.setupModalEvents(modalId);
@@ -451,9 +501,7 @@ class ModalManager {
     modal.classList.add('closing');
     modal.classList.remove('dragging');
     
-    // Сразу убираем блокировку прокрутки
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
+    // Разблокируем скролл после завершения анимации
     
     // Запускаем анимацию закрытия
     const duration = 300;
@@ -482,6 +530,7 @@ class ModalManager {
         content.style.transition = '';
         
         this.activeModal = null;
+        this.unlockScroll();
       }
     };
     
@@ -543,9 +592,7 @@ class ModalManager {
     modal.classList.add('closing');
     modal.classList.remove('dragging');
     
-    // Сразу убираем блокировку прокрутки
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
+    // Разблокируем скролл после завершения анимации
     
     // Запускаем анимацию закрытия
     const duration = 300;
@@ -579,6 +626,7 @@ class ModalManager {
         }
         
         this.activeModal = null;
+        this.unlockScroll();
       }
     };
     
@@ -628,9 +676,7 @@ class ModalManager {
     modal.classList.add('closing');
     modal.classList.remove('dragging');
 
-    // Сразу убираем блокировку прокрутки
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
+    // Разблокируем скролл после завершения анимации
     
     // Плавно анимируем закрытие из текущей позиции
     const startY = currentDeltaY;
@@ -667,6 +713,7 @@ class ModalManager {
         }
         
         this.activeModal = null;
+        this.unlockScroll();
       }
     };
 
