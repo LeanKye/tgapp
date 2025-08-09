@@ -708,8 +708,11 @@ class ModalManager {
     // Плавно анимируем закрытие из текущей позиции, используя проценты как в обычной анимации закрытия
     const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
-    const duration = 300; // единая длительность как при закрытии по клику на фон/кнопку
+    // Длительность пропорциональна оставшемуся пути, чтобы оверлей не зависал
+    const remaining = 100 - startPercent;
+    const duration = Math.max(120, Math.round(300 * (remaining / 100))); // от 120мс до 300мс
     const startTime = Date.now();
+    const baseAlpha = 0.5;
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -722,6 +725,9 @@ class ModalManager {
       
       // Анимируем transform в процентах, как в обычном закрытии
       content.style.setProperty('transform', `translateY(${currentPercent}%)`, 'important');
+      // Параллельно гасим затемнение оверлея до нуля
+      const overlayAlpha = baseAlpha * (1 - currentPercent / 100);
+      modal.style.background = `rgba(0, 0, 0, ${overlayAlpha})`;
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -731,6 +737,7 @@ class ModalManager {
         modal.classList.remove('closing');
         modal.style.opacity = '';
         modal.style.visibility = '';
+        modal.style.background = '';
         content.style.transform = '';
         content.style.transition = '';
         
