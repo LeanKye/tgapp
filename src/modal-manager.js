@@ -167,6 +167,7 @@ class ModalManager {
     let lastY = 0;
     let lastTime = 0;
     let startedInsideScrollable = false;
+    const baseAlpha = 0.5; // базовое затемнение оверлея
 
     // Touch события для мобильных устройств
     const handleTouchStart = (e) => {
@@ -206,6 +207,11 @@ class ModalManager {
       if (deltaY > 0) {
         const translateY = Math.min(deltaY, window.innerHeight * 0.5);
         content.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
+        // Чем ниже модалка, тем прозрачнее фон
+        const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
+        const progressDown = Math.min(1, translateY / contentHeight);
+        const overlayAlpha = baseAlpha * (1 - progressDown);
+        modal.style.background = `rgba(0, 0, 0, ${overlayAlpha})`;
         
         // Убираем эффект изменения прозрачности при перетягивании
         
@@ -280,6 +286,11 @@ class ModalManager {
       if (deltaY > 0) {
         const translateY = Math.min(deltaY, window.innerHeight * 0.5);
         content.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
+        // Обновляем затемнение для desktop drag
+        const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
+        const progressDown = Math.min(1, translateY / contentHeight);
+        const overlayAlpha = baseAlpha * (1 - progressDown);
+        modal.style.background = `rgba(0, 0, 0, ${overlayAlpha})`;
         
         // Убираем эффект изменения прозрачности при перетягивании
         
@@ -455,6 +466,8 @@ class ModalManager {
     modal.classList.add('show');
     modal.style.opacity = '1';
     modal.style.visibility = 'visible';
+    const baseAlpha = 0.5;
+    modal.style.background = 'rgba(0,0,0,0)';
     
     // Устанавливаем начальное состояние
     content.style.transform = 'translateY(100%)';
@@ -474,6 +487,7 @@ class ModalManager {
       // Анимируем transform
       const translateY = (1 - easeProgress) * 100;
       content.style.transform = `translateY(${translateY}%)`;
+      modal.style.background = `rgba(0, 0, 0, ${baseAlpha * easeProgress})`;
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -481,6 +495,7 @@ class ModalManager {
         // Анимация завершена
         content.style.transform = 'translateY(0)';
         content.style.transition = '';
+        modal.style.background = `rgba(0, 0, 0, ${baseAlpha})`;
       }
     };
     
@@ -506,6 +521,7 @@ class ModalManager {
     // Запускаем анимацию закрытия
     const duration = 300;
     const startTime = Date.now();
+    const baseAlpha = 0.5;
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -517,6 +533,7 @@ class ModalManager {
       // Анимируем только transform - "уезжает вниз"
       const translateY = easeProgress * 100;
       content.style.transform = `translateY(${translateY}%)`;
+      modal.style.background = `rgba(0, 0, 0, ${baseAlpha * (1 - easeProgress)})`;
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -528,6 +545,7 @@ class ModalManager {
         modal.style.visibility = '';
         content.style.transform = '';
         content.style.transition = '';
+        modal.style.background = '';
         
         this.activeModal = null;
         this.unlockScroll();
@@ -546,6 +564,8 @@ class ModalManager {
     modal.classList.add('show');
     modal.style.opacity = '1';
     modal.style.visibility = 'visible';
+    const baseAlpha = 0.5;
+    modal.style.background = 'rgba(0,0,0,0)';
     
     // Устанавливаем начальное состояние
     content.style.transform = 'translateY(100%)';
@@ -565,6 +585,7 @@ class ModalManager {
       // Анимируем transform
       const translateY = (1 - easeProgress) * 100;
       content.style.transform = `translateY(${translateY}%)`;
+      modal.style.background = `rgba(0, 0, 0, ${baseAlpha * easeProgress})`;
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -572,6 +593,7 @@ class ModalManager {
         // Анимация завершена
         content.style.transform = 'translateY(0)';
         content.style.transition = '';
+        modal.style.background = `rgba(0, 0, 0, ${baseAlpha})`;
       }
     };
     
@@ -597,6 +619,7 @@ class ModalManager {
     // Запускаем анимацию закрытия
     const duration = 300;
     const startTime = Date.now();
+    const baseAlpha = 0.5;
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -608,6 +631,7 @@ class ModalManager {
       // Анимируем только transform - "уезжает вниз"
       const translateY = easeProgress * 100;
       content.style.transform = `translateY(${translateY}%)`;
+      modal.style.background = `rgba(0, 0, 0, ${baseAlpha * (1 - easeProgress)})`;
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -619,6 +643,7 @@ class ModalManager {
         modal.style.visibility = '';
         content.style.transform = '';
         content.style.transition = '';
+        modal.style.background = '';
         
         // Очищаем данные для checkout-modal
         if (modal.id === 'checkout-modal') {
@@ -640,6 +665,7 @@ class ModalManager {
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
     const duration = 300;
     const startTime = Date.now();
+    const baseAlpha = 0.5;
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -649,7 +675,9 @@ class ModalManager {
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       const currentPercent = startPercent + (0 - startPercent) * easeProgress;
       content.style.setProperty('transform', `translateY(${currentPercent}%)`, 'important');
-      // Не меняем opacity - оставляем как есть для консистентности
+      // Увеличиваем затемнение обратно при возврате вверх
+      const overlayAlpha = baseAlpha * (1 - currentPercent / 100);
+      modal.style.background = `rgba(0, 0, 0, ${overlayAlpha})`;
       
       if (progress < 1) {
         requestAnimationFrame(animate);
@@ -657,7 +685,7 @@ class ModalManager {
         // Анимация завершена - возвращаем в нормальное состояние
         content.style.transform = 'translateY(0)';
         content.style.transition = '';
-        // Не сбрасываем opacity - оставляем модальное окно полностью видимым
+        modal.style.background = `rgba(0, 0, 0, ${baseAlpha})`;
       }
     };
 

@@ -434,23 +434,18 @@ body:has(.product)::before {
   /* Добавляем безопасную зону для iOS */
   margin-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
-  /* Добавляем тень для лучшей видимости */
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
-  /* Добавляем плавные переходы */
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  /* Убираем свечение вокруг кнопки */
+  box-shadow: none;
+  /* Переход для эффекта нажатия */
+  transition: transform 0.08s ease-out;
   cursor: pointer;
 }
 
-@media (hover: hover) {
-  .add-to-cart:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
-  }
-}
+/* Удалён пустой hover-блок для .add-to-cart */
 
 .add-to-cart:active {
-  transform: translateY(0px);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2);
+  /* Эффект «физического» нажатия */
+  transform: scale(0.98);
 }
 
 .text-gray {
@@ -2501,12 +2496,14 @@ body.info-page {
   
   @media (hover: hover) {
     .add-to-cart:hover {
-      transform: translateX(-50%) translateY(-2px);
+      /* Без вертикального смещения при hover */
+      background: #1E90FF;
     }
   }
   
   .add-to-cart:active {
-    transform: translateX(-50%) translateY(0px);
+    /* Эффект «физического» нажатия с сохранением центрирования */
+    transform: translateX(-50%) scale(0.98);
   }
   
  
@@ -2873,27 +2870,28 @@ body.modal-open {
   border: none;
   border-radius: 8px;
   padding: 14px;
-  font-size: 16px; /* Уменьшили на 2 размера с 18px до 16px */
+  font-size: 18px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s ease;
+  /* Плавный эффект нажатия и смены фона */
+  transition: transform 0.08s ease-out, background-color 0.2s ease;
   /* Стилизация как кнопка "Купить" */
   height: 46px;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
+  /* Убираем свечение вокруг кнопки */
+  box-shadow: none;
 }
 
 @media (hover: hover) {
   .modal-close:hover {
     background: #1E90FF;
-    transform: translateY(-2px);
-    box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
+    /* Без вертикального скачка при hover */
   }
 }
 
 .modal-close:active {
   background: #1976D2;
-  transform: translateY(0px);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2);
+  /* Эффект «физического» нажатия */
+  transform: scale(0.98);
 }
 
 /* Стили для footer модального окна */
@@ -2972,7 +2970,7 @@ body.modal-open {
   
   .modal-close {
     padding: 12px;
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
@@ -2991,7 +2989,7 @@ body.modal-open {
   }
   
   .modal-close {
-    font-size: 16px;
+    font-size: 18px;
   }
 }
 
@@ -3244,12 +3242,12 @@ body.modal-open {
   border: none;
   border-radius: 8px;
   padding: 0;
-  font-size: 16px; /* Уменьшили на 2 размера с 18px до 16px */
+  font-size: 18px;
   font-weight: 600;
   height: 46px;
   width: 100%;
-  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(41, 165, 255, 0.3);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: none;
+  transition: transform 0.08s ease-out, background-color 0.2s ease;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3259,14 +3257,13 @@ body.modal-open {
 
 .checkout-button:hover {
   background: #1E90FF;
-  transform: translateY(-2px);
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.4), 0 6px 20px rgba(41, 165, 255, 0.4);
+  /* Без вертикального скачка при hover */
 }
 
 .checkout-button:active {
   background: #1976D2 !important;
-  transform: translateY(0px) !important;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2), 0 2px 12px rgba(41, 165, 255, 0.2) !important;
+  /* Эффект «физического» нажатия */
+  transform: scale(0.98) !important;
 }
 
 /* Стили для текста соглашения */
