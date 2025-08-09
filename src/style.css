@@ -2881,16 +2881,15 @@ body.modal-open {
   box-shadow: none;
 }
 
+/* Убираем изменение цвета при наведении */
 @media (hover: hover) {
   .modal-close:hover {
-    background: #1E90FF;
-    /* Без вертикального скачка при hover */
+    background: #29A5FF;
   }
 }
 
 .modal-close:active {
-  background: #1976D2;
-  /* Эффект «физического» нажатия */
+  /* Эффект «физического» нажатия без смены цвета */
   transform: scale(0.98);
 }
 
@@ -3255,14 +3254,13 @@ body.modal-open {
   box-sizing: border-box;
 }
 
+/* Убираем изменение цвета при наведении */
 .checkout-button:hover {
-  background: #1E90FF;
-  /* Без вертикального скачка при hover */
+  background: #29A5FF;
 }
 
 .checkout-button:active {
-  background: #1976D2 !important;
-  /* Эффект «физического» нажатия */
+  /* Эффект «физического» нажатия без смены цвета */
   transform: scale(0.98) !important;
 }
 
