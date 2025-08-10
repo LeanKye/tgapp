@@ -769,10 +769,10 @@ body:has(.product)::before {
   /* Принудительно размещаем поверх всех элементов */
   transform: translateZ(0);
   will-change: transform;
-  /* Включаем скролл для мобильных устройств */
+  /* По умолчанию разрешаем скролл; скрипт может отключить его если контент короче контейнера */
   -webkit-overflow-scrolling: touch;
-  /* Разрешаем скролл */
   touch-action: pan-y;
+  overscroll-behavior: contain; /* предотвращаем «резинку» просачивания на фон */
 }
 
 .search-dropdown.show {

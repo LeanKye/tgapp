@@ -248,10 +248,20 @@ class CategoryPage {
     });
 
     dropdown.classList.add('show');
-    
-    // Сбрасываем стили блокировки скролла для dropdown с результатами
-    dropdown.style.overflow = '';
-    dropdown.style.touchAction = '';
+
+    // Для iOS: если фактической прокрутки нет, отключаем скролл/резинку
+    const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
+    if (isScrollable) {
+      dropdown.style.overflowY = 'auto';
+      dropdown.style.touchAction = 'pan-y';
+      dropdown.style.webkitOverflowScrolling = 'touch';
+      dropdown.style.overscrollBehavior = 'contain';
+    } else {
+      dropdown.style.overflow = 'hidden';
+      dropdown.style.touchAction = 'none';
+      dropdown.style.webkitOverflowScrolling = 'auto';
+      dropdown.style.overscrollBehavior = 'none';
+    }
   }
 
   createSearchSuggestion(product) {
@@ -289,6 +299,8 @@ class CategoryPage {
     // Блокируем скролл для dropdown когда показывается "Товары не найдены"
     dropdown.style.overflow = 'hidden';
     dropdown.style.touchAction = 'none';
+    dropdown.style.webkitOverflowScrolling = 'auto';
+    dropdown.style.overscrollBehavior = 'none';
     
     // Добавляем обработчик клика для сброса поиска
     const noResultsElement = dropdown.querySelector('.no-results');
@@ -323,6 +335,8 @@ class CategoryPage {
       // Сбрасываем стили блокировки скролла
       dropdown.style.overflow = '';
       dropdown.style.touchAction = '';
+      dropdown.style.webkitOverflowScrolling = '';
+      dropdown.style.overscrollBehavior = '';
     }
   }
 

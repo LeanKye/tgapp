@@ -958,9 +958,24 @@ class SearchManager {
     if (noResultsElement) {
       this.searchDropdown.style.overflow = 'hidden';
       this.searchDropdown.style.touchAction = 'none';
+      this.searchDropdown.style.webkitOverflowScrolling = 'auto';
+      this.searchDropdown.style.overscrollBehavior = 'none';
+      return;
+    }
+
+    // Для iOS: если фактической прокрутки нет (контента меньше высоты контейнера),
+    // отключаем scroll/overscroll, чтобы не было bounce-эффекта и «скролла каретки»
+    const isScrollable = this.searchDropdown.scrollHeight > this.searchDropdown.clientHeight + 1;
+    if (isScrollable) {
+      this.searchDropdown.style.overflowY = 'auto';
+      this.searchDropdown.style.touchAction = 'pan-y';
+      this.searchDropdown.style.webkitOverflowScrolling = 'touch';
+      this.searchDropdown.style.overscrollBehavior = 'contain';
     } else {
-      this.searchDropdown.style.overflow = '';
-      this.searchDropdown.style.touchAction = '';
+      this.searchDropdown.style.overflow = 'hidden';
+      this.searchDropdown.style.touchAction = 'none';
+      this.searchDropdown.style.webkitOverflowScrolling = 'auto';
+      this.searchDropdown.style.overscrollBehavior = 'none';
     }
   }
 
