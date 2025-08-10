@@ -6,6 +6,7 @@ class CategoryPage {
     this.currentCategory = null;
     this.currentProducts = [];
     this.filteredProducts = [];
+    this._edgeLockCleanup = null;
     this.init();
   }
 
@@ -256,11 +257,14 @@ class CategoryPage {
       dropdown.style.touchAction = 'pan-y';
       dropdown.style.webkitOverflowScrolling = 'touch';
       dropdown.style.overscrollBehavior = 'contain';
+      // Включаем блокировку «резинки»
+      this.enableEdgeScrollLock(dropdown);
     } else {
       dropdown.style.overflow = 'hidden';
       dropdown.style.touchAction = 'none';
       dropdown.style.webkitOverflowScrolling = 'auto';
       dropdown.style.overscrollBehavior = 'none';
+      this.disableEdgeScrollLock();
     }
   }
 
@@ -337,6 +341,42 @@ class CategoryPage {
       dropdown.style.touchAction = '';
       dropdown.style.webkitOverflowScrolling = '';
       dropdown.style.overscrollBehavior = '';
+      this.disableEdgeScrollLock();
+    }
+  }
+
+  // Блокировка iOS bounce на границах внутреннего скролла dropdown
+  enableEdgeScrollLock(container) {
+    this.disableEdgeScrollLock();
+    let startY = 0;
+    const onTouchStart = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        startY = e.touches[0].clientY;
+      }
+    };
+    const onTouchMove = (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      const currentY = e.touches[0].clientY;
+      const deltaY = currentY - startY;
+      const atTop = container.scrollTop <= 0;
+      const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+      if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    this._edgeLockCleanup = () => {
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      this._edgeLockCleanup = null;
+    };
+  }
+
+  disableEdgeScrollLock() {
+    if (this._edgeLockCleanup) {
+      this._edgeLockCleanup();
     }
   }
 

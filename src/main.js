@@ -701,6 +701,7 @@ class SearchManager {
     this.currentResults = [];
     this.searchTimeout = null;
     this.isSearchActive = false;
+    this._edgeLockCleanup = null;
     
     this.init();
   }
@@ -971,11 +972,14 @@ class SearchManager {
       this.searchDropdown.style.touchAction = 'pan-y';
       this.searchDropdown.style.webkitOverflowScrolling = 'touch';
       this.searchDropdown.style.overscrollBehavior = 'contain';
+      // Включаем блокировку «резинки» на границах списка
+      this.enableEdgeScrollLock(this.searchDropdown);
     } else {
       this.searchDropdown.style.overflow = 'hidden';
       this.searchDropdown.style.touchAction = 'none';
       this.searchDropdown.style.webkitOverflowScrolling = 'auto';
       this.searchDropdown.style.overscrollBehavior = 'none';
+      this.disableEdgeScrollLock();
     }
   }
 
@@ -986,6 +990,47 @@ class SearchManager {
     // Сбрасываем стили блокировки скролла
     this.searchDropdown.style.overflow = '';
     this.searchDropdown.style.touchAction = '';
+    this.searchDropdown.style.webkitOverflowScrolling = '';
+    this.searchDropdown.style.overscrollBehavior = '';
+    this.disableEdgeScrollLock();
+  }
+
+  // Блокировка резинки iOS на границах внутреннего скролла
+  enableEdgeScrollLock(container) {
+    this.disableEdgeScrollLock();
+    let startY = 0;
+    let startTop = 0;
+    const onTouchStart = (e) => {
+      if (e.touches && e.touches.length > 0) {
+        startY = e.touches[0].clientY;
+        startTop = container.scrollTop;
+      }
+    };
+    const onTouchMove = (e) => {
+      if (!e.touches || e.touches.length === 0) return;
+      const currentY = e.touches[0].clientY;
+      const deltaY = currentY - startY;
+      const atTop = container.scrollTop <= 0;
+      const atBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 1;
+      // Если на верхней границе тянем вниз или на нижней — вверх, предотвращаем
+      if ((atTop && deltaY > 0) || (atBottom && deltaY < 0)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    this._edgeLockCleanup = () => {
+      container.removeEventListener('touchstart', onTouchStart);
+      container.removeEventListener('touchmove', onTouchMove);
+      this._edgeLockCleanup = null;
+    };
+  }
+
+  disableEdgeScrollLock() {
+    if (this._edgeLockCleanup) {
+      this._edgeLockCleanup();
+    }
   }
 
   activateSearch() {
