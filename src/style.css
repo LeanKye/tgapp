@@ -625,7 +625,7 @@ body:has(.product)::before {
 }
 
 .logo h1 {
-  font-size: 18px;
+  font-size: clamp(15px, 4.6vw, 18px);
   font-weight: 600;
   color: #29A5FF;
   margin: 0;
@@ -2222,7 +2222,7 @@ body.info-page {
   }
   
   .logo h1 {
-    font-size: 16px;
+    font-size: clamp(15px, 4.6vw, 18px);
   }
   
   .version-badge {
@@ -2377,7 +2377,7 @@ body.info-page {
   }
   
   .logo h1 {
-    font-size: 17px;
+    font-size: clamp(15px, 4.6vw, 18px);
   }
   
   .version-badge {
@@ -2846,7 +2846,7 @@ body.modal-open {
 }
 
 .modal-title {
-  font-size: 20px;
+  font-size: clamp(16px, 5.3vw, 20px);
   font-weight: 600;
   color: #ffffff;
   margin: 0;
@@ -2857,7 +2857,7 @@ body.modal-open {
 }
 
 .modal-text {
-  font-size: 16px;
+  font-size: clamp(14px, 4.2vw, 16px);
   line-height: 1.5;
   color: #cccccc;
   margin: 0;
@@ -2870,7 +2870,7 @@ body.modal-open {
   border: none;
   border-radius: 8px;
   padding: 14px;
-  font-size: 17px;
+  font-size: clamp(15px, 4.5vw, 17px);
   font-weight: 600;
   cursor: pointer;
   /* Плавный эффект нажатия и смены фона */
@@ -2960,16 +2960,16 @@ body.modal-open {
   }
   
   .modal-title {
-    font-size: 18px;
+    font-size: clamp(16px, 5.3vw, 20px);
   }
   
   .modal-text {
-    font-size: 15px;
+    font-size: clamp(14px, 4.2vw, 16px);
   }
   
   .modal-close {
     padding: 12px;
-    font-size: 17px;
+    font-size: clamp(15px, 4.5vw, 17px);
   }
 }
 
@@ -3121,7 +3121,7 @@ body.modal-open {
 
 .checkout-modal-header h3 {
   margin: 0;
-  font-size: 20px;
+  font-size: clamp(16px, 5.3vw, 20px);
   font-weight: 600;
   color: #ffffff;
 }
@@ -3179,7 +3179,7 @@ body.modal-open {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
-  font-size: 14px;
+  font-size: clamp(12px, 3.8vw, 14px);
 }
 
 .payment-details .payment-item:last-child {
@@ -3202,7 +3202,7 @@ body.modal-open {
   padding-top: 12px;
   margin-top: 12px;
   font-weight: 600;
-  font-size: 16px;
+  font-size: clamp(14px, 4.5vw, 16px);
 }
 
 .payment-details .payment-item.total span:last-child {
@@ -3241,7 +3241,7 @@ body.modal-open {
   border: none;
   border-radius: 8px;
   padding: 0;
-  font-size: 17px;
+  font-size: clamp(15px, 4.5vw, 17px);
   font-weight: 600;
   height: 46px;
   width: 100%;
@@ -3267,7 +3267,7 @@ body.modal-open {
 /* Стили для текста соглашения */
 .payment-agreement-text {
   text-align: left;
-  font-size: 13px;
+  font-size: clamp(11px, 3.6vw, 13px);
   color: #888;
   padding: 0;
   margin: 0;
@@ -3337,15 +3337,15 @@ body.modal-open {
   }
   
   .checkout-modal-header h3 {
-    font-size: 18px;
+    font-size: clamp(16px, 5.3vw, 20px);
   }
   
   .payment-details .payment-item {
-    font-size: 13px;
+    font-size: clamp(12px, 3.8vw, 14px);
   }
   
   .payment-details .payment-item.total {
-    font-size: 15px;
+    font-size: clamp(14px, 4.5vw, 16px);
   }
   
   .checkout-button-container {
@@ -3368,7 +3368,7 @@ body.modal-open {
   }
   
   .checkout-modal-header h3 {
-    font-size: 17px;
+    font-size: clamp(16px, 5.3vw, 20px);
   }
   
   .checkout-modal-body {
@@ -3382,11 +3382,11 @@ body.modal-open {
   }
   
   .payment-details .payment-item {
-    font-size: 12px;
+    font-size: clamp(12px, 3.8vw, 14px);
   }
   
   .payment-details .payment-item.total {
-    font-size: 14px;
+    font-size: clamp(14px, 4.5vw, 16px);
   }
   
   .checkout-button-container {
@@ -3394,6 +3394,79 @@ body.modal-open {
     min-height: 46px;
     margin-top: 0;
   }
+}
+
+/* Адаптация для очень маленьких экранов (iPhone 5 и похожие) */
+@media (max-width: 320px) {
+  /* Базовые отступы контейнеров и хедера */
+  .container { padding: 12px; }
+  .header-container { padding: 12px; }
+  .toggle-switches-container { padding: 0 12px; }
+
+  /* Лого и поиск */
+  .logo h1 { font-size: 15px; }
+  .input-container { height: 40px; padding-inline: 10px; }
+  .search input { font-size: 15px; }
+
+  /* Кнопка Купить и отступы страницы товара */
+  .add-to-cart {
+    left: 8px;
+    right: 8px;
+    width: calc(100% - 16px);
+    height: 42px;
+    font-size: 15px;
+  }
+  .product { padding-bottom: calc(42px + 28px + env(safe-area-inset-bottom)); }
+
+  /* Обложка товара и баннеры */
+  .product-cover { height: 200px; }
+  .banner-item {
+    flex: 0 0 calc(100vw - 70px);
+    min-width: 240px;
+    max-width: 280px;
+    height: 120px;
+  }
+
+  /* Карточки и сетки */
+  .category-products-grid { column-gap: 12px; row-gap: 10px; }
+  .category-product-title { font-size: clamp(12px, 3vw, 14px); }
+  .category-product-category { font-size: clamp(11px, 2.8vw, 13px); }
+  .category-product-price-current { font-size: clamp(14px, 3vw, 17px); }
+  .category-product-price-old { font-size: clamp(11px, 2.4vw, 13px); }
+
+  /* Переключатели периодов/вариантов/планов */
+  .period-buttons { gap: 4px; }
+  .period-buttons label { min-width: 78px; }
+  .period-buttons span {
+    font-size: 11px;
+    padding: 8px 10px;
+    min-height: 34px;
+  }
+
+  .button-group input[name="edition"] + label {
+    width: 100px;
+    height: 52px;
+    padding: 6px;
+  }
+  .button-group input[name="edition"] + label > div > div { font-size: 11px; }
+  .button-group input[name="edition"] + label > div > div:nth-child(2) { font-size: 13px; }
+
+  /* Модалки лейблов */
+  .modal-title { font-size: 16px; }
+  .modal-text { font-size: 14px; }
+  .modal-content { max-height: 78vh; max-height: 78dvh; padding: 14px; }
+  .modal-footer { padding-top: 12px; }
+  .modal-close { height: 42px; font-size: 16px; }
+
+  /* Модалка оформления */
+  .checkout-modal { padding: 14px; max-height: 78vh; max-height: 78dvh; }
+  .checkout-modal-header h3 { font-size: 16px; }
+  .payment-details { padding: 12px; margin-bottom: 12px; }
+  .payment-details .payment-item { font-size: 12px; }
+  .payment-details .payment-item.total { font-size: 14px; }
+  .checkout-button { height: 42px; font-size: 16px; }
+  .checkout-button-container { min-height: 42px; margin-bottom: 12px; }
+  .payment-agreement-text { font-size: 11px; margin-top: 12px; }
 }
 
 /* Адаптивность для планшетов */
