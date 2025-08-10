@@ -377,14 +377,24 @@ class BannerSlider {
     
     // Анимируем переход
     this.animateToPosition(index);
-    
     this.currentIndex = index;
-    
+
     // После завершения анимации проверяем и выполняем незаметную перемотку с клонов
-    setTimeout(() => {
+    const onEnd = () => {
+      this.slider.removeEventListener('transitionend', onEnd);
       this.checkAndRewind();
       this.isTransitioning = false;
-    }, 350);
+    };
+    // Fallback таймер на случай отсутствия события
+    const fallback = setTimeout(() => {
+      this.slider.removeEventListener('transitionend', onEnd);
+      this.checkAndRewind();
+      this.isTransitioning = false;
+    }, 400);
+    this.slider.addEventListener('transitionend', () => {
+      clearTimeout(fallback);
+      onEnd();
+    }, { once: true });
   }
 
   // Установка позиции без анимации
@@ -486,13 +496,19 @@ class BannerSlider {
     const container = this.slider.parentElement;
     const onPointerDown = (e) => {
       // Инициализируем перетягивание
+      // Если стоим на клоне — мгновенно перематываем к реальному, чтобы избежать "залипаний"
+      this.ensureRealIndexOnInteraction();
+      // Прерываем текущую анимацию
+      this.isTransitioning = false;
       this.isDragging = true;
       this.pointerId = e.pointerId;
       container.setPointerCapture(this.pointerId);
       this.dragStartX = e.clientX;
       this.dragLastX = e.clientX;
       this.dragLastTime = performance.now();
-      this.startTranslateX = this.computeTranslateForIndex(this.currentIndex);
+      // Берём фактическую текущую позицию translateX, а не вычисляемую — это устойчиво при быстрых свайпах
+      this.currentTranslateX = this.getCurrentTranslateX();
+      this.startTranslateX = this.currentTranslateX;
       this.velocityX = 0;
       this.wasDraggedRecently = false;
       // Отключаем анимацию на время драга
@@ -596,6 +612,33 @@ class BannerSlider {
         }
       }, { capture: true });
     });
+  }
+
+  // Если пользователь начал взаимодействие на клоне, мгновенно переносим на реальный индекс
+  ensureRealIndexOnInteraction() {
+    if (this.currentIndex === 0) {
+      this.setPositionWithoutTransition(this.totalBanners);
+    } else if (this.currentIndex === this.totalExtendedBanners - 1) {
+      this.setPositionWithoutTransition(1);
+    }
+  }
+
+  // Считываем текущий translateX из style/computedStyle
+  getCurrentTranslateX() {
+    const style = window.getComputedStyle(this.slider);
+    const transform = style.transform || style.webkitTransform;
+    if (!transform || transform === 'none') return 0;
+    // matrix(a, b, c, d, tx, ty)
+    const match = transform.match(/matrix\(([^)]+)\)/);
+    if (match) {
+      const parts = match[1].split(',');
+      const tx = parseFloat(parts[4]);
+      return isNaN(tx) ? 0 : tx;
+    }
+    // translateX(px)
+    const match2 = transform.match(/translateX\((-?\d+(?:\.\d+)?)px\)/);
+    if (match2) return parseFloat(match2[1]);
+    return 0;
   }
 
   // Методы для jump больше не нужны при loop
