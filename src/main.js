@@ -180,32 +180,35 @@ function createCategoryCard(category, index) {
 
 
 
-// Функциональность баннер-слайдера с виртуальной циклической прокруткой
+// Функциональность баннер-слайдера без цикличности с перетягиванием (как у Я.Маркета)
 class BannerSlider {
   constructor() {
     this.slider = document.getElementById('bannerSlider');
     this.bannerData = bannerData;
-    this.totalOriginalBanners = this.bannerData.length;
+    this.totalBanners = this.bannerData.length;
     
-    // Виртуальная циклическая прокрутка - расширяем данные для бесконечности
-    this.extendedData = this.createExtendedData();
-    this.totalExtendedBanners = this.extendedData.length;
-    
-    // Начинаем с середины расширенного массива
-    this.startIndex = this.totalOriginalBanners;
-    this.currentIndex = this.startIndex;
+    // Индекс активного слайда (без цикличности)
+    this.currentIndex = 0;
     
     this.gap = 0;
     this.isTransitioning = false;
     
-    // Touch/swipe переменные
-    this.touchStartX = 0;
-    this.touchEndX = 0;
-    this.touchStartY = 0;
-    this.touchEndY = 0;
-    this.minSwipeDistance = 50;
-    this.isSwipeInProgress = false;
-    this.isMouseDown = false;
+    // Pointer/drag переменные
+    this.isDragging = false;
+    this.pointerId = null;
+    this.dragStartX = 0;
+    this.dragLastX = 0;
+    this.dragLastTime = 0;
+    this.startTranslateX = 0;
+    this.currentTranslateX = 0;
+    this.velocityX = 0;
+    this.minDragToChange = 0.25; // доля ширины слайда для переключения при медленном перетягивании
+    this.wasDraggedRecently = false;
+
+    // Флаги для резкого прыжка при повторном перелистывании на краях
+    this.readyJumpFromEnd = false;
+    this.readyJumpFromStart = false;
+    this.jumpResetTimer = null;
     
     // Автопрокрутка переменные
     this.autoSlideInterval = null;
@@ -216,23 +219,16 @@ class BannerSlider {
     this.init();
   }
 
-  // Создаем расширенный массив данных для виртуальной циклической прокрутки
-  createExtendedData() {
-    // Создаем массив: [данные, данные, данные] - 3 копии для плавной прокрутки
-    return [
-      ...this.bannerData,
-      ...this.bannerData,
-      ...this.bannerData
-    ];
-  }
-
   init() {
-    // Рендерим баннеры из расширенных данных
+    // Рендерим баннеры из оригинальных данных
     this.renderBanners();
     
     // Получаем все баннеры
     this.allBanners = Array.from(this.slider.querySelectorAll('.banner-item'));
     
+    // Создаем пагинацию
+    this.createPagination();
+
     // Устанавливаем начальное позиционирование без анимации
     this.setPositionWithoutTransition(this.currentIndex);
     
@@ -242,17 +238,47 @@ class BannerSlider {
     // Автоматическое переключение
     this.startAutoSlide();
     
-    // Добавляем поддержку touch/swipe жестов
-    this.initTouchEvents();
+    // Добавляем поддержку перетягивания мышью и тачем через Pointer Events
+    this.initPointerEvents();
   }
 
   // Рендеринг баннеров из расширенных данных
   renderBanners() {
     this.slider.innerHTML = '';
     
-    this.extendedData.forEach((banner, index) => {
+    this.bannerData.forEach((banner, index) => {
       const bannerElement = this.createBannerElement(banner, index);
       this.slider.appendChild(bannerElement);
+    });
+  }
+
+  // Создаем пагинацию-точки
+  createPagination() {
+    const container = this.slider.parentElement;
+    // Удаляем старую пагинацию, если есть
+    const old = container.querySelector('.banner-pagination');
+    if (old) old.remove();
+    const pagination = document.createElement('div');
+    pagination.className = 'banner-pagination';
+    
+    for (let i = 0; i < this.totalBanners; i += 1) {
+      const dot = document.createElement('div');
+      dot.className = 'banner-dot' + (i === this.currentIndex ? ' active' : '');
+      dot.dataset.index = String(i);
+      dot.addEventListener('click', () => {
+        this.setActive(i, true);
+      });
+      pagination.appendChild(dot);
+    }
+    container.appendChild(pagination);
+    this.paginationEl = pagination;
+  }
+
+  updatePaginationActive(activeIndex) {
+    if (!this.paginationEl) return;
+    const dots = this.paginationEl.querySelectorAll('.banner-dot');
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === activeIndex);
     });
   }
 
@@ -261,11 +287,9 @@ class BannerSlider {
     const bannerItem = document.createElement('div');
     bannerItem.className = 'banner-item';
     bannerItem.dataset.bannerId = banner.id;
-    bannerItem.dataset.extendedIndex = index;
     
     // Определяем оригинальный индекс для активации
-    const originalIndex = index % this.totalOriginalBanners;
-    bannerItem.dataset.originalIndex = originalIndex;
+    bannerItem.dataset.originalIndex = index;
     
     // Устанавливаем цвет фона
     bannerItem.style.backgroundColor = banner.backgroundColor;
@@ -324,7 +348,7 @@ class BannerSlider {
     
     // Нормализуем индекс
     if (index < 0) index = 0;
-    if (index >= this.totalExtendedBanners) index = this.totalExtendedBanners - 1;
+    if (index >= this.totalBanners) index = this.totalBanners - 1;
     
     if (index === this.currentIndex) return;
     
@@ -336,17 +360,17 @@ class BannerSlider {
     
     // Обновляем активные классы
     this.updateActiveClasses(index);
+    this.updatePaginationActive(index);
     
     // Анимируем переход
     this.animateToPosition(index);
     
     this.currentIndex = index;
     
-    // Проверяем необходимость "перемотки" после завершения анимации
+    // Сбрасываем флаги анимации
     setTimeout(() => {
-      this.checkAndRewind();
       this.isTransitioning = false;
-    }, 350); // Немного больше времени анимации
+    }, 350);
   }
 
   // Установка позиции без анимации
@@ -355,6 +379,9 @@ class BannerSlider {
     this.updateActiveClasses(index);
     this.updateSliderPosition(index);
     this.currentIndex = index;
+    // Сохраняем текущий translateX
+    this.currentTranslateX = this.computeTranslateForIndex(index);
+    this.updatePaginationActive(index);
     
     // Возвращаем анимацию
     requestAnimationFrame(() => {
@@ -390,21 +417,16 @@ class BannerSlider {
     const finalOffset = baseCenterOffset - activeSlideOffset;
     
     this.slider.style.transform = `translateX(${finalOffset}px)`;
+    this.currentTranslateX = finalOffset;
   }
 
-  // Проверка и "перемотка" для бесконечности
-  checkAndRewind() {
-    const needsRewind = this.currentIndex <= this.totalOriginalBanners * 0.5 || 
-                       this.currentIndex >= this.totalOriginalBanners * 2.5;
-    
-    if (needsRewind) {
-      // Вычисляем эквивалентную позицию в средней секции
-      const originalIndex = this.currentIndex % this.totalOriginalBanners;
-      const newIndex = this.startIndex + originalIndex;
-      
-      // Мгновенно перемещаемся в среднюю секцию
-      this.setPositionWithoutTransition(newIndex);
-    }
+  // Вычисление translateX для индекса
+  computeTranslateForIndex(index) {
+    const containerWidth = this.slider.parentElement.offsetWidth;
+    const bannerWidth = this.getBannerWidth();
+    const baseCenterOffset = (containerWidth - bannerWidth) / 2;
+    const activeSlideOffset = index * (bannerWidth + this.gap);
+    return baseCenterOffset - activeSlideOffset;
   }
 
   // Получение ширины баннера
@@ -422,146 +444,204 @@ class BannerSlider {
 
   // Следующий слайд
   nextSlide(isUserInteraction = false) {
-    this.setActive(this.currentIndex + 1, isUserInteraction);
+    if (this.currentIndex < this.totalBanners - 1) {
+      this.setActive(this.currentIndex + 1, isUserInteraction);
+      this.resetJumpArms();
+    } else if (isUserInteraction) {
+      // На последнем слайде — второе перелистывание быстро прыгает на первый
+      if (this.readyJumpFromEnd) {
+        this.performInstantJump(0);
+      } else {
+        this.armJump('end');
+      }
+    }
   }
 
   // Предыдущий слайд
   prevSlide(isUserInteraction = false) {
-    this.setActive(this.currentIndex - 1, isUserInteraction);
+    if (this.currentIndex > 0) {
+      this.setActive(this.currentIndex - 1, isUserInteraction);
+      this.resetJumpArms();
+    } else if (isUserInteraction) {
+      // На первом слайде — второе перелистывание быстро прыгает на последний
+      if (this.readyJumpFromStart) {
+        this.performInstantJump(this.totalBanners - 1);
+      } else {
+        this.armJump('start');
+      }
+    }
   }
 
-  // Инициализация touch событий
-  initTouchEvents() {
+  // Инициализация Pointer Events для перетягивания
+  initPointerEvents() {
     const container = this.slider.parentElement;
-    let swipeDirection = null; // 'horizontal', 'vertical', null
-    let swipeStarted = false;
-    
-    // Touch события на контейнере
-    container.addEventListener('touchstart', (e) => {
-      this.touchStartX = e.touches[0].clientX;
-      this.touchStartY = e.touches[0].clientY;
-      swipeDirection = null;
-      swipeStarted = false;
-    }, { passive: true });
+    const onPointerDown = (e) => {
+      // Инициализируем перетягивание
+      this.isDragging = true;
+      this.pointerId = e.pointerId;
+      container.setPointerCapture(this.pointerId);
+      this.dragStartX = e.clientX;
+      this.dragLastX = e.clientX;
+      this.dragLastTime = performance.now();
+      this.startTranslateX = this.computeTranslateForIndex(this.currentIndex);
+      this.velocityX = 0;
+      this.wasDraggedRecently = false;
+      // Отключаем анимацию на время драга
+      this.slider.style.transition = 'none';
+      // Приостанавливаем автопрокрутку
+      this.pauseAutoSlide();
+    };
 
-    container.addEventListener('touchend', (e) => {
-      this.touchEndX = e.changedTouches[0].clientX;
-      this.touchEndY = e.changedTouches[0].clientY;
-      
-      // Обрабатываем свайп только если было горизонтальное движение
-      if (swipeDirection === 'horizontal') {
-        this.handleSwipe();
+    const onPointerMove = (e) => {
+      if (!this.isDragging || e.pointerId !== this.pointerId) return;
+      const now = performance.now();
+      const deltaX = e.clientX - this.dragStartX;
+
+      // Резинка на краях
+      const bannerWidth = this.getBannerWidth();
+      const step = bannerWidth + this.gap;
+      const minTranslate = this.computeTranslateForIndex(this.totalBanners - 1);
+      const maxTranslate = this.computeTranslateForIndex(0);
+      let nextTranslate = this.startTranslateX + deltaX;
+      if (nextTranslate > maxTranslate) {
+        const over = nextTranslate - maxTranslate;
+        nextTranslate = maxTranslate + over * 0.35;
+      } else if (nextTranslate < minTranslate) {
+        const over = minTranslate - nextTranslate;
+        nextTranslate = minTranslate - over * 0.35;
       }
-      
-      // Сбрасываем состояние
-      swipeDirection = null;
-      swipeStarted = false;
-    }, { passive: true });
+      this.currentTranslateX = nextTranslate;
+      this.slider.style.transform = `translateX(${nextTranslate}px)`;
 
-    // Touch события на баннерах
-    this.allBanners.forEach(banner => {
-      banner.addEventListener('touchstart', (e) => {
-        this.touchStartX = e.touches[0].clientX;
-        this.touchStartY = e.touches[0].clientY;
-        this.isSwipeInProgress = false;
-        swipeDirection = null;
-        swipeStarted = false;
-      }, { passive: true });
+      // Скорость
+      const dx = e.clientX - this.dragLastX;
+      const dt = Math.max(1, now - this.dragLastTime);
+      this.velocityX = dx / dt; // px/ms
+      this.dragLastX = e.clientX;
+      this.dragLastTime = now;
 
-      banner.addEventListener('touchend', (e) => {
-        this.touchEndX = e.changedTouches[0].clientX;
-        this.touchEndY = e.changedTouches[0].clientY;
-        
-        // Обрабатываем свайп только если было горизонтальное движение
-        if (swipeDirection === 'horizontal') {
-          const swipeDistanceX = Math.abs(this.touchStartX - this.touchEndX);
-          const swipeDistanceY = Math.abs(this.touchStartY - this.touchEndY);
-          const isHorizontalSwipe = swipeDistanceX > swipeDistanceY && swipeDistanceX > this.minSwipeDistance;
-          
-          if (isHorizontalSwipe) {
-            this.isSwipeInProgress = true;
-            setTimeout(() => {
-              this.isSwipeInProgress = false;
-            }, 100);
-          }
-          
-          this.handleSwipe();
+      if (Math.abs(e.clientX - this.dragStartX) > 5) {
+        this.wasDraggedRecently = true;
+      }
+    };
+
+    const onPointerUpOrCancel = (e) => {
+      if (!this.isDragging || e.pointerId !== this.pointerId) return;
+      container.releasePointerCapture(this.pointerId);
+      this.isDragging = false;
+      this.pointerId = null;
+
+      // Рассчитываем целевой индекс
+      const containerWidth = this.slider.parentElement.offsetWidth;
+      const bannerWidth = this.getBannerWidth();
+      const step = bannerWidth + this.gap;
+      const baseCenterOffset = (containerWidth - bannerWidth) / 2;
+      const theoreticalIndex = (baseCenterOffset - this.currentTranslateX) / step;
+      let targetIndex = Math.round(theoreticalIndex);
+
+      // Учитываем скорость для "быстрого флика"
+      const flickSpeed = 0.5; // px/ms
+      const draggedDistance = this.dragLastX - this.dragStartX;
+      const isFlick = Math.abs(this.velocityX) > flickSpeed;
+      if (isFlick) {
+        targetIndex = this.currentIndex + (this.velocityX < 0 ? 1 : -1);
+      } else {
+        // Медленное перетягивание — переключаем, если пройден порог
+        const passedSlides = (Math.abs(draggedDistance) / step);
+        if (passedSlides >= this.minDragToChange) {
+          targetIndex = this.currentIndex + (draggedDistance < 0 ? 1 : -1);
         }
-        
-        // Сбрасываем состояние
-        swipeDirection = null;
-        swipeStarted = false;
-      }, { passive: true });
+      }
 
-      banner.addEventListener('touchmove', (e) => {
-        if (!this.touchStartX || !this.touchStartY) return;
-        
-        const touch = e.touches[0];
-        const deltaX = Math.abs(touch.clientX - this.touchStartX);
-        const deltaY = Math.abs(touch.clientY - this.touchStartY);
-        
-        // Определяем направление свайпа только один раз
-        if (!swipeStarted && (deltaX > 10 || deltaY > 10)) {
-          swipeStarted = true;
-          
-          // Определяем преобладающее направление движения
-          if (deltaX > deltaY * 1.5) {
-            swipeDirection = 'horizontal';
-          } else if (deltaY > deltaX * 1.5) {
-            swipeDirection = 'vertical';
-          }
+      // Обработка дополнительного перелистывания на краях
+      if (this.currentIndex === this.totalBanners - 1 && (isFlick ? this.velocityX < 0 : draggedDistance < 0)) {
+        // пытаемся листнуть дальше вправо с последнего
+        if (this.readyJumpFromEnd) {
+          this.slider.style.transition = 'transform 0.001s linear';
+          this.performInstantJump(0);
+        } else {
+          this.armJump('end');
+          targetIndex = this.totalBanners - 1; // остаёмся на последнем
         }
-        
-        // Блокируем событие только для горизонтальных свайпов
-        if (swipeDirection === 'horizontal') {
-          e.preventDefault();
+      } else if (this.currentIndex === 0 && (isFlick ? this.velocityX > 0 : draggedDistance > 0)) {
+        // пытаемся листнуть дальше влево с первого
+        if (this.readyJumpFromStart) {
+          this.slider.style.transition = 'transform 0.001s linear';
+          this.performInstantJump(this.totalBanners - 1);
+        } else {
+          this.armJump('start');
+          targetIndex = 0; // остаёмся на первом
         }
-        // Для вертикальных свайпов позволяем браузеру обрабатывать событие нормально
-      }, { passive: false });
+      } else {
+        // середина — сбрасываем подготовку к прыжку
+        this.resetJumpArms();
+      }
 
+      // Ограничиваем диапазон
+      targetIndex = Math.max(0, Math.min(this.totalBanners - 1, targetIndex));
+
+      // Возвращаем анимацию
+      this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+      // Если остались на том же слайде — просто вернём в центр
+      if (targetIndex === this.currentIndex) {
+        this.animateToPosition(this.currentIndex);
+      } else {
+        this.setActive(targetIndex, true);
+      }
+
+      // Сброс временных значений
+      this.velocityX = 0;
+      this.dragStartX = 0;
+      this.dragLastX = 0;
+    };
+
+    container.addEventListener('pointerdown', onPointerDown);
+    container.addEventListener('pointermove', onPointerMove);
+    container.addEventListener('pointerup', onPointerUpOrCancel);
+    container.addEventListener('pointercancel', onPointerUpOrCancel);
+
+    // Блокируем клики по баннерам после перетягивания
+    this.allBanners.forEach((banner) => {
       banner.addEventListener('click', (e) => {
-        if (this.isSwipeInProgress) {
+        if (this.wasDraggedRecently) {
           e.preventDefault();
           e.stopPropagation();
+          this.wasDraggedRecently = false;
         }
       }, { capture: true });
     });
-
-    // Mouse события для десктопа
-    container.addEventListener('mousedown', (e) => {
-      this.touchStartX = e.clientX;
-      this.isMouseDown = true;
-    });
-
-    container.addEventListener('mouseup', (e) => {
-      this.touchEndX = e.clientX;
-      this.isMouseDown = false;
-      this.handleSwipe();
-    });
   }
 
-  // Обработка свайпа
-  handleSwipe() {
-    if (!this.touchStartX || !this.touchEndX) return;
-    
-    const swipeDistanceX = this.touchStartX - this.touchEndX;
-    const swipeDistanceY = this.touchStartY - this.touchEndY;
-    
-    const isHorizontalSwipe = Math.abs(swipeDistanceX) > Math.abs(swipeDistanceY);
-    
-    if (isHorizontalSwipe && Math.abs(swipeDistanceX) > this.minSwipeDistance) {
-      if (swipeDistanceX > 0) {
-        this.nextSlide(true);
-      } else {
-        this.prevSlide(true);
-      }
+  armJump(edge) {
+    if (edge === 'end') {
+      this.readyJumpFromEnd = true;
+    } else if (edge === 'start') {
+      this.readyJumpFromStart = true;
     }
-    
-    // Сбрасываем координаты
-    this.touchStartX = null;
-    this.touchEndX = null;
-    this.touchStartY = null;
-    this.touchEndY = null;
+    if (this.jumpResetTimer) clearTimeout(this.jumpResetTimer);
+    this.jumpResetTimer = setTimeout(() => this.resetJumpArms(), 1500);
+  }
+
+  resetJumpArms() {
+    this.readyJumpFromEnd = false;
+    this.readyJumpFromStart = false;
+    if (this.jumpResetTimer) {
+      clearTimeout(this.jumpResetTimer);
+      this.jumpResetTimer = null;
+    }
+  }
+
+  performInstantJump(targetIndex) {
+    // Мгновенный переход (без анимации)
+    const prevTransition = this.slider.style.transition;
+    this.slider.style.transition = 'none';
+    this.setPositionWithoutTransition(targetIndex);
+    // Возвращаем transition на следующий кадр
+    requestAnimationFrame(() => {
+      this.slider.style.transition = prevTransition || 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    });
+    this.resetJumpArms();
   }
 
   // Запуск автопрокрутки

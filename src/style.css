@@ -357,9 +357,9 @@ body:has(.product)::before {
 
 /* Специальные стили для контейнера с баннерами */
 .catalog > .container:has(.banner-slider-container) {
-  padding: 0;
+  padding: 16px;
   background: transparent;
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* Отступы для контейнеров на странице товара убраны, но закругления оставлены */
@@ -1686,9 +1686,9 @@ body.info-page {
 }
 
 .banner-item {
-  flex: 0 0 calc(100vw - 80px);
-  min-width: 280px;
-  max-width: 350px;
+  flex: 0 0 100%;
+  min-width: 0;
+  max-width: 100%;
   height: 145px;
   border-radius: 12px;
   /* Фон задается динамически через JavaScript */
@@ -1773,6 +1773,31 @@ body.info-page {
 
 
 /* Стили для больших экранов */
+/* Пагинация баннеров */
+.banner-pagination {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.banner-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.35);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.banner-dot.active {
+  background: rgba(255, 255, 255, 0.95);
+  transform: scale(1.1);
+}
 @media (min-width: 900px) {
   /* Сетка товаров для больших экранов - 4 колонки */
   .category-products-grid {
@@ -1785,8 +1810,8 @@ body.info-page {
 
 @media (min-width: 1024px) {
   .banner-item {
-    flex: 0 0 400px;
-    max-width: 450px;
+    flex: 0 0 100%;
+    max-width: 100%;
     height: 160px;
   }
   
