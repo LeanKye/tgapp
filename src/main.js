@@ -180,15 +180,19 @@ function createCategoryCard(category, index) {
 
 
 
-// Функциональность баннер-слайдера без цикличности с перетягиванием (как у Я.Маркета)
+// Функциональность баннер-слайдера с бесконечным loop и перетягиванием (как у Я.Маркета)
 class BannerSlider {
   constructor() {
     this.slider = document.getElementById('bannerSlider');
     this.bannerData = bannerData;
     this.totalBanners = this.bannerData.length;
-    
-    // Индекс активного слайда (без цикличности)
-    this.currentIndex = 0;
+
+    // Данные для loop: [clone(last), ...originals..., clone(first)]
+    this.extendedData = this.createExtendedData();
+    this.totalExtendedBanners = this.extendedData.length; // = totalBanners + 2
+    // Начинаем на первом реальном слайде (index = 1)
+    this.startIndex = 1;
+    this.currentIndex = this.startIndex;
     
     this.gap = 0;
     this.isTransitioning = false;
@@ -202,13 +206,10 @@ class BannerSlider {
     this.startTranslateX = 0;
     this.currentTranslateX = 0;
     this.velocityX = 0;
-    this.minDragToChange = 0.25; // доля ширины слайда для переключения при медленном перетягивании
+    this.minDragToChange = 0.2; // доля ширины слайда для переключения при медленном перетягивании
     this.wasDraggedRecently = false;
 
-    // Флаги для резкого прыжка при повторном перелистывании на краях
-    this.readyJumpFromEnd = false;
-    this.readyJumpFromStart = false;
-    this.jumpResetTimer = null;
+    // Флаги не нужны для loop
     
     // Автопрокрутка переменные
     this.autoSlideInterval = null;
@@ -220,7 +221,7 @@ class BannerSlider {
   }
 
   init() {
-    // Рендерим баннеры из оригинальных данных
+    // Рендерим баннеры из расширенных данных (с клонами)
     this.renderBanners();
     
     // Получаем все баннеры
@@ -242,11 +243,22 @@ class BannerSlider {
     this.initPointerEvents();
   }
 
-  // Рендеринг баннеров из расширенных данных
+  // Создаём расширенный массив данных для бесконечного цикла
+  createExtendedData() {
+    const first = this.bannerData[0];
+    const last = this.bannerData[this.totalBanners - 1];
+    return [
+      { ...last, __cloned: true },
+      ...this.bannerData.map(b => ({ ...b })),
+      { ...first, __cloned: true }
+    ];
+  }
+
+  // Рендеринг баннеров
   renderBanners() {
     this.slider.innerHTML = '';
     
-    this.bannerData.forEach((banner, index) => {
+    this.extendedData.forEach((banner, index) => {
       const bannerElement = this.createBannerElement(banner, index);
       this.slider.appendChild(bannerElement);
     });
@@ -288,8 +300,9 @@ class BannerSlider {
     bannerItem.className = 'banner-item';
     bannerItem.dataset.bannerId = banner.id;
     
-    // Определяем оригинальный индекс для активации
-    bannerItem.dataset.originalIndex = index;
+    // Определяем оригинальный индекс для активации (без учёта клонов)
+    const originalIndex = this.normalizeOriginalIndex(index);
+    bannerItem.dataset.originalIndex = originalIndex;
     
     // Устанавливаем цвет фона
     bannerItem.style.backgroundColor = banner.backgroundColor;
@@ -348,7 +361,7 @@ class BannerSlider {
     
     // Нормализуем индекс
     if (index < 0) index = 0;
-    if (index >= this.totalBanners) index = this.totalBanners - 1;
+    if (index >= this.totalExtendedBanners) index = this.totalExtendedBanners - 1;
     
     if (index === this.currentIndex) return;
     
@@ -360,15 +373,16 @@ class BannerSlider {
     
     // Обновляем активные классы
     this.updateActiveClasses(index);
-    this.updatePaginationActive(index);
+    this.updatePaginationActive(this.normalizeOriginalIndex(index));
     
     // Анимируем переход
     this.animateToPosition(index);
     
     this.currentIndex = index;
     
-    // Сбрасываем флаги анимации
+    // После завершения анимации проверяем и выполняем незаметную перемотку с клонов
     setTimeout(() => {
+      this.checkAndRewind();
       this.isTransitioning = false;
     }, 350);
   }
@@ -381,7 +395,7 @@ class BannerSlider {
     this.currentIndex = index;
     // Сохраняем текущий translateX
     this.currentTranslateX = this.computeTranslateForIndex(index);
-    this.updatePaginationActive(index);
+    this.updatePaginationActive(this.normalizeOriginalIndex(index));
     
     // Возвращаем анимацию
     requestAnimationFrame(() => {
@@ -429,47 +443,42 @@ class BannerSlider {
     return baseCenterOffset - activeSlideOffset;
   }
 
+  // Возвращает оригинальный индекс [0..totalBanners-1] для расширенного индекса
+  normalizeOriginalIndex(extendedIndex) {
+    if (extendedIndex === 0) return this.totalBanners - 1;
+    if (extendedIndex === this.totalExtendedBanners - 1) return 0;
+    return extendedIndex - 1;
+  }
+
+  // Невидимая перемотка с клонов на реальные элементы
+  checkAndRewind() {
+    if (this.currentIndex === 0) {
+      // были на левом клоне — перематываем на последний реальный
+      this.setPositionWithoutTransition(this.totalBanners);
+    } else if (this.currentIndex === this.totalExtendedBanners - 1) {
+      // были на правом клоне — перематываем на первый реальный
+      this.setPositionWithoutTransition(1);
+    }
+  }
+
   // Получение ширины баннера
   getBannerWidth() {
-    if (this.allBanners && this.allBanners.length > 0) {
-      return this.allBanners[0].offsetWidth;
+    // Привязываем шаг к ширине контейнера, чтобы центральный слайд занимал всё место
+    const container = this.slider?.parentElement;
+    if (container) {
+      return container.offsetWidth;
     }
-    
-    const screenWidth = window.innerWidth;
-    if (screenWidth <= 375) return Math.min(screenWidth - 60, 300);
-    if (screenWidth <= 768) return Math.min(screenWidth - 70, 400);
-    if (screenWidth >= 1024) return 400;
-    return Math.min(screenWidth - 80, 350);
+    return window.innerWidth;
   }
 
   // Следующий слайд
   nextSlide(isUserInteraction = false) {
-    if (this.currentIndex < this.totalBanners - 1) {
-      this.setActive(this.currentIndex + 1, isUserInteraction);
-      this.resetJumpArms();
-    } else if (isUserInteraction) {
-      // На последнем слайде — второе перелистывание быстро прыгает на первый
-      if (this.readyJumpFromEnd) {
-        this.performInstantJump(0);
-      } else {
-        this.armJump('end');
-      }
-    }
+    this.setActive(this.currentIndex + 1, isUserInteraction);
   }
 
   // Предыдущий слайд
   prevSlide(isUserInteraction = false) {
-    if (this.currentIndex > 0) {
-      this.setActive(this.currentIndex - 1, isUserInteraction);
-      this.resetJumpArms();
-    } else if (isUserInteraction) {
-      // На первом слайде — второе перелистывание быстро прыгает на последний
-      if (this.readyJumpFromStart) {
-        this.performInstantJump(this.totalBanners - 1);
-      } else {
-        this.armJump('start');
-      }
-    }
+    this.setActive(this.currentIndex - 1, isUserInteraction);
   }
 
   // Инициализация Pointer Events для перетягивания
@@ -497,10 +506,10 @@ class BannerSlider {
       const now = performance.now();
       const deltaX = e.clientX - this.dragStartX;
 
-      // Резинка на краях
+      // Резинка на краях (только за пределы клонов)
       const bannerWidth = this.getBannerWidth();
       const step = bannerWidth + this.gap;
-      const minTranslate = this.computeTranslateForIndex(this.totalBanners - 1);
+      const minTranslate = this.computeTranslateForIndex(this.totalExtendedBanners - 1);
       const maxTranslate = this.computeTranslateForIndex(0);
       let nextTranslate = this.startTranslateX + deltaX;
       if (nextTranslate > maxTranslate) {
@@ -553,32 +562,8 @@ class BannerSlider {
         }
       }
 
-      // Обработка дополнительного перелистывания на краях
-      if (this.currentIndex === this.totalBanners - 1 && (isFlick ? this.velocityX < 0 : draggedDistance < 0)) {
-        // пытаемся листнуть дальше вправо с последнего
-        if (this.readyJumpFromEnd) {
-          this.slider.style.transition = 'transform 0.001s linear';
-          this.performInstantJump(0);
-        } else {
-          this.armJump('end');
-          targetIndex = this.totalBanners - 1; // остаёмся на последнем
-        }
-      } else if (this.currentIndex === 0 && (isFlick ? this.velocityX > 0 : draggedDistance > 0)) {
-        // пытаемся листнуть дальше влево с первого
-        if (this.readyJumpFromStart) {
-          this.slider.style.transition = 'transform 0.001s linear';
-          this.performInstantJump(this.totalBanners - 1);
-        } else {
-          this.armJump('start');
-          targetIndex = 0; // остаёмся на первом
-        }
-      } else {
-        // середина — сбрасываем подготовку к прыжку
-        this.resetJumpArms();
-      }
-
       // Ограничиваем диапазон
-      targetIndex = Math.max(0, Math.min(this.totalBanners - 1, targetIndex));
+      targetIndex = Math.max(0, Math.min(this.totalExtendedBanners - 1, targetIndex));
 
       // Возвращаем анимацию
       this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
@@ -613,36 +598,7 @@ class BannerSlider {
     });
   }
 
-  armJump(edge) {
-    if (edge === 'end') {
-      this.readyJumpFromEnd = true;
-    } else if (edge === 'start') {
-      this.readyJumpFromStart = true;
-    }
-    if (this.jumpResetTimer) clearTimeout(this.jumpResetTimer);
-    this.jumpResetTimer = setTimeout(() => this.resetJumpArms(), 1500);
-  }
-
-  resetJumpArms() {
-    this.readyJumpFromEnd = false;
-    this.readyJumpFromStart = false;
-    if (this.jumpResetTimer) {
-      clearTimeout(this.jumpResetTimer);
-      this.jumpResetTimer = null;
-    }
-  }
-
-  performInstantJump(targetIndex) {
-    // Мгновенный переход (без анимации)
-    const prevTransition = this.slider.style.transition;
-    this.slider.style.transition = 'none';
-    this.setPositionWithoutTransition(targetIndex);
-    // Возвращаем transition на следующий кадр
-    requestAnimationFrame(() => {
-      this.slider.style.transition = prevTransition || 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-    });
-    this.resetJumpArms();
-  }
+  // Методы для jump больше не нужны при loop
 
   // Запуск автопрокрутки
   startAutoSlide() {
