@@ -72,8 +72,13 @@ input, textarea {
   overscroll-behavior-x: contain;
 }
 
+.banner-slider-container {
+  touch-action: pan-y;
+  overscroll-behavior-x: contain;
+}
+
 .banner-slider {
-  touch-action: pan-x pan-y;
+  touch-action: pan-y;
   overscroll-behavior-x: contain;
 }
 
@@ -357,8 +362,9 @@ body:has(.product)::before {
 
 /* Специальные стили для контейнера с баннерами */
 .catalog > .container:has(.banner-slider-container) {
-  padding: 0px 16px; /* компактнее сверху/снизу, как у остальных секций */
-  background: transparent;
+  padding: 0; /* баннеры должны быть слитно без внутренних отступов */
+  background-color: #1f1f1f; /* как у остальных контейнеров */
+  margin-inline: 16px; /* как у основного содержимого */
   overflow: hidden;
 }
 
@@ -629,6 +635,7 @@ body:has(.product)::before {
   font-weight: 600;
   color: #29A5FF;
   margin: 0;
+  margin-left: 10px; /* +4px к исходному отступу только для текста Hooli */
   text-shadow: 0 2px 4px rgba(41, 165, 255, 0.3);
   white-space: nowrap;
   user-select: none;
@@ -769,17 +776,36 @@ body:has(.product)::before {
   /* Принудительно размещаем поверх всех элементов */
   transform: translateZ(0);
   will-change: transform;
-  /* По умолчанию разрешаем скролл; скрипт может отключить его если контент короче контейнера */
+  /* Нативная прокрутка и bounce как у страницы */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  overscroll-behavior: contain; /* предотвращаем «резинку» просачивания на фон */
+  overscroll-behavior: auto;
 }
 
 .search-dropdown.show {
   display: block;
 }
 
-/* Блокируем скролл в dropdown когда показывается "Товары не найдены" */
+  /* Видимая полоска прокрутки внутри dropdown */
+  .search-dropdown {
+    scrollbar-width: thin; /* Firefox: тонкая полоса */
+    scrollbar-color: #5a5a5a transparent; /* цвет бегунка и трека */
+  }
+  
+  .search-dropdown::-webkit-scrollbar {
+    width: 6px; /* толщина */
+  }
+  
+  .search-dropdown::-webkit-scrollbar-track {
+    background: transparent; /* прозрачный трек */
+  }
+  
+  .search-dropdown::-webkit-scrollbar-thumb {
+    background-color: #5a5a5a; /* цвет бегунка */
+    border-radius: 6px;
+  }
+
+  /* Блокируем скролл в dropdown когда показывается "Товары не найдены" */
 .search-dropdown:has(.no-results) {
   overflow: hidden !important;
   touch-action: none !important;
@@ -1362,7 +1388,7 @@ body.info-page {
   }
   
   .tab {
-    font-size: 14px;
+    font-size: 16px;
     padding-block: 6px;
   }
 }
@@ -1690,7 +1716,7 @@ body.info-page {
   min-width: 0;
   max-width: 100%;
   height: 145px;
-  border-radius: 12px;
+  border-radius: 0; /* скругление только у общего контейнера */
   /* Фон задается динамически через JavaScript */
   display: flex;
   align-items: center;
@@ -1700,8 +1726,8 @@ body.info-page {
   overflow: hidden;
   transform-origin: center;
   user-select: none;
-  /* Улучшенный touch для мобильных */
-  touch-action: manipulation;
+  /* Разрешаем только вертикальные жесты браузеру, горизонтальные обрабатываем сами */
+  touch-action: pan-y;
   /* Предотвращаем мигание */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -1787,8 +1813,8 @@ body.info-page {
 }
 
 .banner-dot {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.35);
   transition: background 0.2s ease, transform 0.2s ease;
@@ -2056,7 +2082,7 @@ body.info-page {
 .period-buttons {
   display: flex;
   flex-wrap: nowrap;
-  gap: clamp(6px, 1.5vw, 12px);
+  gap: 8px; /* фиксированный отступ как у .edition-group */
   overflow-x: auto;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
@@ -2229,6 +2255,25 @@ body.info-page {
     gap: 10px;
   }
   
+  /* Подсветка при клике по элементу в dropdown */
+  .search-suggestion.clicked {
+    animation: searchItemClick 160ms ease;
+  }
+  
+  @keyframes searchItemClick {
+    0% { background-color: rgba(41, 165, 255, 0.0); }
+    50% { background-color: rgba(41, 165, 255, 0.25); }
+    100% { background-color: rgba(41, 165, 255, 0.0); }
+  }
+  
+  /* Стили для плашки "Товары не найдены" без CSS анимации */
+  .search-dropdown .no-results {
+    padding: 16px;
+    text-align: center;
+    color: #bbbbbb;
+    transform-origin: center center;
+  }
+
   .search-suggestion img {
     width: 32px;
     height: 32px;
@@ -2295,7 +2340,7 @@ body.info-page {
   }
   
   .period-buttons {
-    gap: 4px;
+    gap: 8px;
     padding-top: 6px;
   }
   
@@ -2445,6 +2490,7 @@ body.info-page {
   }
   
   .period-buttons {
+    gap: 8px;
     padding-top: 8px;
   }
   
@@ -2547,6 +2593,7 @@ body.info-page {
   }
   
   .period-buttons {
+    gap: 8px;
     padding-top: 10px;
   }
   
@@ -2733,11 +2780,11 @@ body.info-page {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0);
   z-index: 10000;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: none;
   /* Обеспечиваем правильное позиционирование в WebView */
   height: 100vh;
   height: 100dvh; /* Динамическая высота viewport для мобильных */
@@ -2824,17 +2871,13 @@ body.modal-open {
   height: 4px;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  opacity: 0.3; /* фиксированная непрозрачность, без анимации */
+  transition: none;
 }
 
-.modal-overlay.show .modal-content::before {
-  opacity: 1;
-}
+.modal-overlay.show .modal-content::before { opacity: 0.3; }
 
-.modal-overlay.dragging .modal-content::before {
-  opacity: 0.6;
-}
+.modal-overlay.dragging .modal-content::before { opacity: 0.3; }
 
 .modal-header {
   display: flex;
@@ -3027,11 +3070,11 @@ body.modal-open {
   right: 0;
   bottom: 0;
   /* Приводим затемнение к такому же, как у модалки лейблов */
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0);
   z-index: 20000;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: none;
   height: 100vh;
   height: 100dvh;
   width: 100vw;
@@ -3119,18 +3162,14 @@ body.modal-open {
   height: 4px;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 2px;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+  opacity: 0.3; /* фиксированная непрозрачность, без анимации */
+  transition: none;
   z-index: 1;
 }
 
-.checkout-modal-overlay.show .checkout-modal::before {
-  opacity: 1;
-}
+.checkout-modal-overlay.show .checkout-modal::before { opacity: 0.3; }
 
-.checkout-modal-overlay.dragging .checkout-modal::before {
-  opacity: 0.6;
-}
+.checkout-modal-overlay.dragging .checkout-modal::before { opacity: 0.3; }
 
 
 
@@ -3292,7 +3331,7 @@ body.modal-open {
 /* Стили для текста соглашения */
 .payment-agreement-text {
   text-align: left;
-  font-size: clamp(11px, 3.6vw, 13px);
+  font-size: clamp(12px, 3.8vw, 14px); /* на 1px больше базово и в максимум */
   color: #888;
   padding: 0;
   margin: 0;
@@ -3460,7 +3499,7 @@ body.modal-open {
   .category-product-price-old { font-size: clamp(11px, 2.4vw, 13px); }
 
   /* Переключатели периодов/вариантов/планов */
-  .period-buttons { gap: 4px; }
+  .period-buttons { gap: 8px; }
   .period-buttons label { min-width: 78px; }
   .period-buttons span {
     font-size: 11px;
@@ -3491,7 +3530,7 @@ body.modal-open {
   .payment-details .payment-item.total { font-size: 14px; }
   .checkout-button { height: 42px; font-size: 16px; }
   .checkout-button-container { min-height: 42px; margin-bottom: 12px; }
-  .payment-agreement-text { font-size: 11px; margin-top: 12px; }
+  .payment-agreement-text { font-size: 12px; margin-top: 12px; }
 }
 
 /* Адаптивность для планшетов */

@@ -209,11 +209,14 @@ class BannerSlider {
     this.isDragging = false;
     this.pointerId = null;
     this.dragStartX = 0;
+    this.dragStartY = 0;
     this.dragLastX = 0;
     this.dragLastTime = 0;
     this.startTranslateX = 0;
     this.currentTranslateX = 0;
     this.velocityX = 0;
+    this.dragDirection = null; // 'horizontal' | 'vertical' | null
+    this.dragThreshold = 8; // px
     this.minDragToChange = 0.2; // доля ширины слайда для переключения при медленном перетягивании
     this.wasDraggedRecently = false;
 
@@ -512,6 +515,7 @@ class BannerSlider {
       this.pointerId = e.pointerId;
       container.setPointerCapture(this.pointerId);
       this.dragStartX = e.clientX;
+      this.dragStartY = e.clientY;
       this.dragLastX = e.clientX;
       this.dragLastTime = performance.now();
       // Берём фактическую текущую позицию translateX, а не вычисляемую — это устойчиво при быстрых свайпах
@@ -519,6 +523,7 @@ class BannerSlider {
       this.startTranslateX = this.currentTranslateX;
       this.velocityX = 0;
       this.wasDraggedRecently = false;
+      this.dragDirection = null;
       // Отключаем анимацию на время драга
       this.slider.style.transition = 'none';
       // Приостанавливаем автопрокрутку
@@ -528,6 +533,33 @@ class BannerSlider {
     const onPointerMove = (e) => {
       if (!this.isDragging || e.pointerId !== this.pointerId) return;
       const now = performance.now();
+
+      // Определяем направление жеста один раз после преодоления порога
+      if (this.dragDirection === null) {
+        const absDx = Math.abs(e.clientX - this.dragStartX);
+        const absDy = Math.abs(e.clientY - this.dragStartY);
+        if (absDx > this.dragThreshold || absDy > this.dragThreshold) {
+          if (absDx > absDy) {
+            this.dragDirection = 'horizontal';
+          } else {
+            this.dragDirection = 'vertical';
+            // Прерываем перетягивание для вертикального свайпа — отдаём скролл странице
+            container.releasePointerCapture(this.pointerId);
+            this.isDragging = false;
+            this.pointerId = null;
+            // Возвращаем анимацию, если отключали
+            this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            return;
+          }
+        } else {
+          // Порог не пройден — ничего не делаем
+          return;
+        }
+      }
+
+      // Обрабатываем только горизонтальное перетягивание
+      if (this.dragDirection !== 'horizontal') return;
+
       const deltaX = e.clientX - this.dragStartX;
 
       // Резинка на краях (только за пределы клонов)
@@ -559,8 +591,18 @@ class BannerSlider {
     };
 
     const onPointerUpOrCancel = (e) => {
-      if (!this.isDragging || e.pointerId !== this.pointerId) return;
+      if (e.pointerId !== this.pointerId) return;
       container.releasePointerCapture(this.pointerId);
+
+      // Если перетягивание не началось горизонтально — просто сброс состояний
+      if (!this.isDragging || this.dragDirection !== 'horizontal') {
+        this.isDragging = false;
+        this.pointerId = null;
+        this.dragDirection = null;
+        this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        return;
+      }
+
       this.isDragging = false;
       this.pointerId = null;
 
@@ -603,6 +645,7 @@ class BannerSlider {
       this.velocityX = 0;
       this.dragStartX = 0;
       this.dragLastX = 0;
+      this.dragDirection = null;
     };
 
     container.addEventListener('pointerdown', onPointerDown);
@@ -798,12 +841,13 @@ class SearchManager {
   // Обработчик для блокировки всех кликов при активном поиске
   document.addEventListener('click', (e) => {
     if (this.isSearchActive) {
-      // Разрешаем клики только внутри header-container (включая поиск)
-      if (!e.target.closest('.header-container')) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.deactivateSearch();
+      // Разрешаем клики внутри header и внутри открытого меню
+      if (e.target.closest('.header-container') || e.target.closest('#menu')) {
+        return;
       }
+      e.preventDefault();
+      e.stopPropagation();
+      this.deactivateSearch();
     }
   }, { capture: true });
   }
@@ -967,7 +1011,7 @@ class SearchManager {
     this.hideDropdown();
     
     // Переходим на страницу товара
-    window.location.href = `product.html?product=${product.id}`;
+    window.location.href = withBase(`product.html?product=${product.id}`);
   }
 
   handleKeydown(e) {
@@ -1031,17 +1075,16 @@ class SearchManager {
       return;
     }
 
-    // Для iOS: если фактической прокрутки нет (контента меньше высоты контейнера),
-    // отключаем scroll/overscroll, чтобы не было bounce-эффекта и «скролла каретки»
+    // Делаем поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = this.searchDropdown.scrollHeight > this.searchDropdown.clientHeight + 1;
     if (isScrollable) {
       this.searchDropdown.style.overflowY = 'auto';
       this.searchDropdown.style.touchAction = 'pan-y';
       this.searchDropdown.style.webkitOverflowScrolling = 'touch';
-      this.searchDropdown.style.overscrollBehavior = 'contain';
-      // Включаем блокировку «резинки» на границах списка
-      this.enableEdgeScrollLock(this.searchDropdown);
+      this.searchDropdown.style.overscrollBehavior = 'auto';
+      this.disableEdgeScrollLock();
     } else {
+      // Если контента мало — скрываем скролл, чтобы не было фантомного bounce
       this.searchDropdown.style.overflow = 'hidden';
       this.searchDropdown.style.touchAction = 'none';
       this.searchDropdown.style.webkitOverflowScrolling = 'auto';
@@ -1369,6 +1412,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Рендерим категории на главной странице
   renderCategories();
   
+  // Явно навигируем по ссылкам меню (обход глобального блокера кликов при активном поиске)
+  const menuEl = document.getElementById('menu');
+  if (menuEl) {
+    const menuLinks = menuEl.querySelectorAll('a.menu-item');
+    menuLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        e.preventDefault();
+        e.stopPropagation();
+        closeMenu();
+        setTimeout(() => {
+          window.location.href = withBase(href);
+        }, 50);
+      });
+    });
+  }
+
   
 
   // Обработчик для кнопки поддержки проекта удалён

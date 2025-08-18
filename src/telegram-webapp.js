@@ -91,7 +91,12 @@ class TelegramWebApp {
       // Удаляем предыдущие обработчики
       this.tg.BackButton.offClick();
       this.tg.BackButton.onClick(() => {
-        window.location.href = './';
+        // Возвращаем по истории, если есть куда идти, иначе на главную
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = './';
+        }
       });
     }
   }

@@ -81,6 +81,22 @@ class CategoryPage {
     if (menuButton) menuButton.addEventListener('click', toggleMenu);
     if (menuOverlay) menuOverlay.addEventListener('click', this.closeMenu);
 
+    // Явно навигируем по ссылкам меню (чтобы обходить возможные глобальные блокировки кликов)
+    const menuLinks = this.menu ? this.menu.querySelectorAll('a.menu-item') : [];
+    menuLinks.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        const href = link.getAttribute('href');
+        if (!href) return;
+        e.preventDefault();
+        e.stopPropagation();
+        this.closeMenu();
+        // Небольшая задержка для плавного закрытия меню перед переходом
+        setTimeout(() => {
+          window.location.href = withBase(href);
+        }, 50);
+      });
+    });
+
     // Закрытие меню при клике на хедер (кроме самой кнопки меню)
     const headerContainer = document.querySelector('.header-container');
     if (headerContainer) {
@@ -222,12 +238,13 @@ class CategoryPage {
   // Обработчик для блокировки всех кликов при активном поиске
   document.addEventListener('click', (e) => {
     if (this.isSearchActive) {
-      // Разрешаем клики только внутри header-container (включая поиск)
-      if (!e.target.closest('.header-container')) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.deactivateSearch();
+      // Разрешаем клики внутри header и внутри открытого меню
+      if (e.target.closest('.header-container') || e.target.closest('#menu')) {
+        return;
       }
+      e.preventDefault();
+      e.stopPropagation();
+      this.deactivateSearch();
     }
   }, { capture: true });
   }
@@ -260,15 +277,14 @@ class CategoryPage {
 
     dropdown.classList.add('show');
 
-    // Для iOS: если фактической прокрутки нет, отключаем скролл/резинку
+    // Поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
     if (isScrollable) {
       dropdown.style.overflowY = 'auto';
       dropdown.style.touchAction = 'pan-y';
       dropdown.style.webkitOverflowScrolling = 'touch';
-      dropdown.style.overscrollBehavior = 'contain';
-      // Включаем блокировку «резинки»
-      this.enableEdgeScrollLock(dropdown);
+      dropdown.style.overscrollBehavior = 'auto';
+      this.disableEdgeScrollLock();
     } else {
       dropdown.style.overflow = 'hidden';
       dropdown.style.touchAction = 'none';
@@ -303,7 +319,7 @@ class CategoryPage {
       
       // Небольшая задержка перед переходом для показа анимации
       setTimeout(() => {
-        window.location.href = `product.html?product=${product.id}`;
+        window.location.href = withBase(`product.html?product=${product.id}`);
       }, 120);
     });
 

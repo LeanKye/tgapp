@@ -91,7 +91,7 @@ class ModalManager {
           <div class="checkout-modal-body">
             <div class="payment-details">
               <div class="payment-item">
-                <span>Товар:</span>
+                <span>Название:</span>
                 <span id="modal-product-title">-</span>
               </div>
               <div class="payment-item">
@@ -112,7 +112,7 @@ class ModalManager {
               </div>
             </div>
             <div class="checkout-button-container">
-              <button class="checkout-button" id="checkout-proceed-btn">Перейти к оформлению</button>
+              <button class="checkout-button" id="checkout-proceed-btn">Перейти к оплате</button>
             </div>
             <div class="payment-agreement-text">
               Нажимая на кнопку, вы соглашаетесь с <a href="info.html#privacy">Политикой конфиденциальности</a>, а также с <a href="info.html#agreement">Лицензионным соглашением</a>
@@ -467,6 +467,7 @@ class ModalManager {
     modal.style.opacity = '1';
     modal.style.visibility = 'visible';
     const baseAlpha = 0.5;
+    // Устанавливаем фон сразу на 0, чтобы не было задержки показа затемнения
     modal.style.background = 'rgba(0,0,0,0)';
     
     // Устанавливаем начальное состояние
@@ -487,6 +488,7 @@ class ModalManager {
       // Анимируем transform
       const translateY = (1 - easeProgress) * 100;
       content.style.transform = `translateY(${translateY}%)`;
+      // Плавно увеличиваем затемнение без задержки
       modal.style.background = `rgba(0, 0, 0, ${baseAlpha * easeProgress})`;
       
       if (progress < 1) {
@@ -565,6 +567,7 @@ class ModalManager {
     modal.style.opacity = '1';
     modal.style.visibility = 'visible';
     const baseAlpha = 0.5;
+    // Устанавливаем фон сразу на 0, чтобы не было задержки показа затемнения
     modal.style.background = 'rgba(0,0,0,0)';
     
     // Устанавливаем начальное состояние
@@ -585,6 +588,7 @@ class ModalManager {
       // Анимируем transform
       const translateY = (1 - easeProgress) * 100;
       content.style.transform = `translateY(${translateY}%)`;
+      // Плавно увеличиваем затемнение без задержки
       modal.style.background = `rgba(0, 0, 0, ${baseAlpha * easeProgress})`;
       
       if (progress < 1) {
