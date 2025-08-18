@@ -2,8 +2,9 @@ import { defineConfig } from 'vite'
 import { resolve } from 'path'
 import { fileURLToPath, URL } from 'node:url'
 
-export default defineConfig({
-  base: '/tgapp/',
+export default defineConfig(({ command }) => ({
+  // В dev используем корень, в проде — подкаталог репозитория для GitHub Pages
+  base: command === 'serve' ? '/' : '/tgapp/',
   build: {
     rollupOptions: {
       input: {
@@ -14,4 +15,4 @@ export default defineConfig({
       }
     }
   }
-}) 
+}))
