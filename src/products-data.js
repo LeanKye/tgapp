@@ -1,3 +1,5 @@
+import { withBase } from './base-url.js'
+
 // База данных товаров
 export const products = {
   'adobe-creative-cloud': {
@@ -953,19 +955,59 @@ export const products = {
    }
 };
 
+// Локальные плейсхолдеры по категориям (чтобы не зависеть от внешних доменов в WebView)
+const CATEGORY_PLACEHOLDER = {
+  'Дизайн': withBase('/img/design.png'),
+  'Нейросети': withBase('/img/ai.png'),
+  'Microsoft': withBase('/img/microsoft.png'),
+  'Игры': withBase('/img/subscriptions.png'), // временно используем общий плейсхолдер
+  'Подписки': withBase('/img/subscriptions.png')
+};
+
+function resolveImageUrl(url, category) {
+  // Для надёжности в мини‑приложении Telegram заменяем внешние URL на локальные плейсхолдеры
+  // (внешние домены могут блокироваться политиками WebView)
+  const isExternal = /^https?:\/\//i.test(url);
+  if (isExternal) {
+    return CATEGORY_PLACEHOLDER[category] || withBase('/img/subscriptions.png');
+  }
+  // Локальные пути нормализуем через withBase
+  return withBase(url.startsWith('/') ? url : `/${url}`);
+}
+
+function mapProductImages(product) {
+  const mapped = { ...product };
+  if (Array.isArray(product.images)) {
+    mapped.images = product.images.map((img) => resolveImageUrl(img, product.category));
+  }
+  if (Array.isArray(product.editions)) {
+    mapped.editions = product.editions.map((ed) => {
+      const edCopy = { ...ed };
+      if (Array.isArray(ed.images)) {
+        edCopy.images = ed.images.map((img) => resolveImageUrl(img, product.category));
+      }
+      return edCopy;
+    });
+  }
+  return mapped;
+}
+
 // Функция для получения товара по ID
 export function getProductById(id) {
-  return products[id] || null;
+  const p = products[id] || null;
+  return p ? mapProductImages(p) : null;
 }
 
 // Функция для получения всех товаров
 export function getAllProducts() {
-  return Object.values(products);
+  return Object.values(products).map(mapProductImages);
 }
 
 // Функция для получения товаров по категории
 export function getProductsByCategory(category) {
-  return Object.values(products).filter(product => product.category === category);
+  return Object.values(products)
+    .filter(product => product.category === category)
+    .map(mapProductImages);
 }
 
 // Функция для получения всех категорий
@@ -1029,12 +1071,7 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
-// Утилита для корректной ссылки на ресурсы из public с учётом base (GitHub Pages)
-const withBase = (path) => {
-  const base = (import.meta?.env?.BASE_URL) || '/';
-  const normalized = path.startsWith('/') ? path.slice(1) : path;
-  return `${base}${normalized}`;
-};
+// Используем общий withBase из './base-url.js' для всех ссылок на ресурсы
 
 // Данные баннеров для главной страницы
 export const bannerData = [
