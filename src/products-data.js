@@ -955,59 +955,17 @@ export const products = {
    }
 };
 
-// Локальные плейсхолдеры по категориям (чтобы не зависеть от внешних доменов в WebView)
-const CATEGORY_PLACEHOLDER = {
-  'Дизайн': withBase('/img/design.png'),
-  'Нейросети': withBase('/img/ai.png'),
-  'Microsoft': withBase('/img/microsoft.png'),
-  'Игры': withBase('/img/subscriptions.png'), // временно используем общий плейсхолдер
-  'Подписки': withBase('/img/subscriptions.png')
-};
-
-function resolveImageUrl(url, category) {
-  // Для надёжности в мини‑приложении Telegram заменяем внешние URL на локальные плейсхолдеры
-  // (внешние домены могут блокироваться политиками WebView)
-  const isExternal = /^https?:\/\//i.test(url);
-  if (isExternal) {
-    return CATEGORY_PLACEHOLDER[category] || withBase('/img/subscriptions.png');
-  }
-  // Локальные пути нормализуем через withBase
-  return withBase(url.startsWith('/') ? url : `/${url}`);
-}
-
-function mapProductImages(product) {
-  const mapped = { ...product };
-  if (Array.isArray(product.images)) {
-    mapped.images = product.images.map((img) => resolveImageUrl(img, product.category));
-  }
-  if (Array.isArray(product.editions)) {
-    mapped.editions = product.editions.map((ed) => {
-      const edCopy = { ...ed };
-      if (Array.isArray(ed.images)) {
-        edCopy.images = ed.images.map((img) => resolveImageUrl(img, product.category));
-      }
-      return edCopy;
-    });
-  }
-  return mapped;
-}
-
-// Функция для получения товара по ID
+// Функции выборки (изображения ТОВАРОВ оставляем как есть!)
 export function getProductById(id) {
-  const p = products[id] || null;
-  return p ? mapProductImages(p) : null;
+  return products[id] || null;
 }
 
-// Функция для получения всех товаров
 export function getAllProducts() {
-  return Object.values(products).map(mapProductImages);
+  return Object.values(products);
 }
 
-// Функция для получения товаров по категории
 export function getProductsByCategory(category) {
-  return Object.values(products)
-    .filter(product => product.category === category)
-    .map(mapProductImages);
+  return Object.values(products).filter(product => product.category === category);
 }
 
 // Функция для получения всех категорий
@@ -1137,7 +1095,8 @@ export const categoryData = {
   'Игры': {
     name: 'Игры',
     description: 'Лучшие игры для PC и консолей',
-    image: 'https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&h=300&fit=crop&crop=center'
+    // В категориях используем локальное изображение, чтобы оно точно грузилось в Telegram WebApp
+    image: withBase('/img/subscriptions.png')
   },
   'Подписки': {
     name: 'Подписки',
