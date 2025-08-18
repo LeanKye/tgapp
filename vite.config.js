@@ -4,7 +4,8 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig(({ command }) => ({
   // В dev используем корень, в проде — подкаталог репозитория для GitHub Pages
-  base: command === 'serve' ? '/' : '/tgapp/',
+  // Можно переопределить через VITE_BASE из CI, если нужно другой путь
+  base: command === 'serve' ? '/' : (process.env.VITE_BASE || '/tgapp/'),
   build: {
     rollupOptions: {
       input: {
