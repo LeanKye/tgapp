@@ -1,4 +1,5 @@
 // Telegram Web App базовые настройки
+import { withBase } from './base-url.js';
 class TelegramWebApp {
   constructor() {
     this.tg = null;
@@ -35,6 +36,11 @@ class TelegramWebApp {
     
     // Управление кнопками
     this.updateTelegramHeader();
+
+    // Следим за изменениями истории/URL, чтобы корректно переключать Back/Close
+    window.addEventListener('popstate', () => this.handleNavigation());
+    window.addEventListener('hashchange', () => this.handleNavigation());
+    window.addEventListener('pageshow', () => this.handleNavigation());
   }
 
 
@@ -79,9 +85,14 @@ class TelegramWebApp {
   updateTelegramHeader() {
     if (!this.tg) return;
 
+    // Пересчитываем текущую страницу на всякий случай
+    this.currentPage = this.detectCurrentPage();
+
     if (this.currentPage === "home") {
       // На главной странице скрываем все кнопки
       this.tg.BackButton.hide();
+      // На всякий случай снимаем обработчик, чтобы не было артефактов
+      this.tg.BackButton.offClick();
       this.tg.MainButton.hide();
     } else {
       // На остальных страницах показываем кнопку "Назад"
@@ -95,10 +106,16 @@ class TelegramWebApp {
         if (window.history.length > 1) {
           window.history.back();
         } else {
-          window.location.href = './';
+          window.location.href = withBase('index.html');
         }
       });
     }
+  }
+
+  // Обработка смены адреса/страницы
+  handleNavigation() {
+    this.currentPage = this.detectCurrentPage();
+    this.updateTelegramHeader();
   }
 }
 
