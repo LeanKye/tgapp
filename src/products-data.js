@@ -1029,6 +1029,13 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
+// Утилита для корректной ссылки на ресурсы из public с учётом base (GitHub Pages)
+const withBase = (path) => {
+  const base = (import.meta?.env?.BASE_URL) || '/';
+  const normalized = path.startsWith('/') ? path.slice(1) : path;
+  return `${base}${normalized}`;
+};
+
 // Данные баннеров для главной страницы
 export const bannerData = [
   {
@@ -1078,17 +1085,17 @@ export const categoryData = {
   'Дизайн': {
     name: 'Дизайн',
     description: 'Инструменты для графики и видео',
-    image: '/img/design.png'
+    image: withBase('/img/design.png')
   },
   'Нейросети': {
     name: 'Нейросети',
     description: 'Искусственный интеллект и нейронные сети',
-    image: '/img/ai.png'
+    image: withBase('/img/ai.png')
   },
   'Microsoft': {
     name: 'Microsoft',
     description: 'Office и другие продукты Microsoft',
-    image: '/img/microsoft.png'
+    image: withBase('/img/microsoft.png')
   },
   'Игры': {
     name: 'Игры',
@@ -1098,6 +1105,6 @@ export const categoryData = {
   'Подписки': {
     name: 'Подписки',
     description: 'Подписки на сервисы и программы',
-    image: '/img/subscriptions.png'
+    image: withBase('/img/subscriptions.png')
   }
 };
