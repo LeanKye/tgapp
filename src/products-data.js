@@ -3,7 +3,7 @@ export const products = {
   'adobe-creative-cloud': {
     id: 'adobe-creative-cloud',
     title: 'Adobe Creative Cloud',
-    category: 'Adobe',
+    category: 'Дизайн',
     price: 1000,
     oldPrice: 1500,
     discount: '-30%',
@@ -69,7 +69,7 @@ export const products = {
   'microsoft-office': {
     id: 'microsoft-office',
     title: 'Microsoft Office 365',
-    category: 'Подписки',
+    category: 'Microsoft',
     price: 800,
     oldPrice: 1200,
     discount: '-33%',
@@ -170,7 +170,7 @@ export const products = {
   'photoshop': {
     id: 'photoshop',
     title: 'Adobe Photoshop',
-    category: 'Adobe',
+    category: 'Дизайн',
     price: 600,
     oldPrice: 900,
     discount: '-33%',
@@ -372,7 +372,7 @@ export const products = {
   'adobe-illustrator': {
     id: 'adobe-illustrator',
     title: 'Adobe Illustrator',
-    category: 'Adobe',
+    category: 'Дизайн',
     price: 700,
     oldPrice: 1000,
     discount: '-30%',
@@ -411,7 +411,7 @@ export const products = {
   'adobe-after-effects': {
     id: 'adobe-after-effects',
     title: 'Adobe After Effects',
-    category: 'Adobe',
+    category: 'Дизайн',
     price: 800,
     oldPrice: 1200,
     discount: '-33%',
@@ -1075,15 +1075,20 @@ export const bannerData = [
 
 // Данные категорий с изображениями и описаниями
 export const categoryData = {
-  'Adobe': {
-    name: 'Adobe',
-    description: 'Профессиональные инструменты для дизайна и творчества',
-    image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=300&fit=crop&crop=center'
+  'Дизайн': {
+    name: 'Дизайн',
+    description: 'Инструменты для графики и видео',
+    image: '/img/design.png'
   },
   'Нейросети': {
     name: 'Нейросети',
     description: 'Искусственный интеллект и нейронные сети',
-    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=400&h=300&fit=crop&crop=center'
+    image: '/img/ai.png'
+  },
+  'Microsoft': {
+    name: 'Microsoft',
+    description: 'Office и другие продукты Microsoft',
+    image: '/img/microsoft.png'
   },
   'Игры': {
     name: 'Игры',
@@ -1093,11 +1098,6 @@ export const categoryData = {
   'Подписки': {
     name: 'Подписки',
     description: 'Подписки на сервисы и программы',
-    image: 'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=400&h=300&fit=crop&crop=center'
-  },
-  'Антивирусы': {
-    name: 'Антивирусы',
-    description: 'Защита компьютера и данных',
-    image: 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=400&h=300&fit=crop&crop=center'
+    image: '/img/subscriptions.png'
   }
-}; 
+};
