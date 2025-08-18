@@ -1,6 +1,7 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import ModalManager from './modal-manager.js'
+import { withBase } from './base-url.js'
 
 
 
@@ -13,7 +14,7 @@ function getUrlParameter(name) {
 // Функция для отображения товара
 function renderProduct(product) {
   if (!product) {
-    document.querySelector('.product').innerHTML = '<div class="container">Товар не найден</div>';
+    document.querySelector('.product').innerHTML = '<div class="container">Не найдено</div>';
     return;
   }
 
@@ -48,12 +49,16 @@ function renderProduct(product) {
     initImageSlider();
   }, 10);
 
-  // Обновляем лейблы
+  // Обновляем лейблы (удаляем запрещенные: "Гарантия", "Лицензия")
   const labelsContainer = document.querySelector('.labels');
   labelsContainer.innerHTML = '';
-  product.labels.forEach((label, index) => {
+  const labelPairs = (product.labels || []).map((lbl, i) => ({
+    label: lbl,
+    color: (product.labelColors || [])[i]
+  })).filter(pair => !['Гарантия', 'Лицензия'].includes(pair.label));
+  labelPairs.forEach(({ label, color }) => {
     const labelDiv = document.createElement('div');
-    labelDiv.className = `label label-${product.labelColors[index]}`;
+    labelDiv.className = `label label-${color}`;
     labelDiv.innerHTML = `
       <span>${label}</span>
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,7 +66,6 @@ function renderProduct(product) {
       </svg>
     `;
     
-    // Добавляем обработчик клика по лейблу
     labelDiv.addEventListener('click', () => {
       openLabelModal(label);
     });
@@ -947,6 +951,8 @@ function openLabelModal(labelText) {
   if (!modalManager) return;
   
   const labelInfo = modalManager.getLabelInfo(labelText);
+  // Если лейбл относится к "Гарантия" или "Лицензия" — не показываем модалку
+  if (['Гарантия', 'Лицензия'].includes(labelText)) return;
   modalManager.openModal('label-modal', { labelInfo });
 }
 
@@ -964,7 +970,7 @@ async function handleBuyClick() {
   const product = getProductById(productId);
   
   if (!product) {
-    modalManager?.showError('Товар не найден');
+    modalManager?.showError('Не найдено');
     return;
   }
 
@@ -1150,7 +1156,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Если продукт не найден, перенаправляем на главную
   if (!product) {
     setTimeout(() => {
-      window.location.href = '/';
+      window.location.href = withBase('index.html');
     }, 2000);
   }
 });

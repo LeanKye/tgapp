@@ -1,5 +1,6 @@
 import './style.css'
 import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
+import { withBase } from './base-url.js'
 
 class CategoryPage {
   constructor() {
@@ -17,7 +18,7 @@ class CategoryPage {
     
     if (!this.currentCategory) {
       // Если категория не указана, перенаправляем на главную
-      window.location.href = 'index.html';
+      window.location.href = withBase('index.html');
       return;
     }
 
@@ -121,7 +122,7 @@ class CategoryPage {
         if (category === this.currentCategory) {
           this.closeMenu();
         } else {
-          window.location.href = `category.html?category=${encodeURIComponent(category)}`;
+          window.location.href = withBase(`category.html?category=${encodeURIComponent(category)}`);
         }
       });
     });
@@ -137,6 +138,7 @@ class CategoryPage {
 
     let searchTimeout;
     this.isSearchActive = false;
+    this.isFirstTimeOpen = true; // Флаг для первого открытия
 
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -144,7 +146,8 @@ class CategoryPage {
 
       searchTimeout = setTimeout(() => {
         if (query.length === 0) {
-          this.hideSearchDropdown();
+          // Показываем "Товары не найдены" даже при пустом запросе
+          this.showNoSearchResults();
         } else {
           this.performSearch(query);
         }
@@ -154,6 +157,13 @@ class CategoryPage {
     // Активируем поиск при фокусе
     searchInput.addEventListener('focus', () => {
       this.activateSearch();
+      
+      // Если пустое поле или есть текст - показываем соответствующий dropdown
+      if (searchInput.value.trim()) {
+        this.performSearch(searchInput.value);
+      } else {
+        this.showNoSearchResults();
+      }
     });
 
     // Скрываем dropdown при клике вне поиска
@@ -286,8 +296,15 @@ class CategoryPage {
       </div>
     `;
 
+    // Обработчик клика по предложению с анимацией
     suggestion.addEventListener('click', () => {
-      window.location.href = `product.html?product=${product.id}`;
+      // Добавляем класс анимации
+      suggestion.classList.add('clicked');
+      
+      // Небольшая задержка перед переходом для показа анимации
+      setTimeout(() => {
+        window.location.href = `product.html?product=${product.id}`;
+      }, 120);
     });
 
     return suggestion;
@@ -297,10 +314,10 @@ class CategoryPage {
     const dropdown = document.getElementById('search-dropdown');
     if (!dropdown) return;
 
-    dropdown.innerHTML = '<div class="no-results">Товары не найдены</div>';
+    dropdown.innerHTML = '<div class="no-results">Ничего не найдено</div>';
     dropdown.classList.add('show');
     
-    // Блокируем скролл для dropdown когда показывается "Товары не найдены"
+    // Блокируем скролл для dropdown когда показывается "Ничего не найдено"
     dropdown.style.overflow = 'hidden';
     dropdown.style.touchAction = 'none';
     dropdown.style.webkitOverflowScrolling = 'auto';
@@ -309,11 +326,17 @@ class CategoryPage {
     // Добавляем обработчик клика для сброса поиска
     const noResultsElement = dropdown.querySelector('.no-results');
     if (noResultsElement) {
+      // Анимация только при первом открытии поисковика
+      if (this.isFirstTimeOpen) {
+        this.animateNoResults(dropdown); // Анимируем весь dropdown
+        this.isFirstTimeOpen = false;
+      }
+      
       noResultsElement.addEventListener('click', () => {
         this.deactivateSearch(); // Полностью закрываем поиск с затемнением
       });
       
-      // Блокируем скролл для элемента "Товары не найдены" на мобильных устройствах
+      // Блокируем скролл для элемента "Ничего не найдено" на мобильных устройствах
       noResultsElement.addEventListener('touchstart', (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -329,6 +352,51 @@ class CategoryPage {
         e.stopPropagation();
       }, { passive: false });
     }
+  }
+
+  // Анимация появления плашки "Товары не найдены" - расширение из центра
+  animateNoResults(element) {
+    // Устанавливаем начальное состояние
+    element.style.transform = 'scale(0.3)';
+    element.style.opacity = '0';
+    element.style.transition = 'none';
+    
+    // Запускаем анимацию
+    const duration = 250;
+    const startTime = Date.now();
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease out back)
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      
+      // Анимируем scale от 0.3 до 1 с небольшим overshoot
+      let scale;
+      if (progress < 0.8) {
+        scale = 0.3 + (1.05 - 0.3) * (progress / 0.8);
+      } else {
+        scale = 1.05 - (1.05 - 1) * ((progress - 0.8) / 0.2);
+      }
+      
+      // Анимируем opacity
+      const opacity = easeProgress;
+      
+      element.style.transform = `scale(${scale})`;
+      element.style.opacity = `${opacity}`;
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Анимация завершена
+        element.style.transform = 'scale(1)';
+        element.style.opacity = '1';
+        element.style.transition = '';
+      }
+    };
+    
+    requestAnimationFrame(animate);
   }
 
   hideSearchDropdown() {
@@ -417,6 +485,9 @@ class CategoryPage {
     }
     // Убеждаемся, что все товары категории отображаются
     this.displayProducts(this.currentProducts);
+    
+    // Сбрасываем флаг для анимации при следующем открытии
+    this.isFirstTimeOpen = true;
   }
 
   showAllProducts() {
@@ -428,7 +499,7 @@ class CategoryPage {
     const category = categoryData[this.currentCategory];
     if (!category) {
       // Если категория не найдена, перенаправляем на главную
-      window.location.href = 'index.html';
+      window.location.href = withBase('index.html');
       return;
     }
 
@@ -494,7 +565,7 @@ class CategoryPage {
     
     // Добавляем обработчик клика для перехода на страницу товара
     card.addEventListener('click', () => {
-      window.location.href = `product.html?product=${product.id}`;
+      window.location.href = withBase(`product.html?product=${product.id}`);
     });
     
     return card;
