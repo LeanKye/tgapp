@@ -1096,7 +1096,7 @@ export const categoryData = {
     name: 'Игры',
     description: 'Лучшие игры для PC и консолей',
     // В категориях используем локальное изображение, чтобы оно точно грузилось в Telegram WebApp
-    image: withBase('/img/subscriptions.png')
+    image: withBase('/img/games.svg')
   },
   'Подписки': {
     name: 'Подписки',
