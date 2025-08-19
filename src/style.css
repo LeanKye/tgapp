@@ -788,10 +788,10 @@ body:has(.product)::before {
 
   /* Кастомная «всегда видимая» полоса прокрутки внутри dropdown */
   .search-dropdown .custom-scrollbar {
-    position: absolute;
+    position: -webkit-sticky;
+    position: sticky;
     right: 6px;
     top: 8px;
-    bottom: 8px;
     width: 4px;
     border-radius: 4px;
     background: rgba(255, 255, 255, 0.08);

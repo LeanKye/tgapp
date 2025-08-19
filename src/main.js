@@ -1131,9 +1131,9 @@ class SearchManager {
     const ratio = viewH / contentH;
     const thumbH = Math.max(24, Math.round(viewH * ratio));
     const maxScroll = contentH - viewH;
-    const top = Math.round((scrollTop / maxScroll) * (viewH - thumbH));
+    const top = maxScroll > 0 ? Math.round((scrollTop / maxScroll) * (viewH - thumbH)) : 0;
     thumb.style.height = `${thumbH}px`;
-    thumb.style.top = `${8 + top}px`; // 8px совпадает с отступами в CSS
+    thumb.style.transform = `translateY(${top}px)`;
   }
 
   hideDropdown() {
