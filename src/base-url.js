@@ -10,10 +10,9 @@ export const withBase = (path) => {
     base = '/';
   }
 
-  // 2) Если base не задан (или "/"), пробуем вывести его из текущего URL.
-  // Это спасает случаи, когда мини-приложение/вебвью открывает сайт по адресу вида
-  // https://username.github.io/<repo>/... и навигация должна идти с префиксом "/<repo>/".
-  if ((base === '/' || base === '') && typeof window !== 'undefined') {
+  // 2) Только в production, если base не задан (или "/"), пробуем вывести его из текущего URL.
+  // В dev всегда используем BASE_URL из Vite (обычно "/"), чтобы не ломать пути к /img/*.
+  if ((import.meta?.env?.PROD) && (base === '/' || base === '') && typeof window !== 'undefined') {
     const pathname = window.location.pathname || '/';
     // Разбиваем путь на сегменты без пустых значений
     const parts = pathname.split('/').filter(Boolean);
