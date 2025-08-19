@@ -1081,7 +1081,9 @@ class SearchManager {
       this.searchDropdown.style.overflowY = 'auto';
       this.searchDropdown.style.touchAction = 'pan-y';
       this.searchDropdown.style.webkitOverflowScrolling = 'touch';
-      this.searchDropdown.style.overscrollBehavior = 'auto';
+      // allow-y включает нативную резинку на верхней границе dropdown
+      this.searchDropdown.style.overscrollBehaviorY = 'contain';
+      this.searchDropdown.style.overscrollBehaviorX = 'contain';
       this.disableEdgeScrollLock();
     } else {
       // Если контента мало — скрываем скролл, чтобы не было фантомного bounce

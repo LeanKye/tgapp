@@ -283,7 +283,8 @@ class CategoryPage {
       dropdown.style.overflowY = 'auto';
       dropdown.style.touchAction = 'pan-y';
       dropdown.style.webkitOverflowScrolling = 'touch';
-      dropdown.style.overscrollBehavior = 'auto';
+      dropdown.style.overscrollBehaviorY = 'contain';
+      dropdown.style.overscrollBehaviorX = 'contain';
       this.disableEdgeScrollLock();
     } else {
       dropdown.style.overflow = 'hidden';

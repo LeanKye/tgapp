@@ -771,11 +771,6 @@ body:has(.product)::before {
   opacity: 1;
   /* Добавляем тень для лучшей видимости */
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
-  /* Создаем новый stacking context */
-  isolation: isolate;
-  /* Принудительно размещаем поверх всех элементов */
-  transform: translateZ(0);
-  will-change: transform;
   /* Нативная прокрутка и bounce как у страницы */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
@@ -995,6 +990,9 @@ body.search-active {
 /* Поднимаем z-index для поиска когда он активен */
 .search-container.search-active {
   z-index: 99998;
+  /* Не создаём избыточных слоёв, чтобы не ломать overscroll физику внутри dropdown */
+  transform: none;
+  will-change: auto;
 }
 
 /* Блокируем интерактивность для всех элементов при активном поиске, кроме хедера */
