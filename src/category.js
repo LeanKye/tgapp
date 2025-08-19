@@ -277,6 +277,9 @@ class CategoryPage {
 
     dropdown.classList.add('show');
 
+    // Добавляем/обновляем кастомный скроллбар
+    this.ensureCustomScrollbar(dropdown);
+
     // Поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
     if (isScrollable) {
@@ -287,6 +290,7 @@ class CategoryPage {
       dropdown.style.overscrollBehaviorY = 'contain';
       dropdown.style.overscrollBehaviorX = 'contain';
       this.disableEdgeScrollLock();
+      this.updateCustomScrollbarThumb(dropdown);
     } else {
       dropdown.style.overflow = 'hidden';
       dropdown.style.touchAction = 'none';
@@ -294,6 +298,43 @@ class CategoryPage {
       dropdown.style.overscrollBehavior = 'none';
       this.disableEdgeScrollLock();
     }
+  }
+
+  // Создаём контейнер кастомного скроллбара, если его нет
+  ensureCustomScrollbar(dropdown) {
+    let bar = dropdown.querySelector('.custom-scrollbar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'custom-scrollbar';
+      const thumb = document.createElement('div');
+      thumb.className = 'custom-scrollbar-thumb';
+      bar.appendChild(thumb);
+      dropdown.appendChild(bar);
+      dropdown.addEventListener('scroll', () => this.updateCustomScrollbarThumb(dropdown), { passive: true });
+      window.addEventListener('resize', () => this.updateCustomScrollbarThumb(dropdown));
+    }
+    this.updateCustomScrollbarThumb(dropdown);
+  }
+
+  // Обновляет размер и позицию «бегунка» кастомного скроллбара
+  updateCustomScrollbarThumb(dropdown) {
+    const bar = dropdown.querySelector('.custom-scrollbar');
+    const thumb = dropdown.querySelector('.custom-scrollbar-thumb');
+    if (!bar || !thumb) return;
+    const contentH = dropdown.scrollHeight;
+    const viewH = dropdown.clientHeight;
+    const scrollTop = dropdown.scrollTop;
+    if (contentH <= viewH + 1) {
+      bar.style.display = 'none';
+      return;
+    }
+    bar.style.display = 'block';
+    const ratio = viewH / contentH;
+    const thumbH = Math.max(24, Math.round(viewH * ratio));
+    const maxScroll = contentH - viewH;
+    const top = Math.round((scrollTop / maxScroll) * (viewH - thumbH));
+    thumb.style.height = `${thumbH}px`;
+    thumb.style.top = `${8 + top}px`;
   }
 
   createSearchSuggestion(product) {

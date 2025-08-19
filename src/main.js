@@ -894,6 +894,9 @@ class SearchManager {
       this.searchDropdown.appendChild(suggestion);
     });
 
+    // Добавляем/обновляем кастомный скроллбар
+    this.ensureCustomScrollbar();
+
     this.showDropdown();
   }
 
@@ -1078,7 +1081,6 @@ class SearchManager {
     // Делаем поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = this.searchDropdown.scrollHeight > this.searchDropdown.clientHeight + 1;
     if (isScrollable) {
-      // Всегда показываем полосу прокрутки, чтобы было понятно, что контента больше
       this.searchDropdown.style.overflowY = 'scroll';
       this.searchDropdown.style.touchAction = 'pan-y';
       this.searchDropdown.style.webkitOverflowScrolling = 'touch';
@@ -1086,6 +1088,7 @@ class SearchManager {
       this.searchDropdown.style.overscrollBehaviorY = 'contain';
       this.searchDropdown.style.overscrollBehaviorX = 'contain';
       this.disableEdgeScrollLock();
+      this.updateCustomScrollbarThumb();
     } else {
       // Если контента мало — скрываем скролл, чтобы не было фантомного bounce
       this.searchDropdown.style.overflow = 'hidden';
@@ -1094,6 +1097,43 @@ class SearchManager {
       this.searchDropdown.style.overscrollBehavior = 'none';
       this.disableEdgeScrollLock();
     }
+  }
+
+  // Создаёт контейнер кастомного скроллбара, если его нет
+  ensureCustomScrollbar() {
+    let bar = this.searchDropdown.querySelector('.custom-scrollbar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'custom-scrollbar';
+      const thumb = document.createElement('div');
+      thumb.className = 'custom-scrollbar-thumb';
+      bar.appendChild(thumb);
+      this.searchDropdown.appendChild(bar);
+      this.searchDropdown.addEventListener('scroll', () => this.updateCustomScrollbarThumb(), { passive: true });
+      window.addEventListener('resize', () => this.updateCustomScrollbarThumb());
+    }
+    this.updateCustomScrollbarThumb();
+  }
+
+  // Обновляет размер и позицию «бегунка» кастомного скроллбара
+  updateCustomScrollbarThumb() {
+    const bar = this.searchDropdown.querySelector('.custom-scrollbar');
+    const thumb = this.searchDropdown.querySelector('.custom-scrollbar-thumb');
+    if (!bar || !thumb) return;
+    const contentH = this.searchDropdown.scrollHeight;
+    const viewH = this.searchDropdown.clientHeight;
+    const scrollTop = this.searchDropdown.scrollTop;
+    if (contentH <= viewH + 1) {
+      bar.style.display = 'none';
+      return;
+    }
+    bar.style.display = 'block';
+    const ratio = viewH / contentH;
+    const thumbH = Math.max(24, Math.round(viewH * ratio));
+    const maxScroll = contentH - viewH;
+    const top = Math.round((scrollTop / maxScroll) * (viewH - thumbH));
+    thumb.style.height = `${thumbH}px`;
+    thumb.style.top = `${8 + top}px`; // 8px совпадает с отступами в CSS
   }
 
   hideDropdown() {

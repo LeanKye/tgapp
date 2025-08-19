@@ -764,8 +764,6 @@ body:has(.product)::before {
   border-radius: 12px;
   margin-top: 4px;
   max-height: 300px;
-  /* Резервируем место под полосу скролла, чтобы она была видимой и не прыгала вёрстка */
-  scrollbar-gutter: stable both-edges;
   overflow-y: auto;
   z-index: 99999;
   display: none;
@@ -777,6 +775,8 @@ body:has(.product)::before {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior: auto;
+  /* Скрываем системный скроллбар (на iOS/macOS он авто-прячется), используем кастомный видимый */
+  scrollbar-width: none; /* Firefox */
 }
 
 .search-dropdown.show {
@@ -784,22 +784,26 @@ body:has(.product)::before {
 }
 
   /* Видимая полоска прокрутки внутри dropdown */
-  .search-dropdown {
-    scrollbar-width: thin; /* Firefox: тонкая полоса */
-    scrollbar-color: #5a5a5a transparent; /* цвет бегунка и трека */
+  .search-dropdown::-webkit-scrollbar { width: 0; height: 0; }
+
+  /* Кастомная «всегда видимая» полоса прокрутки внутри dropdown */
+  .search-dropdown .custom-scrollbar {
+    position: absolute;
+    right: 6px;
+    top: 8px;
+    bottom: 8px;
+    width: 4px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none; /* не мешаем скроллу контента */
   }
-  
-  .search-dropdown::-webkit-scrollbar {
-    width: 6px; /* толщина */
-  }
-  
-  .search-dropdown::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.08); /* видимый трек */
-  }
-  
-  .search-dropdown::-webkit-scrollbar-thumb {
-    background-color: #5a5a5a; /* цвет бегунка */
-    border-radius: 6px;
+  .search-dropdown .custom-scrollbar-thumb {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    border-radius: 4px;
+    background: #8a8a8a;
+    opacity: 0.7;
   }
 
   /* Блокируем скролл в dropdown когда показывается "Товары не найдены" */
