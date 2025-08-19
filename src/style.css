@@ -990,11 +990,6 @@ body:not(:has(.logo)) .search-overlay {
 /* Блокировка скролла при активном поиске */
 body.search-active {
   overflow: hidden;
-  height: 100vh;
-  position: fixed;
-  width: 100%;
-  left: 0;
-  top: 0;
 }
 
 /* Поднимаем z-index для поиска когда он активен */
