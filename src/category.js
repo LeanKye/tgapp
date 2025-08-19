@@ -280,7 +280,8 @@ class CategoryPage {
     // Поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
     if (isScrollable) {
-      dropdown.style.overflowY = 'auto';
+      // Всегда показываем полосу прокрутки, чтобы было понятно, что контента больше
+      dropdown.style.overflowY = 'scroll';
       dropdown.style.touchAction = 'pan-y';
       dropdown.style.webkitOverflowScrolling = 'touch';
       dropdown.style.overscrollBehaviorY = 'contain';

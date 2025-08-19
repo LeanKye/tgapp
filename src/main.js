@@ -1078,7 +1078,8 @@ class SearchManager {
     // Делаем поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = this.searchDropdown.scrollHeight > this.searchDropdown.clientHeight + 1;
     if (isScrollable) {
-      this.searchDropdown.style.overflowY = 'auto';
+      // Всегда показываем полосу прокрутки, чтобы было понятно, что контента больше
+      this.searchDropdown.style.overflowY = 'scroll';
       this.searchDropdown.style.touchAction = 'pan-y';
       this.searchDropdown.style.webkitOverflowScrolling = 'touch';
       // allow-y включает нативную резинку на верхней границе dropdown

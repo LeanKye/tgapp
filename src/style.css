@@ -764,6 +764,8 @@ body:has(.product)::before {
   border-radius: 12px;
   margin-top: 4px;
   max-height: 300px;
+  /* Резервируем место под полосу скролла, чтобы она была видимой и не прыгала вёрстка */
+  scrollbar-gutter: stable both-edges;
   overflow-y: auto;
   z-index: 99999;
   display: none;
@@ -792,7 +794,7 @@ body:has(.product)::before {
   }
   
   .search-dropdown::-webkit-scrollbar-track {
-    background: transparent; /* прозрачный трек */
+    background: rgba(255, 255, 255, 0.08); /* видимый трек */
   }
   
   .search-dropdown::-webkit-scrollbar-thumb {
