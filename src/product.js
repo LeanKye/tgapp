@@ -712,70 +712,31 @@ function initImageSlider() {
     return;
   }
   
-  // Для infinite loop клонируем первый и последний слайды
-  if (slides.length > 1) {
-    // Клонируем последний слайд и добавляем в начало
-    const lastSlideClone = slides[slides.length - 1].cloneNode(true);
-    lastSlideClone.classList.add('cloned');
-    wrapper.insertBefore(lastSlideClone, wrapper.firstChild);
-    
-    // Клонируем первый слайд и добавляем в конец
-    const firstSlideClone = slides[0].cloneNode(true);
-    firstSlideClone.classList.add('cloned');
-    wrapper.appendChild(firstSlideClone);
-    
-    // Обновляем список слайдов
-    slides = document.querySelectorAll('.swiper-slide');
-  }
-  
-  let currentIndex = 1; // Начинаем с первого реального слайда (после клона)
+  // Отключаем бесконечный цикл: работаем только с реальными слайдами
+  let currentIndex = 0; // Начинаем с первого слайда
   let isTransitioning = false;
   const totalSlides = slides.length;
-  const realSlidesCount = totalSlides - 2; // Исключаем 2 клона
   let animationSeq = 0; // Идентификатор текущей анимации для безопасной отмены
   
-  // Устанавливаем начальную позицию на первый реальный слайд
+  // Устанавливаем начальную позицию на первый слайд
   wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
   wrapper.style.transition = 'transform 0.3s ease';
   
   // Помечаем слайдер как инициализированный
   slider.classList.add('slider-initialized');
   
-  // Функция для перехода к слайду
+  // Функция для перехода к слайду без loop
   function goToSlide(index) {
     if (isTransitioning) return;
-    
+    // Ограничиваем индекс в пределах 0..totalSlides-1
+    const clampedIndex = Math.max(0, Math.min(totalSlides - 1, index));
     isTransitioning = true;
-    currentIndex = index;
+    currentIndex = clampedIndex;
     const localSeq = ++animationSeq;
-    
     // Обновляем позицию слайдера
     wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-    
     setTimeout(() => {
-      // Если анимация была отменена/перебита — выходим
       if (localSeq !== animationSeq) return;
-      // Обрабатываем loop переходы
-      if (currentIndex === 0) {
-        // Если мы на клоне последнего слайда, мгновенно переходим к реальному последнему
-        wrapper.style.transition = 'none';
-        currentIndex = realSlidesCount;
-        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-        setTimeout(() => {
-          if (localSeq !== animationSeq) return;
-          wrapper.style.transition = 'transform 0.3s ease';
-        }, 10);
-      } else if (currentIndex === totalSlides - 1) {
-        // Если мы на клоне первого слайда, мгновенно переходим к реальному первому
-        wrapper.style.transition = 'none';
-        currentIndex = 1;
-        wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-        setTimeout(() => {
-          if (localSeq !== animationSeq) return;
-          wrapper.style.transition = 'transform 0.3s ease';
-        }, 10);
-      }
-      
       isTransitioning = false;
     }, 300);
   }
@@ -872,7 +833,15 @@ function initImageSlider() {
       // Обновляем трансформацию только для горизонтальных свайпов
       if (swipeDirection === 'horizontal') {
         const deltaX = currentX - startX;
-        const newTransform = startTransformPercent + (deltaX / slider.offsetWidth) * 100;
+        let newTransform = startTransformPercent + (deltaX / slider.offsetWidth) * 100;
+        // Эффект резинки на краях без loop
+        const minPercent = -(totalSlides - 1) * 100;
+        const maxPercent = 0;
+        if (newTransform > maxPercent) {
+          newTransform = maxPercent + (newTransform - maxPercent) * 0.35;
+        } else if (newTransform < minPercent) {
+          newTransform = minPercent + (newTransform - minPercent) * 0.35;
+        }
         wrapper.style.transform = `translateX(${newTransform}%)`;
         e.preventDefault(); // Блокируем скролл только для горизонтальных свайпов
       }
@@ -901,14 +870,11 @@ function initImageSlider() {
         
         if (shouldChange) {
           if (deltaX > 0) {
-            // Свайп вправо - предыдущий слайд
             goToSlide(currentIndex - 1);
           } else {
-            // Свайп влево - следующий слайд
             goToSlide(currentIndex + 1);
           }
         } else {
-          // Возвращаем слайд на место
           wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
         }
       } else {
