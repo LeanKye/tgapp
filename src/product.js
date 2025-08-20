@@ -553,6 +553,23 @@ function initCheckoutPanel() {
   
   let isExpanded = false;
   let selectedVariant = 'Активация'; // Изначально выбранный вариант
+  // Блокировка многократных быстрых нажатий во время анимаций
+  let isAnimatingCheckout = false;
+  const EXPAND_DURATION_MS = 420;   // немного больше 400 для запаса
+  const COLLAPSE_DURATION_MS = 330; // немного больше 300 для запаса
+  let expandTimer = null;
+  let collapseTimer = null;
+  
+  function clearCheckoutTimers() {
+    if (expandTimer) {
+      clearTimeout(expandTimer);
+      expandTimer = null;
+    }
+    if (collapseTimer) {
+      clearTimeout(collapseTimer);
+      collapseTimer = null;
+    }
+  }
   
   // Функция для получения текста выбранного варианта
   function getSelectedVariantText() {
@@ -575,7 +592,10 @@ function initCheckoutPanel() {
   
   // Функция для сворачивания блока
   function collapseCheckout(showSelection = false) {
+    if (isAnimatingCheckout) return;
+    isAnimatingCheckout = true;
     isExpanded = false;
+    clearCheckoutTimers();
     
     // Обновляем выбранный вариант перед анимацией
     selectedVariant = getSelectedVariantText();
@@ -598,9 +618,10 @@ function initCheckoutPanel() {
     editionGroup.classList.remove('inactive');
     
     // После завершения анимации убираем все классы
-    setTimeout(() => {
+    collapseTimer = setTimeout(() => {
       variantGroup.classList.remove('expanded', 'collapsing');
-    }, 300); // Длительность анимации collapsing
+      isAnimatingCheckout = false;
+    }, COLLAPSE_DURATION_MS);
     
     // Обновляем текст заголовка
     updateHeaderText();
@@ -623,6 +644,9 @@ function initCheckoutPanel() {
   
   // Функция для разворачивания блока
   function expandCheckout() {
+    if (isAnimatingCheckout) return;
+    isAnimatingCheckout = true;
+    clearCheckoutTimers();
     isExpanded = true;
     checkoutContainer.classList.add('expanded');
     checkoutArrow.classList.add('expanded');
@@ -636,9 +660,10 @@ function initCheckoutPanel() {
     variantGroup.classList.remove('collapsing');
     
     // После анимации убираем классы анимации
-    setTimeout(() => {
+    expandTimer = setTimeout(() => {
       variantGroup.classList.remove('expanding');
-    }, 400);
+      isAnimatingCheckout = false;
+    }, EXPAND_DURATION_MS);
     
     // Обновляем текст заголовка
     updateHeaderText();
@@ -651,6 +676,7 @@ function initCheckoutPanel() {
     const clickedOnArrow = e.target.classList.contains('checkout-arrow') || e.target.closest('.checkout-arrow');
     
     if (clickedOnText || clickedOnArrow) {
+      if (isAnimatingCheckout) return;
       if (isExpanded) {
         collapseCheckout();
       } else {

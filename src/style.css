@@ -1895,6 +1895,13 @@ body.info-page {
   opacity: 0.6;
 }
 
+/* Отключаем визуальные изменения при нажатии на мобильных (тач) устройствах */
+@media (hover: none) {
+  .checkout-header #checkout-header-text:active {
+    opacity: 1;
+  }
+}
+
 
 
 .checkout-arrow {
