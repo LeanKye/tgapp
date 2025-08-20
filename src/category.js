@@ -1,6 +1,13 @@
 import './style.css'
 import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
-import { withBase } from './base-url.js'
+ 
+// Универсальная навигация относительно текущей директории
+function navigate(path) {
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  const normalized = path.startsWith('/') ? path.slice(1) : path;
+  window.location.href = basePath + normalized;
+}
+ 
 
 class CategoryPage {
   constructor() {
@@ -16,9 +23,14 @@ class CategoryPage {
     const urlParams = new URLSearchParams(window.location.search);
     this.currentCategory = urlParams.get('category');
     
+    console.log('DEBUG CATEGORY: window.location.search:', window.location.search);
+    console.log('DEBUG CATEGORY: currentCategory:', this.currentCategory);
+    console.log('DEBUG CATEGORY: window.location.href:', window.location.href);
+    
     if (!this.currentCategory) {
       // Если категория не указана, перенаправляем на главную
-      window.location.href = withBase('index.html');
+      console.log('DEBUG CATEGORY: No category found, redirecting to main');
+      navigate('index.html');
       return;
     }
 
@@ -92,7 +104,11 @@ class CategoryPage {
         this.closeMenu();
         // Небольшая задержка для плавного закрытия меню перед переходом
         setTimeout(() => {
-          window.location.href = withBase(href);
+          if (/^(https?:)?\/\//.test(href) || href.startsWith('#')) {
+            window.location.href = href;
+          } else {
+            navigate(href);
+          }
         }, 50);
       });
     });
@@ -138,7 +154,7 @@ class CategoryPage {
         if (category === this.currentCategory) {
           this.closeMenu();
         } else {
-          window.location.href = withBase(`category.html?category=${encodeURIComponent(category)}`);
+          navigate(`category.html?category=${encodeURIComponent(category)}`);
         }
       });
     });
@@ -277,9 +293,6 @@ class CategoryPage {
 
     dropdown.classList.add('show');
 
-    // Добавляем/обновляем кастомный скроллбар
-    this.ensureCustomScrollbar(dropdown);
-
     // Поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
     if (isScrollable) {
@@ -290,7 +303,6 @@ class CategoryPage {
       dropdown.style.overscrollBehaviorY = 'contain';
       dropdown.style.overscrollBehaviorX = 'contain';
       this.disableEdgeScrollLock();
-      this.updateCustomScrollbarThumb(dropdown);
     } else {
       dropdown.style.overflow = 'hidden';
       dropdown.style.touchAction = 'none';
@@ -298,43 +310,6 @@ class CategoryPage {
       dropdown.style.overscrollBehavior = 'none';
       this.disableEdgeScrollLock();
     }
-  }
-
-  // Создаём контейнер кастомного скроллбара, если его нет
-  ensureCustomScrollbar(dropdown) {
-    let bar = dropdown.querySelector('.custom-scrollbar');
-    if (!bar) {
-      bar = document.createElement('div');
-      bar.className = 'custom-scrollbar';
-      const thumb = document.createElement('div');
-      thumb.className = 'custom-scrollbar-thumb';
-      bar.appendChild(thumb);
-      dropdown.appendChild(bar);
-      dropdown.addEventListener('scroll', () => this.updateCustomScrollbarThumb(dropdown), { passive: true });
-      window.addEventListener('resize', () => this.updateCustomScrollbarThumb(dropdown));
-    }
-    this.updateCustomScrollbarThumb(dropdown);
-  }
-
-  // Обновляет размер и позицию «бегунка» кастомного скроллбара
-  updateCustomScrollbarThumb(dropdown) {
-    const bar = dropdown.querySelector('.custom-scrollbar');
-    const thumb = dropdown.querySelector('.custom-scrollbar-thumb');
-    if (!bar || !thumb) return;
-    const contentH = dropdown.scrollHeight;
-    const viewH = dropdown.clientHeight;
-    const scrollTop = dropdown.scrollTop;
-    if (contentH <= viewH + 1) {
-      bar.style.display = 'none';
-      return;
-    }
-    bar.style.display = 'block';
-    const ratio = viewH / contentH;
-    const thumbH = Math.max(24, Math.round(viewH * ratio));
-    const maxScroll = contentH - viewH;
-    const top = maxScroll > 0 ? Math.round((scrollTop / maxScroll) * (viewH - thumbH)) : 0;
-    thumb.style.height = `${thumbH}px`;
-    thumb.style.transform = `translateY(${top}px)`;
   }
 
   createSearchSuggestion(product) {
@@ -362,7 +337,7 @@ class CategoryPage {
       
       // Небольшая задержка перед переходом для показа анимации
       setTimeout(() => {
-        window.location.href = withBase(`product.html?product=${product.id}`);
+        navigate(`product.html?product=${product.id}`);
       }, 120);
     });
 
@@ -558,7 +533,7 @@ class CategoryPage {
     const category = categoryData[this.currentCategory];
     if (!category) {
       // Если категория не найдена, перенаправляем на главную
-      window.location.href = withBase('index.html');
+      navigate('index.html');
       return;
     }
 
@@ -624,7 +599,7 @@ class CategoryPage {
     
     // Добавляем обработчик клика для перехода на страницу товара
     card.addEventListener('click', () => {
-      window.location.href = withBase(`product.html?product=${product.id}`);
+      navigate(`product.html?product=${product.id}`);
     });
     
     return card;

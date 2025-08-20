@@ -764,6 +764,8 @@ body:has(.product)::before {
   border-radius: 12px;
   margin-top: 4px;
   max-height: 300px;
+  /* Резервируем место под полосу скролла, чтобы она была видимой и не прыгала вёрстка */
+  scrollbar-gutter: stable both-edges;
   overflow-y: auto;
   z-index: 99999;
   display: none;
@@ -775,8 +777,6 @@ body:has(.product)::before {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   overscroll-behavior: auto;
-  /* Скрываем системный скроллбар (на iOS/macOS он авто-прячется), используем кастомный видимый */
-  scrollbar-width: none; /* Firefox */
 }
 
 .search-dropdown.show {
@@ -784,26 +784,22 @@ body:has(.product)::before {
 }
 
   /* Видимая полоска прокрутки внутри dropdown */
-  .search-dropdown::-webkit-scrollbar { width: 0; height: 0; }
-
-  /* Кастомная «всегда видимая» полоса прокрутки внутри dropdown */
-  .search-dropdown .custom-scrollbar {
-    position: -webkit-sticky;
-    position: sticky;
-    right: 6px;
-    top: 8px;
-    width: 4px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.08);
-    pointer-events: none; /* не мешаем скроллу контента */
+  .search-dropdown {
+    scrollbar-width: thin; /* Firefox: тонкая полоса */
+    scrollbar-color: #5a5a5a transparent; /* цвет бегунка и трека */
   }
-  .search-dropdown .custom-scrollbar-thumb {
-    position: absolute;
-    left: 0;
-    width: 100%;
-    border-radius: 4px;
-    background: #8a8a8a;
-    opacity: 0.7;
+  
+  .search-dropdown::-webkit-scrollbar {
+    width: 6px; /* толщина */
+  }
+  
+  .search-dropdown::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.08); /* видимый трек */
+  }
+  
+  .search-dropdown::-webkit-scrollbar-thumb {
+    background-color: #5a5a5a; /* цвет бегунка */
+    border-radius: 6px;
   }
 
   /* Блокируем скролл в dropdown когда показывается "Товары не найдены" */
@@ -1746,7 +1742,7 @@ body.info-page {
 .banner-item.active {
   transform: none;
   z-index: 2;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: none;
 }
 
 
@@ -2969,6 +2965,8 @@ body.modal-open {
   margin-top: auto;
   /* Убираем отступ снизу для мобильных */
   margin-bottom: 0;
+  /* Блокируем жесты прокрутки/свайпа на футере (кнопка \"Понятно\") */
+  touch-action: none;
 }
 
 /* Адаптация для мобильных */
@@ -3018,6 +3016,7 @@ body.modal-open {
     margin: 0;
     /* Убираем safe area padding из общего контейнера */
     padding-bottom: env(safe-area-inset-bottom);
+    touch-action: none;
   }
   
   .modal-icon {

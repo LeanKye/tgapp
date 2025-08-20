@@ -51,7 +51,7 @@
       <div class="no-products" id="no-products" style="display: none;">
         <h3>В этой категории пока пусто</h3>
         <p>Но скоро они появятся!</p>
-        <button class="back-to-main reset-Button" onclick="window.location.href='index.html'">
+        <button class="back-to-main reset-Button" onclick="(function(){var b=window.location.pathname.replace(/[^/]*$/,'');window.location.href=b+'index.html';})()">
           Вернуться на главную
         </button>
       </div>

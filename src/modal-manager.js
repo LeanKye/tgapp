@@ -172,6 +172,11 @@ class ModalManager {
     // Touch события для мобильных устройств
     const handleTouchStart = (e) => {
       if (e.touches.length !== 1) return;
+      // Не инициируем drag, если жест начинается на интерактивных элементах футера (кнопка "Понятно" и т.п.)
+      const noDragTarget = e.target.closest('.modal-footer, #modal-close, .checkout-button-container');
+      if (noDragTarget) {
+        return;
+      }
       
       isDragging = true;
       startY = e.touches[0].clientY;
@@ -258,6 +263,11 @@ class ModalManager {
     // Mouse события для десктопа
     const handleMouseDown = (e) => {
       if (e.button !== 0) return; // Только левая кнопка мыши
+      // Блокируем старт drag при нажатии на кнопки/элементы футера
+      const noDragTarget = e.target.closest('.modal-footer, #modal-close, .checkout-button-container');
+      if (noDragTarget) {
+        return;
+      }
       
       isDragging = true;
       startY = e.clientY;

@@ -1,7 +1,13 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import ModalManager from './modal-manager.js'
-import { withBase } from './base-url.js'
+ 
+// Универсальная навигация относительно текущей директории
+function navigate(path) {
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  const normalized = path.startsWith('/') ? path.slice(1) : path;
+  window.location.href = basePath + normalized;
+}
 
 
 
@@ -1140,7 +1146,12 @@ document.addEventListener('DOMContentLoaded', () => {
   modalManager = new ModalManager();
   
   const productId = getUrlParameter('product');
+  console.log('DEBUG: productId from URL:', productId);
+  console.log('DEBUG: window.location.search:', window.location.search);
+  console.log('DEBUG: window.location.href:', window.location.href);
+  
   const product = getProductById(productId);
+  console.log('DEBUG: product found:', !!product, product?.title);
   
   renderProduct(product);
   
@@ -1156,7 +1167,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Если продукт не найден, перенаправляем на главную
   if (!product) {
     setTimeout(() => {
-      window.location.href = withBase('index.html');
+      navigate('index.html');
     }, 2000);
   }
 });

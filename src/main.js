@@ -1,6 +1,13 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
-import { withBase } from './base-url.js'
+ 
+// Универсальная навигация относительно текущей директории (работает локально и на GitHub Pages)
+function navigate(path) {
+  const basePath = window.location.pathname.replace(/[^/]*$/, '');
+  const normalized = path.startsWith('/') ? path.slice(1) : path;
+  window.location.href = basePath + normalized;
+}
+ 
 
 const menuButton = document.getElementById('menu-button');
 const menu = document.getElementById('menu')
@@ -111,7 +118,7 @@ function createProductCard(product) {
   
   // Добавляем обработчик клика для перехода на страницу товара
   card.addEventListener('click', () => {
-    window.location.href = withBase(`product.html?product=${product.id}`);
+    navigate(`product.html?product=${product.id}`);
   });
   
   return card;
@@ -180,7 +187,7 @@ function createCategoryCard(category, index) {
   
   // Добавляем обработчик клика для перехода на страницу категории
   card.addEventListener('click', () => {
-    window.location.href = withBase(`category.html?category=${encodeURIComponent(category.name)}`);
+    navigate(`category.html?category=${encodeURIComponent(category.name)}`);
   });
   
   return card;
@@ -353,10 +360,10 @@ class BannerSlider {
     
     switch (banner.action) {
       case 'category':
-        window.location.href = withBase(`category.html?category=${encodeURIComponent(banner.actionParams.category)}`);
+        navigate(`category.html?category=${encodeURIComponent(banner.actionParams.category)}`);
         break;
       case 'product':
-        window.location.href = withBase(`product.html?product=${banner.actionParams.productId}`);
+        navigate(`product.html?product=${banner.actionParams.productId}`);
         break;
       case 'url':
         window.location.href = banner.actionParams.url;
@@ -433,7 +440,11 @@ class BannerSlider {
 
   // Анимация перехода к позиции
   animateToPosition(index) {
-    this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    // Смягчаем wrap-переходы между клонами и реальными слайдами
+    const isWrap = (this.currentIndex === 1 && index === this.totalExtendedBanners - 1) ||
+                   (this.currentIndex === this.totalExtendedBanners - 2 && index === 0);
+    const duration = isWrap ? 450 : 300;
+    this.slider.style.transition = `transform ${duration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
     this.updateSliderPosition(index);
   }
 
@@ -894,9 +905,6 @@ class SearchManager {
       this.searchDropdown.appendChild(suggestion);
     });
 
-    // Добавляем/обновляем кастомный скроллбар
-    this.ensureCustomScrollbar();
-
     this.showDropdown();
   }
 
@@ -1014,7 +1022,7 @@ class SearchManager {
     this.hideDropdown();
     
     // Переходим на страницу товара
-    window.location.href = withBase(`product.html?product=${product.id}`);
+    navigate(`product.html?product=${product.id}`);
   }
 
   handleKeydown(e) {
@@ -1081,6 +1089,7 @@ class SearchManager {
     // Делаем поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = this.searchDropdown.scrollHeight > this.searchDropdown.clientHeight + 1;
     if (isScrollable) {
+      // Всегда показываем полосу прокрутки, чтобы было понятно, что контента больше
       this.searchDropdown.style.overflowY = 'scroll';
       this.searchDropdown.style.touchAction = 'pan-y';
       this.searchDropdown.style.webkitOverflowScrolling = 'touch';
@@ -1088,7 +1097,6 @@ class SearchManager {
       this.searchDropdown.style.overscrollBehaviorY = 'contain';
       this.searchDropdown.style.overscrollBehaviorX = 'contain';
       this.disableEdgeScrollLock();
-      this.updateCustomScrollbarThumb();
     } else {
       // Если контента мало — скрываем скролл, чтобы не было фантомного bounce
       this.searchDropdown.style.overflow = 'hidden';
@@ -1097,43 +1105,6 @@ class SearchManager {
       this.searchDropdown.style.overscrollBehavior = 'none';
       this.disableEdgeScrollLock();
     }
-  }
-
-  // Создаёт контейнер кастомного скроллбара, если его нет
-  ensureCustomScrollbar() {
-    let bar = this.searchDropdown.querySelector('.custom-scrollbar');
-    if (!bar) {
-      bar = document.createElement('div');
-      bar.className = 'custom-scrollbar';
-      const thumb = document.createElement('div');
-      thumb.className = 'custom-scrollbar-thumb';
-      bar.appendChild(thumb);
-      this.searchDropdown.appendChild(bar);
-      this.searchDropdown.addEventListener('scroll', () => this.updateCustomScrollbarThumb(), { passive: true });
-      window.addEventListener('resize', () => this.updateCustomScrollbarThumb());
-    }
-    this.updateCustomScrollbarThumb();
-  }
-
-  // Обновляет размер и позицию «бегунка» кастомного скроллбара
-  updateCustomScrollbarThumb() {
-    const bar = this.searchDropdown.querySelector('.custom-scrollbar');
-    const thumb = this.searchDropdown.querySelector('.custom-scrollbar-thumb');
-    if (!bar || !thumb) return;
-    const contentH = this.searchDropdown.scrollHeight;
-    const viewH = this.searchDropdown.clientHeight;
-    const scrollTop = this.searchDropdown.scrollTop;
-    if (contentH <= viewH + 1) {
-      bar.style.display = 'none';
-      return;
-    }
-    bar.style.display = 'block';
-    const ratio = viewH / contentH;
-    const thumbH = Math.max(24, Math.round(viewH * ratio));
-    const maxScroll = contentH - viewH;
-    const top = maxScroll > 0 ? Math.round((scrollTop / maxScroll) * (viewH - thumbH)) : 0;
-    thumb.style.height = `${thumbH}px`;
-    thumb.style.transform = `translateY(${top}px)`;
   }
 
   hideDropdown() {
@@ -1467,7 +1438,12 @@ document.addEventListener('DOMContentLoaded', () => {
         e.stopPropagation();
         closeMenu();
         setTimeout(() => {
-          window.location.href = withBase(href);
+          // Навигация по относительным путям через helper
+          if (/^(https?:)?\/\//.test(href) || href.startsWith('#')) {
+            window.location.href = href;
+          } else {
+            navigate(href);
+          }
         }, 50);
       });
     });

@@ -1,4 +1,4 @@
-import { withBase } from './base-url.js'
+ 
 
 // База данных товаров
 export const products = {
@@ -1029,7 +1029,7 @@ export function formatPriceCard(price, currency = '₽', isOldPrice = false) {
   return `<span class="formatted-price">${formattedPrice}<span class="currency-separator">${currency}</span></span>`;
 }
 
-// Используем общий withBase из './base-url.js' для всех ссылок на ресурсы
+// Изображения категорий указываем относительными путями к каталогу img/
 
 // Данные баннеров для главной страницы
 export const bannerData = [
@@ -1080,27 +1080,27 @@ export const categoryData = {
   'Дизайн': {
     name: 'Дизайн',
     description: 'Инструменты для графики и видео',
-    image: withBase('/img/design.png')
+    image: 'img/design.png'
   },
   'Нейросети': {
     name: 'Нейросети',
     description: 'Искусственный интеллект и нейронные сети',
-    image: withBase('/img/ai.png')
+    image: 'img/ai.png'
   },
   'Microsoft': {
     name: 'Microsoft',
     description: 'Office и другие продукты Microsoft',
-    image: withBase('/img/microsoft.png')
+    image: 'img/microsoft.png'
   },
   'Игры': {
     name: 'Игры',
     description: 'Лучшие игры для PC и консолей',
     // В категориях используем локальное изображение, чтобы оно точно грузилось в Telegram WebApp
-    image: withBase('/img/games.svg')
+    image: 'img/games.svg'
   },
   'Подписки': {
     name: 'Подписки',
     description: 'Подписки на сервисы и программы',
-    image: withBase('/img/subscriptions.png')
+    image: 'img/subscriptions.png'
   }
 };

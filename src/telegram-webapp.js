@@ -95,7 +95,8 @@ class TelegramWebApp {
         if (window.history.length > 1) {
           window.history.back();
         } else {
-          window.location.href = './';
+          const basePath = window.location.pathname.replace(/[^/]*$/, '');
+          window.location.href = basePath + 'index.html';
         }
       });
     }
