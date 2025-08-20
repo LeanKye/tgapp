@@ -732,6 +732,7 @@ function initImageSlider() {
   let isTransitioning = false;
   const totalSlides = slides.length;
   const realSlidesCount = totalSlides - 2; // Исключаем 2 клона
+  let animationSeq = 0; // Идентификатор текущей анимации для безопасной отмены
   
   // Устанавливаем начальную позицию на первый реальный слайд
   wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
@@ -746,11 +747,14 @@ function initImageSlider() {
     
     isTransitioning = true;
     currentIndex = index;
+    const localSeq = ++animationSeq;
     
     // Обновляем позицию слайдера
     wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
     
     setTimeout(() => {
+      // Если анимация была отменена/перебита — выходим
+      if (localSeq !== animationSeq) return;
       // Обрабатываем loop переходы
       if (currentIndex === 0) {
         // Если мы на клоне последнего слайда, мгновенно переходим к реальному последнему
@@ -758,6 +762,7 @@ function initImageSlider() {
         currentIndex = realSlidesCount;
         wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
         setTimeout(() => {
+          if (localSeq !== animationSeq) return;
           wrapper.style.transition = 'transform 0.3s ease';
         }, 10);
       } else if (currentIndex === totalSlides - 1) {
@@ -766,6 +771,7 @@ function initImageSlider() {
         currentIndex = 1;
         wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
         setTimeout(() => {
+          if (localSeq !== animationSeq) return;
           wrapper.style.transition = 'transform 0.3s ease';
         }, 10);
       }
@@ -791,12 +797,35 @@ function initImageSlider() {
     let touchBlocked = false; // Блокируем новые touch события во время анимации
     let swipeDirection = null; // 'horizontal', 'vertical', null
     let swipeStarted = false;
+    let startTransformPercent = 0; // Текущая позиция слайдера в процентах на момент touchstart
+
+    function getCurrentTranslatePercent() {
+      const style = window.getComputedStyle(wrapper);
+      const transform = style.transform || style.webkitTransform;
+      if (!transform || transform === 'none') {
+        return -currentIndex * 100;
+      }
+      const match = transform.match(/matrix\(([^)]+)\)/);
+      let tx = 0;
+      if (match) {
+        const parts = match[1].split(',');
+        tx = parseFloat(parts[4]);
+      } else {
+        const match2 = transform.match(/translateX\((-?\d+(?:\.\d+)?)px\)/);
+        tx = match2 ? parseFloat(match2[1]) : 0;
+      }
+      const width = slider.offsetWidth || 1;
+      return (tx / width) * 100;
+    }
     
     function handleTouchStart(e) {
-      // Блокируем новые touch события если идет анимация
+      // Если идёт анимация или стоим в блоке, прерываем её и начинаем новый свайп сразу
       if (isTransitioning || touchBlocked) {
-        e.preventDefault();
-        return;
+        wrapper.style.transition = 'none';
+        isTransitioning = false;
+        touchBlocked = false;
+        // Инвалидация предыдущей анимации
+        animationSeq++;
       }
       
       // Сбрасываем предыдущее состояние
@@ -815,6 +844,8 @@ function initImageSlider() {
       swipeDirection = null;
       swipeStarted = false;
       wrapper.style.transition = 'none';
+      // Запоминаем текущую фактическую позицию слайдера в процентах
+      startTransformPercent = getCurrentTranslatePercent();
     }
     
     function handleTouchMove(e) {
@@ -841,9 +872,7 @@ function initImageSlider() {
       // Обновляем трансформацию только для горизонтальных свайпов
       if (swipeDirection === 'horizontal') {
         const deltaX = currentX - startX;
-        const currentTransform = -currentIndex * 100;
-        const newTransform = currentTransform + (deltaX / slider.offsetWidth) * 100;
-        
+        const newTransform = startTransformPercent + (deltaX / slider.offsetWidth) * 100;
         wrapper.style.transform = `translateX(${newTransform}%)`;
         e.preventDefault(); // Блокируем скролл только для горизонтальных свайпов
       }
@@ -854,7 +883,7 @@ function initImageSlider() {
       if (!isDragging || isTransitioning || touchBlocked) return;
       
       isDragging = false;
-      touchBlocked = true; // Блокируем новые touch события
+      // Не блокируем новые touch события — позволяем мгновенно начинать следующий свайп
       wrapper.style.transition = 'transform 0.3s ease';
       
       // Обрабатываем свайп только если было горизонтальное движение
@@ -887,17 +916,15 @@ function initImageSlider() {
         wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
       }
       
-      // Разблокируем touch события через небольшую задержку
-      setTimeout(() => {
-        touchBlocked = false;
-        startX = 0;
-        startY = 0;
-        currentX = 0;
-        currentY = 0;
-        startTime = 0;
-        swipeDirection = null;
-        swipeStarted = false;
-      }, 350); // Чуть больше времени анимации
+      // Сбрасываем состояние сразу — без задержки
+      touchBlocked = false;
+      startX = 0;
+      startY = 0;
+      currentX = 0;
+      currentY = 0;
+      startTime = 0;
+      swipeDirection = null;
+      swipeStarted = false;
     }
     
     // Добавляем обработчик для отмены touch событий
@@ -906,17 +933,15 @@ function initImageSlider() {
         isDragging = false;
         wrapper.style.transition = 'transform 0.3s ease';
         wrapper.style.transform = `translateX(-${currentIndex * 100}%)`;
-        
-        setTimeout(() => {
-          touchBlocked = false;
-          startX = 0;
-          startY = 0;
-          currentX = 0;
-          currentY = 0;
-          startTime = 0;
-          swipeDirection = null;
-          swipeStarted = false;
-        }, 350);
+        // Мгновенно сбрасываем флаги, не блокируя последующие жесты
+        touchBlocked = false;
+        startX = 0;
+        startY = 0;
+        currentX = 0;
+        currentY = 0;
+        startTime = 0;
+        swipeDirection = null;
+        swipeStarted = false;
       }
     }
     
