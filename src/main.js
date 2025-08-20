@@ -516,6 +516,7 @@ class BannerSlider {
   // Инициализация Pointer Events для перетягивания
   initPointerEvents() {
     const container = this.slider.parentElement;
+    let originalTouchAction = container.style.touchAction || '';
     const onPointerDown = (e) => {
       // Инициализируем перетягивание
       // Если стоим на клоне — мгновенно перематываем к реальному, чтобы избежать "залипаний"
@@ -525,6 +526,9 @@ class BannerSlider {
       this.isDragging = true;
       this.pointerId = e.pointerId;
       container.setPointerCapture(this.pointerId);
+      // Разрешаем вертикальный скролл до определения направления
+      originalTouchAction = container.style.touchAction || '';
+      container.style.touchAction = 'pan-y';
       this.dragStartX = e.clientX;
       this.dragStartY = e.clientY;
       this.dragLastX = e.clientX;
@@ -552,6 +556,8 @@ class BannerSlider {
         if (absDx > this.dragThreshold || absDy > this.dragThreshold) {
           if (absDx > absDy) {
             this.dragDirection = 'horizontal';
+            // Блокируем нативный скролл страницы при горизонтальном драге (iOS Safari)
+            container.style.touchAction = 'none';
           } else {
             this.dragDirection = 'vertical';
             // Прерываем перетягивание для вертикального свайпа — отдаём скролл странице
@@ -560,6 +566,8 @@ class BannerSlider {
             this.pointerId = null;
             // Возвращаем анимацию, если отключали
             this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            // Восстанавливаем touch-action
+            container.style.touchAction = originalTouchAction || 'pan-y';
             return;
           }
         } else {
@@ -599,6 +607,10 @@ class BannerSlider {
       if (Math.abs(e.clientX - this.dragStartX) > 5) {
         this.wasDraggedRecently = true;
       }
+      // Явно предотвращаем скролл страницы при горизонтальном драге (особенно для iOS)
+      if (e.cancelable) {
+        e.preventDefault();
+      }
     };
 
     const onPointerUpOrCancel = (e) => {
@@ -611,6 +623,8 @@ class BannerSlider {
         this.pointerId = null;
         this.dragDirection = null;
         this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        // Восстанавливаем touch-action
+        container.style.touchAction = originalTouchAction || 'pan-y';
         return;
       }
 
@@ -657,6 +671,8 @@ class BannerSlider {
       this.dragStartX = 0;
       this.dragLastX = 0;
       this.dragDirection = null;
+      // Восстанавливаем touch-action после завершения взаимодействия
+      container.style.touchAction = originalTouchAction || 'pan-y';
     };
 
     container.addEventListener('pointerdown', onPointerDown);
