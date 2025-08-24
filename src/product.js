@@ -122,6 +122,9 @@ function renderProduct(product) {
   // Обновляем описание и системные требования
   updateTabs(product);
   
+  // Рендерим нижнюю кнопку / контролы корзины
+  renderBuyOrControls(product);
+
   // Убеждаемся, что полосочка правильно позиционируется после полной загрузки
   setTimeout(() => {
     const tabsContainer = document.querySelector('.tabs');
@@ -983,8 +986,8 @@ function openLabelModal(labelText) {
 function initPayment() {
   const buyButton = document.querySelector('.add-to-cart');
   if (!buyButton) return;
-
-  buyButton.addEventListener('click', handleBuyClick);
+  // Больше не открываем модалку — переключаемся на контролы корзины
+  buyButton.addEventListener('click', handleAddToCartFromProduct);
 }
 
 // Обработчик клика по кнопке "Купить"
@@ -1009,6 +1012,110 @@ async function handleBuyClick() {
   
   // Открываем модальное окно оформления
   openCheckoutModal(product, selectedOptions, finalPrice);
+}
+
+// --- Корзина (страница товара) ---
+const STORAGE_KEY = 'hooli_cart';
+
+function readCart() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; }
+}
+function writeCart(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
+
+function getCartItem(product) {
+  const items = readCart();
+  return items.find(i => i.id === String(product.id));
+}
+
+function setCartItem(product, qty, selectedOptions) {
+  const items = readCart();
+  const id = String(product.id);
+  const idx = items.findIndex(i => i.id === id);
+  if (qty <= 0) {
+    if (idx !== -1) items.splice(idx, 1);
+  } else {
+    const payload = {
+      id,
+      title: product.title,
+      // Цена фиксируется с учётом выбранных опций (если переданы)
+      price: selectedOptions ? calculateFinalPrice(product, selectedOptions) : (product.price),
+      image: product.images?.[0] || '',
+      qty,
+      // Сохраняем выбранные опции, чтобы показывать в корзине и модалке
+      variantId: selectedOptions?.variantId,
+      periodId: selectedOptions?.periodId,
+      editionId: selectedOptions?.editionId,
+      variantName: selectedOptions?.variant,
+      periodName: selectedOptions?.period,
+      editionName: selectedOptions?.edition
+    };
+    if (idx === -1) items.push(payload); else items[idx] = { ...items[idx], ...payload };
+  }
+  writeCart(items);
+  window.dispatchEvent(new Event('cart:updated'));
+}
+
+function renderBuyOrControls(product) {
+  // Удаляем старые элементы
+  const oldControls = document.querySelector('.product-cart-controls');
+  if (oldControls) oldControls.remove();
+
+  const cartItem = getCartItem(product);
+  if (!cartItem) return; // показываем стандартную кнопку "Купить"
+
+  // Скрываем стандартную кнопку
+  const buyBtn = document.querySelector('.add-to-cart');
+  if (buyBtn) buyBtn.style.display = 'none';
+
+  // Рендер контролов
+  const controls = document.createElement('div');
+  controls.className = 'product-cart-controls';
+  controls.innerHTML = `
+    <button class="reset-Button go-to-cart">Перейти в корзину</button>
+    <div class="qty-box">
+      <button class="reset-Button qty-btn" data-action="dec">−</button>
+      <span class="qty-value">${cartItem.qty || 1}</span>
+      <button class="reset-Button qty-btn" data-action="inc">+</button>
+    </div>
+  `;
+  document.body.appendChild(controls);
+
+  // Обработчики
+  controls.querySelector('.go-to-cart').addEventListener('click', () => {
+    const basePath = window.location.pathname.replace(/[^/]*$/, '');
+    window.location.href = basePath + 'cart.html';
+  });
+  controls.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const action = btn.getAttribute('data-action');
+    const current = getCartItem(product) || { qty: 0 };
+    let nextQty = current.qty || 1;
+    if (action === 'inc') nextQty += 1;
+    if (action === 'dec') nextQty -= 1;
+    setCartItem(product, nextQty);
+
+    // Если удалили последний — вернуть кнопку «Купить»
+    if (nextQty <= 0) {
+      controls.remove();
+      if (buyBtn) {
+        buyBtn.style.display = 'block';
+      }
+    } else {
+      controls.querySelector('.qty-value').textContent = String(nextQty);
+    }
+  });
+}
+
+function handleAddToCartFromProduct() {
+  const productId = getUrlParameter('product');
+  const product = getProductById(productId);
+  if (!product) return;
+  const selectedOptions = getSelectedOptions();
+  const existing = getCartItem(product);
+  const qty = existing ? (existing.qty || 1) + 1 : 1;
+  setCartItem(product, qty, selectedOptions || undefined);
+  renderBuyOrControls(product);
 }
 
 // Получение выбранных опций

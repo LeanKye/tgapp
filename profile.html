@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>Профиль - Hooli</title>
+</head>
+
+<body class="preload">
+  <div class="catalog">
+    <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px);">Профиль</div>
+
+    <div class="container profile-card">
+      <div class="profile-avatar" id="profile-avatar"></div>
+      <div class="profile-info">
+        <div class="profile-name" id="profile-name">—</div>
+        <div class="profile-sub" id="profile-sub">Настройки</div>
+      </div>
+      <button class="reset-Button profile-next" aria-label="Открыть настройки">›</button>
+    </div>
+
+    <div class="profile-orders-title">История заказов</div>
+    <div class="profile-orders" id="profile-orders"></div>
+
+    <div class="container profile-menu">
+      <button class="reset-Button profile-menu-item" data-link="info.html#about">
+        <span class="icon">ℹ️</span>
+        <span>О нас</span>
+      </button>
+      <button class="reset-Button profile-menu-item" data-link="">
+        <span class="icon">🎧</span>
+        <span>Поддержка</span>
+      </button>
+      <button class="reset-Button profile-menu-item" data-link="">
+        <span class="icon">💬</span>
+        <span>Связаться с нами</span>
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="src/telegram-webapp.js"></script>
+  <script type="module" src="src/nav.js"></script>
+  <script type="module" src="src/profile.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.body.classList.remove('preload');
+        document.body.classList.add('loaded');
+      }, 100);
+    });
+  </script>
+</body>
+
+</html>
+

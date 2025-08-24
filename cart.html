@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <title>Корзина - Hooli</title>
+</head>
+
+<body class="preload">
+  <div class="catalog">
+    <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px);">Корзина</div>
+
+    <!-- Панель массовых действий -->
+    <div class="cart-bulk">
+      <div class="bulk-spacer"></div>
+      <div class="bulk-actions">
+        <button class="reset-Button bulk-btn" id="bulk-delete-btn">Удалить выбранные</button>
+        <button class="reset-Button bulk-btn" id="bulk-select-all-btn">Выбрать все</button>
+      </div>
+      <label class="bulk-checkbox" title="Выбрать все">
+        <input type="checkbox" id="bulk-select-all" />
+        <span></span>
+      </label>
+    </div>
+
+    <!-- Список товаров рендерит cart.js (каждый товар в собственном .container) -->
+    <div id="cart-list"></div>
+
+    <div class="container cart-summary" id="cart-summary" style="display:none;">
+      <div class="cart-summary-row">
+        <span>Товары</span>
+        <span id="cart-items-count">0</span>
+      </div>
+      <div class="cart-summary-row total">
+        <span>Итого</span>
+        <span id="cart-total-price">0</span>
+      </div>
+    </div>
+
+    <div class="no-products" id="cart-empty" style="display:none;">
+      <h3>В вашей корзине пока пусто</h3>
+      <p>Добавьте товары из каталога</p>
+      <button class="back-to-main reset-Button" id="to-main-btn">Вернуться на главную</button>
+    </div>
+
+    <div class="checkout-button-container cart-checkout" id="cart-checkout" style="display:none;">
+      <button class="checkout-button" id="proceed-checkout-btn">Перейти к оформлению</button>
+    </div>
+
+    <!-- Темный фон за меню -->
+    <div class="menu-overlay menu-closed" id="menu-overlay"></div>
+    <!-- Меню -->
+    <div class="menu menu-closed" id="menu">
+      <a href="info.html#privacy" class="menu-item">Политика конфиденциальности</a>
+      <a href="info.html#agreement" class="menu-item">Лицензионное соглашение</a>
+      <a href="info.html#offer" class="menu-item">Публичная оферта</a>
+      <a href="info.html#contacts" class="menu-item">Контакты</a>
+      <a href="info.html#about" class="menu-item">О нас</a>
+    </div>
+  </div>
+
+  <script type="module" src="src/telegram-webapp.js"></script>
+  <script type="module" src="src/nav.js"></script>
+  <script type="module" src="src/bounce-scroll.js"></script>
+  <script type="module" src="src/cart.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        document.body.classList.remove('preload');
+        document.body.classList.add('loaded');
+      }, 100);
+    });
+  </script>
+</body>
+
+</html>
+
