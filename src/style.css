@@ -1283,7 +1283,7 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
   position: fixed;
   left: 16px;
   right: 16px;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;
   gap: 8px;
   z-index: 1000;
@@ -1337,7 +1337,7 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
 
 /* Поднимаем блок над нижней навигацией */
 body.has-bottom-nav .product-cart-controls {
-  bottom: calc(16px + var(--bottom-nav-height));
+  bottom: calc(16px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
 /* ===== Панель массовых действий корзины ===== */
