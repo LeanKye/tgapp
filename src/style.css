@@ -1272,11 +1272,11 @@ body.info-page {
 .cart-summary-row.total { color: #fff; font-weight: 600; font-size: 16px; }
 
 /* кнопка оформления как на странице товара */
-.cart-checkout { position: fixed; left: 16px; right: 16px; bottom: 16px; z-index: 900; }
+.cart-checkout { position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 900; }
 .cart-checkout .checkout-button { background-color: #29A5FF; height: 46px; border-radius: 8px; font-size: 18px; font-weight: 600; }
 
 /* отступ под нижний навбар */
-body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height)); }
+body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height) + env(safe-area-inset-bottom)); }
 
 /* ===== Контролы товара (перейти в корзину + счётчик) ===== */
 .product-cart-controls {
