@@ -1061,7 +1061,7 @@ function renderBuyOrControls(product) {
   if (oldControls) oldControls.remove();
 
   const cartItem = getCartItem(product);
-  if (!cartItem) return; // показываем стандартную кнопку "Купить"
+  if (!cartItem) return; // показываем стандартную кнопку "Добавить в корзину"
 
   // Скрываем стандартную кнопку
   const buyBtn = document.querySelector('.add-to-cart');
@@ -1278,6 +1278,8 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('DEBUG: product found:', !!product, product?.title);
   
   renderProduct(product);
+  // На странице товара всегда есть нижние действия — показываем подложку
+  document.body.classList.add('has-checkout-bar');
   
   // Инициализируем компоненты после отрисовки продукта
   if (product) {

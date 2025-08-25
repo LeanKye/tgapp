@@ -33,8 +33,11 @@ function removeItem(productId) {
 }
 
 function calculateTotals(items) {
-  const total = items.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
-  const count = items.reduce((sum, i) => sum + (i.qty || 1), 0);
+  const selected = Array.from(document.querySelectorAll('.cart-select:checked')).map(cb => cb.getAttribute('data-id'));
+  const useSelected = selected.length > 0;
+  const src = useSelected ? items.filter(i => selected.includes(String(i.id))) : items;
+  const total = src.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
+  const count = src.reduce((sum, i) => sum + (i.qty || 1), 0);
   return { total, count };
 }
 
@@ -90,21 +93,25 @@ function renderCart() {
 
   if (!items.length) {
     list.innerHTML = '';
-    summary.style.display = 'none';
+    summary && (summary.style.display = 'none');
     checkout.style.display = 'none';
     empty.style.display = 'block';
+    document.body.classList.remove('has-checkout-bar');
     return;
   }
 
   empty.style.display = 'none';
-  summary.style.display = '';
+  summary && (summary.style.display = '');
   checkout.style.display = '';
+  document.body.classList.add('has-checkout-bar');
 
   list.innerHTML = items.map(createCartItemHTML).join('');
 
   const { total, count } = calculateTotals(items);
-  document.getElementById('cart-items-count').textContent = String(count);
-  document.getElementById('cart-total-price').innerHTML = formatPrice(total);
+  const countEl = document.getElementById('checkout-count');
+  const totalEl = document.getElementById('checkout-total');
+  if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
+  if (totalEl) totalEl.innerHTML = formatPrice(total);
 }
 
 function attachEvents() {
@@ -167,10 +174,12 @@ function attachEvents() {
   selectAllBtn?.addEventListener('click', () => {
     const allChecked = Array.from(document.querySelectorAll('.cart-select')).every(cb => cb.checked);
     selectAll(!allChecked);
+    renderCart();
   });
 
   selectAllCheckbox?.addEventListener('change', (e) => {
     selectAll(e.target.checked);
+    renderCart();
   });
 
   deleteBtn?.addEventListener('click', () => {

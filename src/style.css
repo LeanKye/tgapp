@@ -439,7 +439,7 @@ body:has(.product)::before {
 
 .add-to-cart {
   position: fixed;
-  bottom: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
   left: 16px;
   right: 16px;
   display: block;
@@ -452,8 +452,6 @@ body:has(.product)::before {
   color: white;
   z-index: 1000;
   margin: 0;
-  /* Добавляем безопасную зону для iOS */
-  margin-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
   /* Убираем свечение вокруг кнопки */
   box-shadow: none;
@@ -464,7 +462,7 @@ body:has(.product)::before {
 
 /* Поднимаем кнопку над нижней навигацией */
 body.has-bottom-nav .add-to-cart {
-  bottom: calc(16px + var(--bottom-nav-height));
+  bottom: calc(8px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
 /* Удалён пустой hover-блок для .add-to-cart */
@@ -1055,7 +1053,7 @@ body.info-page {
     padding: 16px;
     background-color: var(--bg-color);
     z-index: 10;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: none;
 }
 
 .info-header .back-button {
@@ -1157,7 +1155,7 @@ body.info-page {
   bottom: 0;
   height: var(--bottom-nav-height);
   background: #1f1f1f;
-  border-top: 1px solid var(--border-color);
+  border-top: none;
   display: flex;
   align-items: center;
   justify-content: space-around;
@@ -1227,9 +1225,9 @@ body.info-page {
   gap: 8px;
   padding: 12px;
   background-color: #1f1f1f;
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
-  margin: 8px 0px;
+  border: none;
+  border-radius: 16px; /* такой же, как на главной */
+  margin: 8px 0;
   position: relative;
   min-height: var(--cart-item-min-h);
   box-sizing: border-box;
@@ -1267,17 +1265,35 @@ body.info-page {
 .qty-btn.square { width: var(--cart-qty-size); height: var(--cart-qty-size); border-radius: 10px; background: #2f2f2f; color: #ffffff; border: 1px solid #3f3f3f; font-size: 18px; }
 .qty-value.square { width: var(--cart-qty-size); height: var(--cart-qty-size); border-radius: 10px; background: #ffffff; color: #1a1a1a; display: flex; align-items: center; justify-content: center; font-weight: 600; }
 
-.cart-summary { margin: 0 8px; background: #1f1f1f; border: 1px solid var(--border-color); border-radius: 16px; padding: 12px; }
+.cart-summary { margin: 0 8px; background: #1f1f1f; border: none; border-radius: 16px; padding: 12px; }
 .cart-summary-row { display: flex; align-items: center; justify-content: space-between; color: #CACACA; padding: 6px 0; }
 .cart-summary-row.total { color: #fff; font-weight: 600; font-size: 16px; }
 
 /* кнопка оформления как на странице товара */
-.cart-checkout { position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 900; }
-.cart-checkout .checkout-button { background-color: #29A5FF; height: 46px; border-radius: 8px; font-size: 18px; font-weight: 600; }
+.cart-checkout { position: fixed; left: 16px; right: 16px; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 2000; pointer-events: auto; }
+.cart-checkout .checkout-button { background-color: #29A5FF; height: 46px; border-radius: 8px; font-size: clamp(13px, 3.8vw, 16px); font-weight: 600; padding: 0 12px; white-space: nowrap; }
+.cart-checkout .checkout-button { position: relative; z-index: 1; }
+.cart-checkout .checkout-button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
+.cart-checkout .checkout-button .left, .cart-checkout .checkout-button .right { font-weight: 600; font-size: 0.92em; flex: 0 0 auto; }
+.cart-checkout .checkout-button .center { font-weight: 600; font-size: 1em; flex: 1 1 auto; text-align: center; }
 
 /* отступ под нижний навбар */
-body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height) + env(safe-area-inset-bottom)); }
+body.has-bottom-nav .cart-checkout { bottom: calc(8px + var(--bottom-nav-height) + env(safe-area-inset-bottom)); }
 
+/* Подложка под нижними кнопками (визуально объединяет с навбаром) */
+.bottom-actions-bg {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px 16px 0 0;
+  height: calc(var(--bottom-nav-height) + 65px + env(safe-area-inset-bottom));
+  background: #1f1f1f;
+  z-index: 400; /* значительно ниже навбара и кнопок */
+  pointer-events: none;
+  display: none;
+}
+body.has-checkout-bar .bottom-actions-bg { display: block; }
 /* ===== Контролы товара (перейти в корзину + счётчик) ===== */
 .product-cart-controls {
   position: fixed;
@@ -1286,7 +1302,7 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
   bottom: calc(16px + env(safe-area-inset-bottom));
   display: flex;
   gap: 8px;
-  z-index: 1000;
+  z-index: 2000; /* выше подложки и навбара */
   align-items: center;
 }
 
@@ -1297,7 +1313,7 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
   border: none;
   border-radius: 8px;
   height: 46px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
 }
 
@@ -1305,8 +1321,6 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #2f2f2f;
-  border: 1px solid #3f3f3f;
   border-radius: 8px;
   padding: 6px 8px;
   height: 46px;
@@ -1314,8 +1328,8 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
 }
 
 .product-cart-controls .qty-btn {
-  width: 33px;
-  height: 33px;
+  width: 45px;
+  height: 45px;
   background: #3a3a3a;
   color: #fff;
   border: none;
@@ -1324,8 +1338,8 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
 }
 
 .product-cart-controls .qty-value {
-  width: 33px;
-  height: 33px;
+  width: 45px;
+  height: 45px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1337,15 +1351,15 @@ body.has-bottom-nav .cart-checkout { bottom: calc(16px + var(--bottom-nav-height
 
 /* Поднимаем блок над нижней навигацией */
 body.has-bottom-nav .product-cart-controls {
-  bottom: calc(16px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  bottom: calc(8px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
 /* ===== Панель массовых действий корзины ===== */
 .cart-bulk {
-  margin: 8px 16px 12px 16px;
+  margin: 8px 0 12px 0;
   background: #1f1f1f;
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
+  border: none;
+  border-radius: 16px; /* такой же, как на главной */
   padding: 10px 12px;
   display: flex;
   align-items: center;

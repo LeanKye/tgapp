@@ -14,7 +14,7 @@
 
 <body class="preload">
   <div class="catalog">
-    <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px);">Корзина</div>
+    <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px); font-size: 24px;">Корзина</div>
 
     <!-- Панель массовых действий -->
     <div class="cart-bulk">
@@ -32,16 +32,7 @@
     <!-- Список товаров рендерит cart.js (каждый товар в собственном .container) -->
     <div id="cart-list"></div>
 
-    <div class="container cart-summary" id="cart-summary" style="display:none;">
-      <div class="cart-summary-row">
-        <span>Товары</span>
-        <span id="cart-items-count">0</span>
-      </div>
-      <div class="cart-summary-row total">
-        <span>Итого</span>
-        <span id="cart-total-price">0</span>
-      </div>
-    </div>
+    <!-- Сумма и количество теперь внутри кнопки оформления -->
 
     <div class="no-products" id="cart-empty" style="display:none;">
       <h3>В вашей корзине пока пусто</h3>
@@ -49,9 +40,6 @@
       <button class="back-to-main reset-Button" id="to-main-btn">Вернуться на главную</button>
     </div>
 
-    <div class="checkout-button-container cart-checkout" id="cart-checkout" style="display:none;">
-      <button class="checkout-button" id="proceed-checkout-btn">Перейти к оформлению</button>
-    </div>
 
     <!-- Темный фон за меню -->
     <div class="menu-overlay menu-closed" id="menu-overlay"></div>
@@ -64,6 +52,14 @@
       <a href="info.html#about" class="menu-item">О нас</a>
     </div>
   </div>
+  <div class="checkout-button-container cart-checkout" id="cart-checkout" style="display:none;">
+    <button class="checkout-button" id="proceed-checkout-btn">
+      <span class="left" id="checkout-count">0 товаров</span>
+      <span class="center">К оформлению</span>
+      <span class="right" id="checkout-total">0</span>
+    </button>
+  </div>
+  <div class="bottom-actions-bg"></div>
 
   <script type="module" src="src/telegram-webapp.js"></script>
   <script type="module" src="src/nav.js"></script>
