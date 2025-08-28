@@ -34,8 +34,7 @@ function removeItem(productId) {
 
 function calculateTotals(items) {
   const selected = Array.from(document.querySelectorAll('.cart-select:checked')).map(cb => cb.getAttribute('data-id'));
-  const useSelected = selected.length > 0;
-  const src = useSelected ? items.filter(i => selected.includes(String(i.id))) : items;
+  const src = items.filter(i => selected.includes(String(i.id)));
   const total = src.reduce((sum, i) => sum + (i.price || 0) * (i.qty || 1), 0);
   const count = src.reduce((sum, i) => sum + (i.qty || 1), 0);
   return { total, count };
@@ -51,16 +50,17 @@ function createCartItemHTML(item) {
       <div class="cart-left">
         <img class="cart-item-cover" src="${item.image || ''}" alt="" />
         <div class="cart-left-actions">
-          <button class="reset-Button icon-btn danger" data-action="remove" title="Удалить">
+          <button class="reset-Button icon-btn remove" data-action="remove" title="Удалить">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M3 6h18M9 6v-1a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v1M8 10l.6 8m6.8-8-.6 8M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
+            <span class="btn-text">Удалить</span>
           </button>
           <button class="reset-Button cart-buy">
             <span class="icon">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z" fill="currentColor"/></svg>
             </span>
-            Купить
+            <span class="btn-text">Купить</span>
           </button>
         </div>
       </div>
@@ -90,6 +90,8 @@ function renderCart() {
   const empty = document.getElementById('cart-empty');
   const checkout = document.getElementById('cart-checkout');
   const items = readCart();
+  // Сохраняем выбранные элементы до перерендера
+  const prevSelected = new Set(Array.from(document.querySelectorAll('.cart-select:checked')).map(cb => cb.getAttribute('data-id')));
 
   if (!items.length) {
     list.innerHTML = '';
@@ -97,6 +99,8 @@ function renderCart() {
     checkout.style.display = 'none';
     empty.style.display = 'block';
     document.body.classList.remove('has-checkout-bar');
+    const selectAllCheckbox = document.getElementById('bulk-select-all');
+    if (selectAllCheckbox) selectAllCheckbox.checked = false;
     return;
   }
 
@@ -106,6 +110,24 @@ function renderCart() {
   document.body.classList.add('has-checkout-bar');
 
   list.innerHTML = items.map(createCartItemHTML).join('');
+
+  // Восстанавливаем/устанавливаем выбор чекбоксов: по умолчанию выделяем все
+  const checkboxes = list.querySelectorAll('.cart-select');
+  if (prevSelected.size > 0) {
+    checkboxes.forEach(cb => {
+      const id = cb.getAttribute('data-id');
+      cb.checked = prevSelected.has(id);
+    });
+  } else {
+    checkboxes.forEach(cb => { cb.checked = true; });
+  }
+
+  // Синхронизируем чекбокс "выбрать все"
+  const selectAllCheckbox = document.getElementById('bulk-select-all');
+  if (selectAllCheckbox) {
+    const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+    selectAllCheckbox.checked = allChecked;
+  }
 
   const { total, count } = calculateTotals(items);
   const countEl = document.getElementById('checkout-count');
@@ -131,6 +153,25 @@ function attachEvents() {
     if (action === 'inc') updateQty(id, +1);
     if (action === 'dec') updateQty(id, -1);
     renderCart();
+  });
+
+  // Обновление суммы/счётчика и состояния "выбрать все" при смене любого чекбокса товара
+  document.getElementById('cart-list')?.addEventListener('change', (e) => {
+    const target = e.target;
+    if (!target || !target.classList || !target.classList.contains('cart-select')) return;
+    const items = readCart();
+    const { total, count } = calculateTotals(items);
+    const countEl = document.getElementById('checkout-count');
+    const totalEl = document.getElementById('checkout-total');
+    if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
+    if (totalEl) totalEl.innerHTML = formatPrice(total);
+
+    const selectAllCheckbox = document.getElementById('bulk-select-all');
+    if (selectAllCheckbox) {
+      const checkboxes = document.querySelectorAll('.cart-select');
+      const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+      selectAllCheckbox.checked = allChecked;
+    }
   });
 
   document.getElementById('proceed-checkout-btn')?.addEventListener('click', () => {
@@ -172,14 +213,27 @@ function attachEvents() {
   }
 
   selectAllBtn?.addEventListener('click', () => {
-    const allChecked = Array.from(document.querySelectorAll('.cart-select')).every(cb => cb.checked);
-    selectAll(!allChecked);
-    renderCart();
+    const checkboxes = document.querySelectorAll('.cart-select');
+    const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
+    checkboxes.forEach(cb => { cb.checked = !allChecked; });
+    if (selectAllCheckbox) selectAllCheckbox.checked = !allChecked;
+    const items = readCart();
+    const { total, count } = calculateTotals(items);
+    const countEl = document.getElementById('checkout-count');
+    const totalEl = document.getElementById('checkout-total');
+    if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
+    if (totalEl) totalEl.innerHTML = formatPrice(total);
   });
 
   selectAllCheckbox?.addEventListener('change', (e) => {
-    selectAll(e.target.checked);
-    renderCart();
+    const checkboxes = document.querySelectorAll('.cart-select');
+    checkboxes.forEach(cb => { cb.checked = !!e.target.checked; });
+    const items = readCart();
+    const { total, count } = calculateTotals(items);
+    const countEl = document.getElementById('checkout-count');
+    const totalEl = document.getElementById('checkout-total');
+    if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
+    if (totalEl) totalEl.innerHTML = formatPrice(total);
   });
 
   deleteBtn?.addEventListener('click', () => {
