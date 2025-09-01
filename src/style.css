@@ -1212,7 +1212,7 @@ body.info-page.has-bottom-nav {
 
 .bottom-nav .cart-badge {
   position: absolute;
-  top: -2px;
+  top: 2px;
   right: 10px;
   background: #FE5F4A;
   color: #fff;
