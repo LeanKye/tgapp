@@ -9,96 +9,6 @@ function navigate(path) {
 }
  
 
-const menuButton = document.getElementById('menu-button');
-const menu = document.getElementById('menu')
-const menuOverlay = document.getElementById('menu-overlay')
-
-const toggleMenu = () => {
-  const isClosing = !menu.classList.contains('menu-closed');
-  
-  // Если открываем меню и поиск активен, закрываем поиск
-  if (!isClosing && document.body.classList.contains('search-active')) {
-    // Находим экземпляр SearchManager и закрываем поиск
-    if (window.searchManager) {
-      window.searchManager.deactivateSearch();
-    }
-  }
-  
-  menu.classList.toggle('menu-closed');
-  menuOverlay.classList.toggle('menu-closed');
-  
-  // Позиционируем меню относительно хедера
-  if (!isClosing) {
-    positionMenuRelativeToHeader();
-  }
-  
-  // Управление прокруткой страницы
-  if (isClosing) {
-    // Закрываем меню - включаем прокрутку
-    document.body.style.overflow = '';
-  } else {
-    // Открываем меню - отключаем прокрутку
-    document.body.style.overflow = 'hidden';
-  }
-}
-
-// Функция для позиционирования меню относительно хедера
-const positionMenuRelativeToHeader = () => {
-  const headerContainer = document.querySelector('.header-container');
-  if (headerContainer) {
-    const headerRect = headerContainer.getBoundingClientRect();
-    const headerBottom = headerRect.bottom;
-    
-    // Устанавливаем позицию меню относительно нижней границы хедера
-    menu.style.top = `${headerBottom + 8}px`; // 8px отступ от хедера
-  }
-}
-
-const closeMenu = () => {
-  menu.classList.add('menu-closed');
-  menuOverlay.classList.add('menu-closed');
-  // Сбрасываем позицию меню
-  menu.style.top = '';
-  // Включаем прокрутку при закрытии
-  document.body.style.overflow = '';
-}
-
-menuButton.addEventListener('click', toggleMenu)
-// Закрытие меню при клике на overlay
-menuOverlay.addEventListener('click', closeMenu)
-
-// Закрытие меню при клике на хедер (кроме самой кнопки меню)
-const headerContainer = document.querySelector('.header-container');
-if (headerContainer) {
-  headerContainer.addEventListener('click', (e) => {
-    // Если клик не на кнопку меню и меню открыто
-    if (!e.target.closest('#menu-button') && !menu.classList.contains('menu-closed')) {
-      closeMenu();
-    }
-  });
-}
-
-// Закрытие меню клавишей Escape
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !menu.classList.contains('menu-closed')) {
-    closeMenu();
-  }
-})
-
-// Обновляем позицию меню при скролле, если оно открыто
-document.addEventListener('scroll', () => {
-  if (!menu.classList.contains('menu-closed')) {
-    positionMenuRelativeToHeader();
-  }
-})
-
-// Обновляем позицию меню при изменении размера окна, если оно открыто
-window.addEventListener('resize', () => {
-  if (!menu.classList.contains('menu-closed')) {
-    positionMenuRelativeToHeader();
-  }
-})
-
 // Функция для создания карточки товара
 function createProductCard(product) {
   const card = document.createElement('div');
@@ -808,13 +718,7 @@ class SearchManager {
 
     // Показываем dropdown при фокусе всегда
     this.searchInput.addEventListener('focus', () => {
-      // Закрываем бургер-меню если оно открыто
-      if (!menu.classList.contains('menu-closed')) {
-        closeMenu();
-      }
-      
       this.activateSearch();
-      
       if (this.searchInput.value.trim()) {
         this.handleInput(this.searchInput.value);
       } else {
@@ -868,8 +772,8 @@ class SearchManager {
   // Обработчик для блокировки всех кликов при активном поиске
   document.addEventListener('click', (e) => {
     if (this.isSearchActive) {
-      // Разрешаем клики внутри header и внутри открытого меню
-      if (e.target.closest('.header-container') || e.target.closest('#menu')) {
+      // Разрешаем клики внутри header
+      if (e.target.closest('.header-container')) {
         return;
       }
       e.preventDefault();
@@ -1174,12 +1078,6 @@ class SearchManager {
   }
 
   activateSearch() {
-    // Закрываем меню если оно открыто
-    const menu = document.getElementById('menu');
-    if (menu && !menu.classList.contains('menu-closed')) {
-      closeMenu();
-    }
-    
     this.isSearchActive = true;
     document.body.classList.add('search-active');
     const searchOverlay = document.getElementById('search-overlay');
@@ -1442,28 +1340,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Рендерим категории на главной странице
   renderCategories();
   
-  // Явно навигируем по ссылкам меню (обход глобального блокера кликов при активном поиске)
-  const menuEl = document.getElementById('menu');
-  if (menuEl) {
-    const menuLinks = menuEl.querySelectorAll('a.menu-item');
-    menuLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
-        const href = link.getAttribute('href');
-        if (!href) return;
-        e.preventDefault();
-        e.stopPropagation();
-        closeMenu();
-        setTimeout(() => {
-          // Навигация по относительным путям через helper
-          if (/^(https?:)?\/\//.test(href) || href.startsWith('#')) {
-            window.location.href = href;
-          } else {
-            navigate(href);
-          }
-        }, 50);
-      });
-    });
-  }
+  // Меню удалено
 
   
 

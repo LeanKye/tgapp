@@ -1059,6 +1059,11 @@ body.info-page {
     line-height: 1.6;
 }
 
+/* Не даём нижней навигации перекрывать контент на info.html */
+body.info-page.has-bottom-nav {
+    padding-bottom: calc(20px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
 .info-header {
     position: fixed;
     top: 0;
@@ -1177,6 +1182,9 @@ body.info-page {
   justify-content: space-around;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 800; /* ниже модалок и кнопки Купить */
+  /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
+  transform: translateY(var(--keyboard-offset, 0px));
+  will-change: transform;
 }
 
 .bottom-nav .nav-item {
@@ -1193,13 +1201,13 @@ body.info-page {
 }
 
 .bottom-nav .nav-item span {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1;
 }
 
 .bottom-nav .nav-item .nav-icon {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
 }
 
 .bottom-nav .cart-badge {
@@ -1228,7 +1236,14 @@ body.info-page {
 
 @media (max-width: 375px) {
   :root { --bottom-nav-height: 48px; }
-  .bottom-nav .nav-item span { font-size: 11px; }
+  .bottom-nav .nav-item span { font-size: 10px; }
+}
+
+/* iOS 16+: используем нативный inset клавиатуры, смещая панель вниз (в пределах экрана это 0) */
+@supports (bottom: env(keyboard-inset-height)) {
+  .bottom-nav {
+    transform: translateY(env(keyboard-inset-height));
+  }
 }
 
 /* ===== Корзина ===== */
@@ -1239,19 +1254,19 @@ body.info-page {
     'check'
     'row';
   gap: 8px;
-  padding: 12px;
+  padding: 16px; /* как у контейнеров на главной */
   background-color: #1f1f1f;
   border: none;
   border-radius: 16px; /* такой же, как на главной */
   margin: 8px 0;
   position: relative;
-  min-height: var(--cart-item-min-h);
+  min-height: auto; /* убираем фиксированную минимальную высоту, чтобы не оставалось пустого места */
   box-sizing: border-box;
 }
 
 .card-check { position: absolute; right: 12px; top: 12px; }
-.cart-row { display: grid; grid-template-columns: var(--cart-img-size) 1fr; gap: 12px; align-items: end; }
-.cart-left { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; justify-content: flex-end; }
+.cart-row { display: grid; grid-template-columns: var(--cart-img-size) 1fr; gap: 12px; align-items: stretch; }
+.cart-left { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; justify-content: flex-start; }
 .cart-left-actions { display: flex; gap: 8px; align-items: center; justify-content: flex-start; width: var(--cart-img-size); margin-left: 0; padding-left: 0; width: 200%; }
 /* Делаем кнопку удаления шире под текст */
 .cart-left-actions .icon-btn.remove { width: var(--cart-buy-w); height: var(--cart-buy-h); border-radius: 10px; justify-content: center; font-size: 14px; gap: 0; }
@@ -1264,8 +1279,8 @@ body.info-page {
 }
 
 .cart-item-main { display: flex; flex-direction: column; gap: 8px; }
-.cart-right { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-.cart-right-footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }
+.cart-right { display: flex; flex-direction: column; gap: 8px; flex: 1; height: 100%; }
+.cart-right-footer { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: auto; }
 .cart-item-header { display: flex; justify-content: flex-start; align-items: baseline; gap: 8px; }
 .cart-price-current { color: #29A5FF; font-size: var(--cart-price-fs); font-weight: 700; }
 .cart-price-old { color: #9a9a9a; font-size: 13px; margin-left: 8px; }
@@ -2206,6 +2221,38 @@ body.has-bottom-nav .product-cart-controls {
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
+}
+
+/* Выровнять размеры шрифта у текста заголовка и кнопки "Подробнее" */
+.checkout-header #checkout-header-text,
+.checkout-header .checkout-more {
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.checkout-header .checkout-more {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: inherit; /* как у checkout-header-text */
+  font-weight: inherit;
+  cursor: pointer;
+  padding: 8px 4px;   /* такая же зона клика, как у текста */
+  /* Негативные отступы только сверху/снизу и справа, слева — auto для выравнивания вправо */
+  margin-top: -8px;
+  margin-bottom: -8px;
+  margin-right: -4px;
+  margin-left: auto;
+}
+
+@media (hover: hover) {
+  .checkout-header .checkout-more:hover { opacity: 0.8; }
+}
+.checkout-header .checkout-more:active { opacity: 0.6; }
+
+@media (hover: none) {
+  .checkout-header .checkout-more:active { opacity: 1; }
 }
 
 .checkout-header #checkout-header-text {

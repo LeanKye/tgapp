@@ -284,10 +284,12 @@ function updateVariants(product) {
     container.appendChild(input);
     container.appendChild(label);
     
-    // Добавляем обработчик для автоматического скролла
+    // Добавляем обработчик для автоматического скролла и обновления кнопок
     input.addEventListener('change', () => {
       if (input.checked) {
         scrollToSelectedButton(container, label);
+        const product = getProductById(getUrlParameter('product'));
+        if (product) refreshBuyControls(product);
       }
     });
   });
@@ -324,6 +326,8 @@ function updatePeriods(product) {
         document.querySelector('.price-value').innerHTML = formatPrice(period.price);
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
+        const product = getProductById(getUrlParameter('product'));
+        if (product) refreshBuyControls(product);
       }
     });
   });
@@ -362,6 +366,8 @@ function updateEditions(product) {
         applyEditionVisuals(product, edition);
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
+        const productObj = getProductById(getUrlParameter('product'));
+        if (productObj) refreshBuyControls(productObj);
       }
     });
   });
@@ -717,6 +723,12 @@ function initCheckoutPanel() {
         
         // Обрабатываем выбор
         handleVariantSelection();
+        // Явно инициируем событие change и обновляем состояние кнопок
+        try {
+          targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+        } catch {}
+        const product = getProductById(getUrlParameter('product'));
+        if (product) refreshBuyControls(product);
       }
     }
   });
@@ -1022,14 +1034,24 @@ function readCart() {
 }
 function writeCart(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
 
-function getCartItem(product) {
+function buildCartItemId(product, selectedOptions) {
+  const baseId = String(product.id);
+  if (!selectedOptions) return baseId;
+  const v = selectedOptions.variantId || 'v';
+  const p = selectedOptions.periodId || 'p';
+  const e = selectedOptions.editionId || 'e';
+  return `${baseId}|${v}|${p}|${e}`;
+}
+
+function getCartItem(product, selectedOptions) {
   const items = readCart();
-  return items.find(i => i.id === String(product.id));
+  const targetId = buildCartItemId(product, selectedOptions);
+  return items.find(i => i.id === targetId);
 }
 
 function setCartItem(product, qty, selectedOptions) {
   const items = readCart();
-  const id = String(product.id);
+  const id = buildCartItemId(product, selectedOptions);
   const idx = items.findIndex(i => i.id === id);
   if (qty <= 0) {
     if (idx !== -1) items.splice(idx, 1);
@@ -1060,7 +1082,9 @@ function renderBuyOrControls(product) {
   const oldControls = document.querySelector('.product-cart-controls');
   if (oldControls) oldControls.remove();
 
-  const cartItem = getCartItem(product);
+  // Проверяем наличие именно текущей конфигурации
+  const selectedOptions = getSelectedOptions();
+  const cartItem = selectedOptions ? getCartItem(product, selectedOptions) : null;
   if (!cartItem) return; // показываем стандартную кнопку "Добавить в корзину"
 
   // Скрываем стандартную кнопку
@@ -1089,11 +1113,11 @@ function renderBuyOrControls(product) {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const action = btn.getAttribute('data-action');
-    const current = getCartItem(product) || { qty: 0 };
+    const current = getCartItem(product, getSelectedOptions()) || { qty: 0 };
     let nextQty = current.qty || 1;
     if (action === 'inc') nextQty += 1;
     if (action === 'dec') nextQty -= 1;
-    setCartItem(product, nextQty);
+    setCartItem(product, nextQty, getSelectedOptions());
 
     // Если удалили последний — вернуть кнопку «Купить»
     if (nextQty <= 0) {
@@ -1112,10 +1136,27 @@ function handleAddToCartFromProduct() {
   const product = getProductById(productId);
   if (!product) return;
   const selectedOptions = getSelectedOptions();
-  const existing = getCartItem(product);
+  const existing = getCartItem(product, selectedOptions || undefined);
   const qty = existing ? (existing.qty || 1) + 1 : 1;
   setCartItem(product, qty, selectedOptions || undefined);
   renderBuyOrControls(product);
+}
+
+// Обновление состояния нижней кнопки/контролов в зависимости от выбранных опций
+function refreshBuyControls(product) {
+  const buyBtn = document.querySelector('.add-to-cart');
+  const controls = document.querySelector('.product-cart-controls');
+  const options = getSelectedOptions();
+  const exists = options ? getCartItem(product, options) : null;
+  if (exists) {
+    if (!controls) {
+      renderBuyOrControls(product);
+    }
+    if (buyBtn) buyBtn.style.display = 'none';
+  } else {
+    if (controls) controls.remove();
+    if (buyBtn) buyBtn.style.display = 'block';
+  }
 }
 
 // Получение выбранных опций
@@ -1287,6 +1328,20 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       initCheckoutPanel();
       initPayment(); // Добавляем инициализацию оплаты
+      // Синхронизируем состояние кнопок в соответствии с выбранными опциями
+      refreshBuyControls(product);
+      // Кнопка "Подробнее" — открывает модалку лейблов с описанием услуги
+      const moreBtn = document.getElementById('more-info-btn');
+      if (moreBtn) {
+        moreBtn.addEventListener('click', () => {
+          if (!modalManager) return;
+          const info = {
+            title: 'Подробнее об услуге',
+            description: product.description || 'Описание услуги будет доступно позже.'
+          };
+          modalManager.openModal('label-modal', { labelInfo: info });
+        });
+      }
     }, 100);
   }
   

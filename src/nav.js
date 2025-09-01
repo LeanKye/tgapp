@@ -98,6 +98,31 @@ function initNav() {
     if (e.key === 'hooli_cart') updateCartBadge();
   });
   window.addEventListener('cart:updated', () => updateCartBadge());
+
+  // iOS клавиатура: удерживаем нижнюю навигацию у нижнего края экрана
+  const setKeyboardOffset = () => {
+    try {
+      const vv = window.visualViewport;
+      if (!vv) {
+        document.documentElement.style.setProperty('--keyboard-offset', '0px');
+        return;
+      }
+      const viewportBottom = vv.height + vv.offsetTop; // расстояние от top вьюпорта до низа вьюпорта
+      const windowBottom = window.innerHeight;         // полный размер окна
+      const overlap = Math.max(0, windowBottom - viewportBottom); // сколько «съедено» клавиатурой
+      // Смещаем навбар обратно вниз (в отрицательную сторону не уходим)
+      document.documentElement.style.setProperty('--keyboard-offset', overlap ? `${overlap}px` : '0px');
+    } catch {
+      document.documentElement.style.setProperty('--keyboard-offset', '0px');
+    }
+  };
+
+  // Привязываемся к событиям visualViewport (iOS Safari)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', setKeyboardOffset);
+    window.visualViewport.addEventListener('scroll', setKeyboardOffset);
+    setKeyboardOffset();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initNav);
