@@ -2224,18 +2224,16 @@ body.has-bottom-nav .product-cart-controls {
 }
 
 /* Выровнять размеры шрифта у текста заголовка и кнопки "Подробнее" */
-.checkout-header #checkout-header-text,
-.checkout-header .checkout-more {
-  font-size: 16px;
-  line-height: 1.2;
-}
+/* Текст заголовка фиксируем отдельно, иконка — размером 16px */
+.checkout-header #checkout-header-text { font-size: 16px; line-height: 1.2; }
+.checkout-header .checkout-more svg { width: 20px; height: 20px; display: block; }
 
 .checkout-header .checkout-more {
   margin-left: auto;
   background: transparent;
   border: none;
   color: rgb(157, 157, 157);
-  font-size: 12px; /* как у checkout-header-text */
+  font-size: 12px;
   cursor: pointer;
   padding: 8px 4px;   /* такая же зона клика, как у текста */
   /* Негативные отступы только сверху/снизу и справа, слева — auto для выравнивания вправо */
