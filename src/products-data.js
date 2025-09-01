@@ -27,8 +27,8 @@ export const products = {
     periods: [
       { id: 'period-week', name: 'Неделя', price: 300 },
       { id: 'period-1', name: '1 мес', price: 1000 },
-      { id: 'period-3', name: '3 мес', price: 2500, discount: 'Выгода 17%' },
-      { id: 'period-12', name: '12 мес', price: 8000, discount: 'Выгода 33%' }
+      { id: 'period-3', name: '3 мес', price: 2500 },
+      { id: 'period-12', name: '12 мес', price: 8000 }
     ],
     editions: [
       { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1000,
@@ -89,8 +89,8 @@ export const products = {
     ],
     periods: [
       { id: 'period-1', name: '1 месяц', price: 800 },
-      { id: 'period-2', name: '6 месяцев', price: 4000, discount: 'Выгода 17%' },
-      { id: 'period-3', name: '12 месяцев', price: 7000, discount: 'Выгода 27%' }
+      { id: 'period-2', name: '6 месяцев', price: 4000 },
+      { id: 'period-3', name: '12 месяцев', price: 7000 }
     ],
     editions: [
       { id: 'edition-1', name: 'Personal', price: 800 },
