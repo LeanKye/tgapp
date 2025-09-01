@@ -1178,9 +1178,9 @@ body.info-page.has-bottom-nav {
   background: #1f1f1f;
   border-top: none;
   display: flex;
-  align-items: center;
+  align-items: stretch; /* растягиваем элементы по высоте бара */
   justify-content: space-around;
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: max(0px, calc(env(safe-area-inset-bottom) - 2px));
   z-index: 800; /* ниже модалок и кнопки Купить */
   /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
   transform: translateY(var(--keyboard-offset, 0px));
@@ -1192,8 +1192,8 @@ body.info-page.has-bottom-nav {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: flex-end; /* прижимаем иконку и текст к низу панели */
+  gap: 2px; /* меньшее расстояние между иконкой и текстом */
   min-width: 64px;
   color: #9b9b9b;
   cursor: pointer;
