@@ -2235,7 +2235,7 @@ body.has-bottom-nav .product-cart-controls {
   background: transparent;
   border: none;
   color: rgb(157, 157, 157);
-  font-size: 14px; /* как у checkout-header-text */
+  font-size: 12px; /* как у checkout-header-text */
   cursor: pointer;
   padding: 8px 4px;   /* такая же зона клика, как у текста */
   /* Негативные отступы только сверху/снизу и справа, слева — auto для выравнивания вправо */
