@@ -1187,6 +1187,12 @@ body.info-page.has-bottom-nav {
   will-change: transform;
 }
 
+/* При открытой клавиатуре скрываем нижнюю навигацию ниже видимой области */
+body.keyboard-open .bottom-nav {
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
 .bottom-nav .nav-item {
   all: unset;
   display: flex;
@@ -1243,6 +1249,9 @@ body.info-page.has-bottom-nav {
 @supports (bottom: env(keyboard-inset-height)) {
   .bottom-nav {
     transform: none;
+  }
+  body.keyboard-open .bottom-nav {
+    transform: translateY(100%);
   }
 }
 

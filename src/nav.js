@@ -105,8 +105,30 @@ function initNav() {
       const vv = window.visualViewport;
       // Полностью отключаем любое смещение навбара
       document.documentElement.style.setProperty('--keyboard-offset', '0px');
+
+      // Определяем состояние открытой клавиатуры и скрываем нижнюю навигацию
+      let keyboardOpen = false;
+      if (vv) {
+        const viewportBottom = vv.height + vv.offsetTop;
+        const windowBottom = window.innerHeight;
+        const overlap = windowBottom - viewportBottom;
+        const KEYBOARD_THRESHOLD = 80; // заметная высота
+        keyboardOpen = overlap > KEYBOARD_THRESHOLD;
+      }
+
+      // Дополнительно: если фокус на текстовом поле, считаем, что клавиатура открыта
+      if (!keyboardOpen) {
+        const el = document.activeElement;
+        const tag = (el && el.tagName ? el.tagName.toLowerCase() : '');
+        if ((tag === 'input' || tag === 'textarea') && !el.readOnly && !el.disabled) {
+          keyboardOpen = true;
+        }
+      }
+
+      document.body.classList.toggle('keyboard-open', keyboardOpen);
     } catch {
       document.documentElement.style.setProperty('--keyboard-offset', '0px');
+      document.body.classList.remove('keyboard-open');
     }
   };
 
