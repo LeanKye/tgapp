@@ -40,23 +40,43 @@ function observe(el) {
   if (el.tagName === 'IMG') loadImg(el); else loadBg(el);
 }
 
+function ensureObserver() {
+  if (io) return io;
+  if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+    io = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          io.unobserve(el);
+          observe(el);
+        }
+      });
+    }, { rootMargin: '200px 0px' });
+    return io;
+  }
+  return null;
+}
+
 export function initLazyImages() {
-  if (io) return;
-  io = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        const el = entry.target;
-        io.unobserve(el);
-        observe(el);
-      }
-    });
-  }, { rootMargin: '200px 0px' });
+  if (!ensureObserver()) {
+    // Фолбэк: если IntersectionObserver не поддерживается — грузим сразу
+    scan(document, true);
+    return;
+  }
   scan();
 }
 
-export function scan(root = document) {
+export function scan(root = document, forceImmediate = false) {
   const nodes = root.querySelectorAll(LAZY_SELECTOR);
-  nodes.forEach((el) => io.observe(el));
+  const observer = forceImmediate ? null : ensureObserver();
+  nodes.forEach((el) => {
+    if (observer) {
+      observer.observe(el);
+    } else {
+      // Нет observer — загружаем мгновенно
+      observe(el);
+    }
+  });
 }
 
 export function observeWithin(root) {
