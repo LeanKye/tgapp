@@ -1,6 +1,7 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import ModalManager from './modal-manager.js'
+import { initLazyImages, observeWithin } from './lazy-images.js'
  
 // Универсальная навигация относительно текущей директории
 function navigate(path) {
@@ -46,9 +47,17 @@ function renderProduct(product) {
   product.images.forEach((image, index) => {
     const slide = document.createElement('div');
     slide.className = 'swiper-slide';
-    slide.innerHTML = `<img src="${image}" alt="${product.title} ${index + 1}" />`;
+    slide.innerHTML = `<img class="lazy-image img-skeleton" data-src="${image}" alt="${product.title} ${index + 1}" loading="lazy" decoding="async" />`;
     swiperWrapper.appendChild(slide);
   });
+
+  // Загружаем первый слайд сразу (eager), остальные — лениво
+  const firstImg = swiperWrapper.querySelector('.swiper-slide img');
+  if (firstImg && firstImg.dataset.src) {
+    firstImg.loading = 'eager';
+    firstImg.src = firstImg.dataset.src;
+  }
+  observeWithin(swiperWrapper);
 
   // Инициализируем слайдер сразу после создания слайдов
   setTimeout(() => {
@@ -253,9 +262,16 @@ function applyEditionVisuals(product, edition) {
   imagesToUse.forEach((image, index) => {
     const slide = document.createElement('div');
     slide.className = 'swiper-slide';
-    slide.innerHTML = `<img src="${image}" alt="${newTitle} ${index + 1}" />`;
+    slide.innerHTML = `<img class="lazy-image img-skeleton" data-src="${image}" alt="${newTitle} ${index + 1}" loading="lazy" decoding="async" />`;
     swiperWrapper.appendChild(slide);
   });
+
+  const firstImg = swiperWrapper.querySelector('.swiper-slide img');
+  if (firstImg && firstImg.dataset.src) {
+    firstImg.loading = 'eager';
+    firstImg.src = firstImg.dataset.src;
+  }
+  observeWithin(swiperWrapper);
 
   setTimeout(() => {
     initImageSlider();
@@ -1309,6 +1325,7 @@ function openCheckoutModal(product, selectedOptions, finalPrice) {
 document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем ModalManager
   modalManager = new ModalManager();
+  initLazyImages();
   
   const productId = getUrlParameter('product');
   console.log('DEBUG: productId from URL:', productId);
@@ -1330,14 +1347,16 @@ document.addEventListener('DOMContentLoaded', () => {
       initPayment(); // Добавляем инициализацию оплаты
       // Синхронизируем состояние кнопок в соответствии с выбранными опциями
       refreshBuyControls(product);
-      // Кнопка "Подробнее" — открывает модалку лейблов с описанием услуги
+      // Кнопка "Подробнее" — открывает модалку с описанием услуги
       const moreBtn = document.getElementById('more-info-btn');
       if (moreBtn) {
         moreBtn.addEventListener('click', () => {
           if (!modalManager) return;
           const info = {
             title: 'Подробнее об услуге',
-            description: product.description || 'Описание услуги будет доступно позже.'
+            description: product.serviceDescription || product.description || 'Описание услуги будет доступно позже.',
+            icon: '💼',
+            iconClass: 'service'
           };
           modalManager.openModal('label-modal', { labelInfo: info });
         });

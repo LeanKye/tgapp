@@ -1,5 +1,6 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
+import { initLazyImages, observeWithin } from './lazy-images.js'
  
 // Универсальная навигация относительно текущей директории (работает локально и на GitHub Pages)
 function navigate(path) {
@@ -20,7 +21,7 @@ function createProductCard(product) {
   }
   
   card.innerHTML = `
-    <img src="${product.images[0]}" alt="${product.title}" />
+    <img class="lazy-image img-skeleton" data-src="${product.images[0]}" alt="${product.title}" loading="lazy" decoding="async" />
     <div class="category-product-title">${product.title}</div>
     <div class="category-product-category">${product.category}</div>
     <div class="category-product-price">${priceHTML}</div>
@@ -52,6 +53,9 @@ function renderNewProducts() {
   setTimeout(() => {
     container.scrollLeft = 0;
   }, 0);
+
+  // Инициализируем наблюдение за ленивыми изображениями внутри контейнера
+  observeWithin(container);
 }
 
 // Функция для рендеринга категорий
@@ -74,6 +78,9 @@ function renderCategories() {
     }
     container.appendChild(card);
   });
+
+  // Подключаем ленивую загрузку фонов для категорий
+  observeWithin(container);
 }
 
 // Функция для создания карточки категории
@@ -81,8 +88,9 @@ function createCategoryCard(category, index) {
   const card = document.createElement('div');
   card.className = 'category-card';
   
-  // Устанавливаем фоновое изображение
-  card.style.backgroundImage = `url(${category.image})`;
+  // Устанавливаем фоновое изображение лениво
+  card.classList.add('lazy-bg');
+  card.setAttribute('data-bg-src', category.image);
   
   // Для последней карточки делаем её на 2 колонки (как в оригинальном дизайне)
   if (index === Object.keys(categoryData).length - 1) {
@@ -834,7 +842,7 @@ class SearchManager {
     suggestion.dataset.index = index;
     
     suggestion.innerHTML = `
-      <img src="${product.images[0]}" alt="${product.title}" />
+      <img class="lazy-image img-skeleton" data-src="${product.images[0]}" alt="${product.title}" loading="lazy" decoding="async" />
       <div class="search-suggestion-content">
         <div class="search-suggestion-title">${product.title}</div>
         <div class="search-suggestion-category">${product.category}</div>
@@ -1291,7 +1299,7 @@ class PSPlusManager {
     const price = product.prices[currentPeriod];
     
     card.innerHTML = `
-      <img src="${product.image}" alt="${product.name}">
+      <img class="lazy-image img-skeleton" data-src="${product.image}" alt="${product.name}" loading="lazy" decoding="async">
       <div>
         <div>${product.name}</div>
         <div class="product-price">${formatPrice(price)}</div>
@@ -1360,4 +1368,6 @@ document.addEventListener('DOMContentLoaded', () => {
       slider.updateOnResize();
     }, 100);
   });
+
+  initLazyImages();
 });

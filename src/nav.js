@@ -103,15 +103,8 @@ function initNav() {
   const setKeyboardOffset = () => {
     try {
       const vv = window.visualViewport;
-      if (!vv) {
-        document.documentElement.style.setProperty('--keyboard-offset', '0px');
-        return;
-      }
-      const viewportBottom = vv.height + vv.offsetTop; // расстояние от top вьюпорта до низа вьюпорта
-      const windowBottom = window.innerHeight;         // полный размер окна
-      const overlap = Math.max(0, windowBottom - viewportBottom); // сколько «съедено» клавиатурой
-      // Смещаем навбар обратно вниз (в отрицательную сторону не уходим)
-      document.documentElement.style.setProperty('--keyboard-offset', overlap ? `${overlap}px` : '0px');
+      // Полностью отключаем любое смещение навбара
+      document.documentElement.style.setProperty('--keyboard-offset', '0px');
     } catch {
       document.documentElement.style.setProperty('--keyboard-offset', '0px');
     }
@@ -123,6 +116,11 @@ function initNav() {
     window.visualViewport.addEventListener('scroll', setKeyboardOffset);
     setKeyboardOffset();
   }
+
+  // Также реагируем на фокус/расфокус инпутов, чтобы сразу убирать смещение
+  // Поддерживаем значение 0 вне зависимости от фокуса
+  window.addEventListener('focusin', setKeyboardOffset, { capture: true });
+  window.addEventListener('focusout', () => setTimeout(setKeyboardOffset, 0), { capture: true });
 }
 
 document.addEventListener('DOMContentLoaded', initNav);
