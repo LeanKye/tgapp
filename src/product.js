@@ -339,7 +339,14 @@ function updatePeriods(product) {
     // Обновляем цену при выборе периода
     input.addEventListener('change', () => {
       if (input.checked) {
-        document.querySelector('.price-value').innerHTML = formatPrice(period.price);
+        const productObj = getProductById(getUrlParameter('product'));
+        const selectedOptions = getSelectedOptions();
+        if (productObj && selectedOptions) {
+          const final = calculateFinalPrice(productObj, selectedOptions);
+          document.querySelector('.price-value').innerHTML = formatPrice(final);
+        } else {
+          document.querySelector('.price-value').innerHTML = formatPrice(period.price);
+        }
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
         const product = getProductById(getUrlParameter('product'));
@@ -363,10 +370,12 @@ function updateEditions(product) {
 
     const label = document.createElement('label');
     label.htmlFor = edition.id;
+    const editionMonthly = (edition.periodPricing && edition.periodPricing['period-1']) || edition.price;
+    const priceHtml = editionMonthly ? `${formatPriceSimple(editionMonthly)}` : '';
     label.innerHTML = `
       <div>
         <div>${edition.name}</div>
-        <div>${formatPriceSimple(edition.price)}</div>
+        <div>${priceHtml}</div>
       </div>
     `;
 
@@ -376,13 +385,21 @@ function updateEditions(product) {
     // Обновляем цену при выборе издания
     input.addEventListener('change', () => {
       if (input.checked) {
-        // Цена
-        document.querySelector('.price-value').innerHTML = formatPrice(edition.price);
         // Визуальные изменения (заголовок + изображения)
         applyEditionVisuals(product, edition);
+        // Обновляем доступность периодов под выбранное издание
+        updatePeriodAvailabilityForEdition(product, edition);
+        // Пересчитываем итоговую цену исходя из выбранных опций
+        const productObj = getProductById(getUrlParameter('product'));
+        const selectedOptions = getSelectedOptions();
+        if (productObj && selectedOptions) {
+          const final = calculateFinalPrice(productObj, selectedOptions);
+          document.querySelector('.price-value').innerHTML = formatPrice(final);
+        } else if (edition.price) {
+          document.querySelector('.price-value').innerHTML = formatPrice(edition.price);
+        }
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
-        const productObj = getProductById(getUrlParameter('product'));
         if (productObj) refreshBuyControls(productObj);
       }
     });
@@ -392,6 +409,64 @@ function updateEditions(product) {
   const defaultEdition = product.editions[0];
   if (defaultEdition) {
     applyEditionVisuals(product, defaultEdition);
+    updatePeriodAvailabilityForEdition(product, defaultEdition);
+  }
+  // Устанавливаем корректную цену согласно выбранным по умолчанию опциям
+  const productObj = getProductById(getUrlParameter('product'));
+  const selectedOptions = getSelectedOptions();
+  if (productObj && selectedOptions) {
+    const final = calculateFinalPrice(productObj, selectedOptions);
+    const priceEl = document.querySelector('.price-value');
+    if (priceEl) priceEl.innerHTML = formatPrice(final);
+  }
+}
+
+// Включаем/выключаем периоды в зависимости от выбранного издания,
+// если у издания задана карта цен periodPricing
+function updatePeriodAvailabilityForEdition(product, edition) {
+  const container = document.querySelector('#period-group');
+  if (!container) return;
+
+  // Если у издания нет periodPricing — ничего не ограничиваем
+  const hasPricingMap = edition && edition.periodPricing && typeof edition.periodPricing === 'object';
+  const inputs = Array.from(container.querySelectorAll('input[name="period"]'));
+  let firstAvailable = null;
+
+  inputs.forEach((input) => {
+    const label = container.querySelector(`label[for="${input.id}"]`);
+    let available = true;
+    if (hasPricingMap) {
+      const priceValue = edition.periodPricing[input.id];
+      available = typeof priceValue === 'number';
+    }
+
+    if (available) {
+      input.disabled = false;
+      if (label) {
+        label.style.display = '';
+        label.classList.remove('disabled');
+        label.style.opacity = '';
+      }
+      if (!firstAvailable) firstAvailable = input;
+    } else {
+      // Скрываем/блокируем недоступные периоды для издания
+      input.disabled = true;
+      if (label) {
+        label.style.display = 'none';
+        label.classList.add('disabled');
+        label.style.opacity = '0.5';
+      }
+      if (input.checked) {
+        input.checked = false;
+      }
+    }
+  });
+
+  // Если текущий выбор стал недоступным — выбираем первый доступный период
+  const currentlyChecked = container.querySelector('input[name="period"]:checked');
+  if (!currentlyChecked && firstAvailable) {
+    firstAvailable.checked = true;
+    try { firstAvailable.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
   }
 }
 
@@ -1212,14 +1287,25 @@ function calculateFinalPrice(product, selectedOptions) {
   const period = product.periods.find(p => p.id === selectedOptions.periodId);
   const edition = product.editions.find(e => e.id === selectedOptions.editionId);
   
-  if (period && period.price) {
-    basePrice = period.price;
+  // 1) Приоритет: если у издания задана помесячная сетка цен, используем цену для выбранного периода
+  if (edition && edition.periodPricing && selectedOptions.periodId && Object.prototype.hasOwnProperty.call(edition.periodPricing, selectedOptions.periodId)) {
+    const priceForPeriod = edition.periodPricing[selectedOptions.periodId];
+    if (typeof priceForPeriod === 'number') {
+      return priceForPeriod;
+    }
   }
   
-  if (edition && edition.price) {
-    basePrice = edition.price;
+  // 2) Далее — цена периода, если есть
+  if (period && typeof period.price === 'number') {
+    return period.price;
   }
   
+  // 3) Затем — цена издания, если задана
+  if (edition && typeof edition.price === 'number') {
+    return edition.price;
+  }
+  
+  // 4) Иначе — базовая цена товара
   return basePrice;
 }
 

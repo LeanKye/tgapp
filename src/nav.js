@@ -116,11 +116,20 @@ function initNav() {
         keyboardOpen = overlap > KEYBOARD_THRESHOLD;
       }
 
-      // Дополнительно: если фокус на текстовом поле, считаем, что клавиатура открыта
+      // Дополнительно: считаем, что клавиатура открыта только для ТЕКСТОВЫХ полей
       if (!keyboardOpen) {
         const el = document.activeElement;
         const tag = (el && el.tagName ? el.tagName.toLowerCase() : '');
-        if ((tag === 'input' || tag === 'textarea') && !el.readOnly && !el.disabled) {
+        const isContentEditable = !!(el && el.isContentEditable);
+        let isTextualInput = false;
+        if (tag === 'textarea') {
+          isTextualInput = true;
+        } else if (tag === 'input') {
+          const type = String(el.getAttribute('type') || '').toLowerCase();
+          const TEXT_TYPES = new Set(['text', 'email', 'password', 'search', 'tel', 'url', 'number']);
+          isTextualInput = TEXT_TYPES.has(type) || type === '';
+        }
+        if ((isTextualInput || isContentEditable) && !el.readOnly && !el.disabled) {
           keyboardOpen = true;
         }
       }

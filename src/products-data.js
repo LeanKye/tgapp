@@ -6,9 +6,9 @@ export const products = {
     id: 'adobe-creative-cloud',
     title: 'Adobe Creative Cloud',
     category: 'Дизайн',
-    price: 1000,
-    oldPrice: 1500,
-    discount: '-30%',
+    price: 1890,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
@@ -21,50 +21,56 @@ export const products = {
     ],
     variants: [
       { id: 'variant-1', name: 'Активация' },
-      { id: 'variant-2', name: 'Подписка' },
-      { id: 'variant-3', name: 'Ключ' }
+      { id: 'variant-2', name: 'Подписка' }
     ],
     periods: [
-      { id: 'period-week', name: 'Неделя', price: 300 },
-      { id: 'period-1', name: '1 мес', price: 1000 },
-      { id: 'period-3', name: '3 мес', price: 2500 },
-      { id: 'period-12', name: '12 мес', price: 8000 }
+      { id: 'period-week', name: 'Неделя', price: 500 },
+      { id: 'period-1', name: '1 мес', price: 1890 },
+      { id: 'period-3', name: '3 мес', price: 4500 },
+      { id: 'period-12', name: '12 мес', price: 16000 }
     ],
     editions: [
-      { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1000,
-        displayTitle: 'Adobe Creative Cloud — Standard',
+      { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1890,
+        displayTitle: 'Adobe Creative Cloud — Полный пакет',
         images: [
           'https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=600&h=400&fit=crop&crop=center',
           'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center'
-        ]
+        ],
+        periodPricing: {
+          'period-week': 500,
+          'period-1': 1890,
+          'period-3': 4500,
+          'period-12': 16000
+        }
       },
-      { id: 'edition-2', name: 'Photoshop + Lightroom', price: 1500,
+      { id: 'edition-2', name: 'Photoshop + Lightroom', price: 1290,
         displayTitle: 'Adobe Photoshop + Lightroom',
         images: [
           'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop&crop=center',
           'https://images.unsplash.com/photo-1504805572947-34fad45aed93?w=600&h=400&fit=crop&crop=center'
-        ]
-      },
-      { id: 'edition-3', name: 'Deluxe', price: 1990,
-        displayTitle: 'Adobe Creative Cloud — Deluxe',
-        images: [
-          'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center',
-          'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&h=400&fit=crop&crop=center'
-        ]
+        ],
+        periodPricing: {
+          'period-1': 1290,
+          'period-3': 2990,
+          'period-12': 10500
+        }
       }
     ],
-    description: `Adobe Creative Cloud — это полный набор профессиональных приложений для творчества. 
-    Включает Photoshop, Illustrator, InDesign, After Effects, Premiere Pro и многие другие инструменты 
-    для дизайна, фотографии, видео и веб-разработки. Подписка дает доступ ко всем приложениям, 
-    облачному хранилищу и дополнительным сервисам Adobe.`,
+    description: `Adobe Creative Cloud — это профессиональная экосистема приложений и сервисов для работы с графикой, фото, видео, 3D и веб‑дизайном. Подходит дизайнерам, видеографам, маркетологам, художникам и контент‑креаторам.<br><br>
+    <strong>Особенности:</strong><br>
+    • Более 20 приложений в одной подписке (Photoshop, Illustrator, After Effects, Lightroom, Premiere Pro и др.)<br>
+    • Доступ к Adobe Fonts и библиотекам стоковых ресурсов<br>
+    • Интеграция с облачным хранилищем Creative Cloud<br>
+    • Поддержка совместной работы в реальном времени<br>
+    • Полная синхронизация проектов между устройствами`,
     systemRequirements: `
       <strong>Минимальные системные требования:</strong><br>
-      • ОС: Windows 10 (64-bit) или macOS 10.14<br>
+      • Windows: Windows 10 (64‑bit), версия 1903+<br>
+      • macOS: macOS 10.14+<br>
       • Процессор: Intel Core i5 или AMD Ryzen 5<br>
       • ОЗУ: 8 ГБ (рекомендуется 16 ГБ)<br>
-      • Место на диске: 4 ГБ для установки<br>
-      • Разрешение экрана: 1280x800<br>
-      • Интернет-соединение для активации
+      • Место на диске: от 4 ГБ для установки<br>
+      • Интернет: требуется для активации и обновлений
     `
   },
   
@@ -72,9 +78,9 @@ export const products = {
     id: 'photoroom',
     title: 'Photoroom',
     category: 'Дизайн',
-    price: 600,
-    oldPrice: 800,
-    discount: '-25%',
+    price: 690,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
@@ -88,47 +94,38 @@ export const products = {
       { id: 'variant-3', name: 'Ключ' }
     ],
     periods: [
-      { id: 'period-week', name: 'Неделя', price: 200 },
-      { id: 'period-1', name: '1 мес', price: 600 },
-      { id: 'period-3', name: '3 мес', price: 1500 },
-      { id: 'period-12', name: '12 мес', price: 5000 }
+      { id: 'period-week', name: 'Неделя', price: 350 },
+      { id: 'period-1', name: '1 мес', price: 690 },
+      { id: 'period-12', name: '12 мес', price: 3000 }
     ],
     editions: [
-      { id: 'edition-1', name: 'Standard', price: 600,
-        displayTitle: 'Photoroom — Standard',
-        images: [
-          'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=600&h=400&fit=crop&crop=center',
-          'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=600&h=400&fit=crop&crop=center'
-        ]
-      },
-      { id: 'edition-2', name: 'Plus', price: 900,
-        displayTitle: 'Photoroom — Plus',
-        images: [
-          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&h=400&fit=crop&crop=center'
-        ]
-      },
-      { id: 'edition-3', name: 'Pro', price: 1200,
-        displayTitle: 'Photoroom — Pro',
-        images: [
-          'https://images.unsplash.com/photo-1499952127939-9bbf5af6c51c?w=600&h=400&fit=crop&crop=center'
-        ]
+      { id: 'edition-1', name: 'Pro', price: 690,
+        displayTitle: 'Photoroom — Pro'
       }
     ],
-    description: `Photoroom — инструмент для быстрой обработки и вырезания фона с фото. Подходит для маркетплейсов и соцсетей.`,
+    description: `Photoroom — это AI‑редактор изображений для интернет‑магазинов, блогеров и маркетологов. Удаление фона, коллажи, баннеры и карточки товаров за секунды.<br><br>
+    <strong>Особенности:</strong><br>
+    • Мгновенное удаление фона<br>
+    • 1000+ готовых шаблонов<br>
+    • Пакетная обработка изображений<br>
+    • Экспорт в высоком разрешении и с прозрачным фоном<br>
+    • Встроенный AI‑генератор изображений`,
     systemRequirements: `
       <strong>Минимальные системные требования:</strong><br>
-      • Современный браузер (Chrome/Firefox/Safari)<br>
-      • Стабильное интернет-соединение
+      • Android: 9.0+<br>
+      • iOS/iPadOS: 17.0+<br>
+      • macOS: устройства с Apple M1+, macOS 14+<br>
+      • Web‑версия: современные браузеры
     `
   },
   
   'midjorney-ai': {
     id: 'midjorney-ai',
-    title: 'Midjorney AI',
+    title: 'MidJourney AI',
     category: 'Нейросети',
-    price: 900,
-    oldPrice: 1200,
-    discount: '-25%',
+    price: 1300,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
@@ -137,25 +134,21 @@ export const products = {
       'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [
-      { id: 'variant-1', name: 'Активация' },
-      { id: 'variant-2', name: 'Подписка' }
+      { id: 'variant-1', name: 'Подписка' }
     ],
     periods: [
-      { id: 'period-week', name: 'Неделя', price: 300 },
-      { id: 'period-1', name: '1 мес', price: 900 },
-      { id: 'period-3', name: '3 мес', price: 2500 },
-      { id: 'period-12', name: '12 мес', price: 8500 }
+      { id: 'period-1', name: '1 мес', price: 1300 }
     ],
     editions: [
-      { id: 'edition-1', name: 'Basic', price: 900, displayTitle: 'Midjorney — Basic' },
-      { id: 'edition-2', name: 'Standard', price: 1500, displayTitle: 'Midjorney — Standard' },
-      { id: 'edition-3', name: 'Pro', price: 2500, displayTitle: 'Midjorney — Pro' }
+      { id: 'edition-1', name: 'Basic', price: 1300, displayTitle: 'MidJourney — Basic', periodPricing: { 'period-1': 1300 } },
+      { id: 'edition-2', name: 'Standard', price: 3300, displayTitle: 'MidJourney — Standard', periodPricing: { 'period-1': 3300 } }
     ],
-    description: `Midjorney AI — нейросеть для генерации изображений по текстовым подсказкам.`,
+    description: `MidJourney — AI‑сервис для генерации изображений и артов по текстовым запросам. Более 40 визуальных стилей, настройка качества и композиции, upscale и вариации. Работает через Discord — без установки отдельных приложений.`,
     systemRequirements: `
-      <strong>Требования:</strong><br>
-      • Современный браузер<br>
-      • Интернет-соединение
+      <strong>Минимальные системные требования:</strong><br>
+      • Устройство: любое, с доступом к Discord или браузеру<br>
+      • Интернет: стабильное подключение от 10 Мбит/с<br>
+      • Железо: не требуется, генерация в облаке
     `
   },
   
@@ -163,9 +156,9 @@ export const products = {
     id: 'chatgpt-ai',
     title: 'ChatGPT AI',
     category: 'Нейросети',
-    price: 800,
-    oldPrice: 1100,
-    discount: '-27%',
+    price: 1990,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
@@ -173,23 +166,22 @@ export const products = {
       'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop&crop=center',
       'https://images.unsplash.com/photo-1526378722484-bd91ca387e72?w=600&h=400&fit=crop&crop=center'
     ],
-    variants: [
-      { id: 'variant-1', name: 'Подписка' },
-      { id: 'variant-2', name: 'Активация' }
-    ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 800 },
-      { id: 'period-3', name: '3 мес', price: 2100 },
-      { id: 'period-12', name: '12 мес', price: 7200 }
-    ],
-    editions: [
-      { id: 'edition-1', name: 'Plus', price: 800, displayTitle: 'ChatGPT — Plus' },
-      { id: 'edition-2', name: 'Team', price: 1300, displayTitle: 'ChatGPT — Team' }
-    ],
-    description: `ChatGPT — помощник на базе ИИ для повседневных задач, генерации текста и кода.`,
+    variants: [ { id: 'variant-1', name: 'Подписка' } ],
+    periods: [ { id: 'period-1', name: '1 мес', price: 1990 } ],
+    editions: [ { id: 'edition-1', name: 'Plus', price: 1990, displayTitle: 'ChatGPT — Plus', periodPricing: { 'period-1': 1990 } } ],
+    description: `ChatGPT AI — платформа на базе GPT‑4/4o для общения, написания текстов, кода, анализа данных и генерации изображений. Подходит для личного использования, бизнеса и обучения.<br><br>
+    <strong>Особенности:</strong><br>
+    • Генерация текстов, статей, скриптов, писем<br>
+    • Написание и отладка кода (30+ языков)<br>
+    • Анализ документов, таблиц, PDF и больших файлов<br>
+    • Мультимодальность: текст, изображение, голос<br>
+    • Интеграция с DALL·E и API для разработчиков`,
     systemRequirements: `
-      <strong>Требования:</strong><br>
-      • Браузер и интернет
+      <strong>Минимальные системные требования:</strong><br>
+      • Windows: Windows 10 (64‑bit/ARM) 17763.0+<br>
+      • macOS: macOS 14 (Sonoma), устройства с Apple Silicon (M1+)<br>
+      • Веб‑версия: современные браузеры (Chrome/Safari/Edge/Firefox)<br>
+      • ОЗУ: от 8 ГБ (рекомендуется 16 ГБ)
     `
   },
   
@@ -232,37 +224,44 @@ export const products = {
     id: 'runway-ai',
     title: 'Runway AI',
     category: 'Нейросети',
-    price: 1200,
-    oldPrice: 1500,
-    discount: '-20%',
+    price: 1890,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
       'https://images.unsplash.com/photo-1512427691650-5fed1f2e5d37?w=600&h=400&fit=crop&crop=center'
     ],
-    variants: [
-      { id: 'variant-1', name: 'Подписка' }
-    ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 1200 },
-      { id: 'period-3', name: '3 мес', price: 3300 }
-    ],
+    variants: [ { id: 'variant-1', name: 'Подписка' } ],
+    periods: [ { id: 'period-1', name: '1 мес', price: 1890 } ],
     editions: [
-      { id: 'edition-1', name: 'Standard', price: 1200 },
-      { id: 'edition-2', name: 'Pro', price: 2200 }
+      { id: 'edition-1', name: 'Standard', price: 1890, periodPricing: { 'period-1': 1890 } },
+      { id: 'edition-2', name: 'Pro', price: 3690, periodPricing: { 'period-1': 3690 } },
+      { id: 'edition-3', name: 'Unlimited', price: 9500, periodPricing: { 'period-1': 9500 } }
     ],
-    description: `Runway — инструменты ИИ для генерации и редактирования видео/изображений.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Runway — облачная AI‑платформа для генерации видео, анимаций, изображений и VFX. Интегрируется с Adobe Premiere Pro, After Effects и другими редакторами. Экспорт до 4K и API для кастомных решений.<br><br>
+    <strong>Особенности:</strong><br>
+    • Генерация видео в высоком качестве<br>
+    • AI‑инструменты для монтажа и удаления объектов<br>
+    • Поддержка VFX, анимаций и стилизации кадров<br>
+    • Интеграция с профессиональными редакторами<br>
+    • Экспорт в 4K и доступ к API`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Web‑версия: современные браузеры (Chrome/Edge/Safari/Firefox)<br>
+      • Локальные проекты: Intel Core i5+, 8 ГБ RAM, GPU GTX 1050+, 20 ГБ HDD<br>
+      • Интернет: стабильное соединение от 10 Мбит/с
+    `
   },
   
   'suno-ai': {
     id: 'suno-ai',
     title: 'Suno AI',
     category: 'Нейросети',
-    price: 900,
-    oldPrice: 1200,
-    discount: '-25%',
+    price: 1390,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
@@ -270,22 +269,33 @@ export const products = {
       'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 900 },
-      { id: 'period-3', name: '3 мес', price: 2400 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 1390 } ],
+    editions: [
+      { id: 'edition-1', name: 'Pro', price: 1390, periodPricing: { 'period-1': 1390 } },
+      { id: 'edition-2', name: 'Premier', price: 3390, periodPricing: { 'period-1': 3390 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 900 } ],
-    description: `Suno AI — генерация музыки с помощью ИИ.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Suno AI — платформа для генерации музыки и вокала. Создание песен и мелодий по тексту, генерация вокала и инструментальных партий, экспорт в MP3/WAV и интеграции с AI‑инструментами.<br><br>
+    <strong>Особенности:</strong><br>
+    • Генерация музыки и вокала по запросу<br>
+    • Поддержка разных жанров и стилей<br>
+    • Экспорт в MP3/WAV и HQ‑форматы<br>
+    • Интеграции с Microsoft Copilot и др.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • iOS: 17.0+<br>
+      • Android: 9.0+<br>
+      • Web: любые современные браузеры<br>
+      • Интернет: стабильное подключение от 10 Мбит/с
+    `
   },
   
   'leonardo-ai': {
     id: 'leonardo-ai',
     title: 'Leonardo AI',
     category: 'Нейросети',
-    price: 850,
-    oldPrice: 1100,
-    discount: '-23%',
+    price: 1350,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
@@ -293,22 +303,28 @@ export const products = {
       'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 850 },
-      { id: 'period-3', name: '3 мес', price: 2200 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 1350 } ],
+    editions: [
+      { id: 'edition-1', name: 'Apprentice', price: 1350, periodPricing: { 'period-1': 1350 } },
+      { id: 'edition-2', name: 'Artisan', price: 2990, periodPricing: { 'period-1': 2990 } },
+      { id: 'edition-3', name: 'Maestro', price: 5850, periodPricing: { 'period-1': 5850 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 850 } ],
-    description: `Leonardo AI — генерация изображений и ассетов.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Leonardo AI — платформа для создания изображений, 3D‑текстур, видео и концепт‑артов. Поддержка кастомных моделей, тонкой настройки стиля, совместной работы и API интеграций.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Web‑версия: любой современный браузер<br>
+      • iOS/macOS: iOS 16.0+, iPadOS 16.0+, macOS 13+ (M1+)<br>
+      • Интернет: необходим для работы
+    `
   },
   
   'recraft-ai': {
     id: 'recraft-ai',
     title: 'Recraft AI',
     category: 'Нейросети',
-    price: 750,
-    oldPrice: 980,
-    discount: '-23%',
+    price: 1290,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
@@ -316,22 +332,27 @@ export const products = {
       'https://images.unsplash.com/photo-1503602642458-232111445657?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 750 },
-      { id: 'period-3', name: '3 мес', price: 2000 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 1290 } ],
+    editions: [
+      { id: 'edition-1', name: 'Basic', price: 1290, periodPricing: { 'period-1': 1290 } },
+      { id: 'edition-2', name: 'Advanced', price: 3890, periodPricing: { 'period-1': 3890 } },
+      { id: 'edition-3', name: 'Pro', price: 6890, periodPricing: { 'period-1': 6890 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 750 } ],
-    description: `Recraft — векторная и 3D‑генерация с помощью ИИ.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Recraft AI — платформа для генерации логотипов, баннеров, мокапов и векторной графики. Умеет генерировать изображения в векторном формате, интегрируется с Figma, Illustrator и Photoshop, поддерживает совместную работу через облако.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Web‑версия: любой современный браузер<br>
+      • Интернет: стабильное соединение от 5 Мбит/с
+    `
   },
   
   'cursor-ai': {
     id: 'cursor-ai',
     title: 'Cursor AI',
     category: 'Нейросети',
-    price: 990,
-    oldPrice: 1300,
-    discount: '-24%',
+    price: 2490,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
@@ -339,22 +360,28 @@ export const products = {
       'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 990 },
-      { id: 'period-3', name: '3 мес', price: 2700 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 2490 } ],
+    editions: [
+      { id: 'edition-1', name: 'Pro', price: 2490, periodPricing: { 'period-1': 2490 } },
+      { id: 'edition-2', name: 'Business', price: 4350, periodPricing: { 'period-1': 4350 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 990 } ],
-    description: `Cursor — ИИ‑редактор кода с автодополнением и агентами.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Cursor — AI‑IDE на базе VS Code для ускорения разработки: автокомплит, генерация кода, автоматическое исправление ошибок, оптимизация алгоритмов, рефакторинг и интеграции с GitHub. Есть Privacy Mode.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • ОС: Windows 10/11 (64‑bit), macOS 10.15+, Linux (Ubuntu 20.04+)<br>
+      • ОЗУ: от 4 ГБ (рекомендуется 8 ГБ)<br>
+      • Диск: 1–2 ГБ свободного места<br>
+      • Интернет: обязателен для AI‑функций
+    `
   },
   
   'flo': {
     id: 'flo',
     title: 'Flo',
     category: 'Подписки',
-    price: 500,
-    oldPrice: 700,
-    discount: '-29%',
+    price: 399,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -362,22 +389,24 @@ export const products = {
       'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 500 },
-      { id: 'period-12', name: '12 мес', price: 4500 }
-    ],
-    editions: [ { id: 'edition-1', name: 'Premium', price: 500 } ],
-    description: `Flo — подписка на расширенные функции приложения.`,
-    systemRequirements: `iOS/Android или веб‑доступ.`
+    periods: [ { id: 'period-12', name: '12 мес', price: 399 } ],
+    editions: [ { id: 'edition-1', name: 'Premium', price: 399, periodPricing: { 'period-12': 399 } } ],
+    description: `Flo — одно из самых популярных приложений для женского здоровья на базе AI. Отслеживание цикла, овуляции, симптомов, настроения и активности; персональные рекомендации по здоровью, планированию беременности, тренировкам и питанию. Есть защищённый режим приватности.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Android: 8.0+<br>
+      • iOS: 15.0+<br>
+      • Web‑версия: современный браузер
+    `
   },
   
   'inshot': {
     id: 'inshot',
     title: 'InShot',
     category: 'Дизайн',
-    price: 450,
-    oldPrice: 650,
-    discount: '-31%',
+    price: 199,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -385,22 +414,31 @@ export const products = {
       'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 450 },
-      { id: 'period-12', name: '12 мес', price: 3800 }
-    ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 450 } ],
-    description: `InShot — мобильный видеоредактор с эффектами и фильтрами.`,
-    systemRequirements: `iOS/Android.`
+    periods: [ { id: 'period-12', name: '12 мес', price: 199 } ],
+    editions: [ { id: 'edition-1', name: 'Pro', price: 199, periodPricing: { 'period-12': 199 } } ],
+    description: `InShot — мобильный видеоредактор для TikTok, Instagram, YouTube и других платформ. Поддерживает AI‑инструменты, эффекты, музыку и субтитры. Отлично подходит для Reels, Shorts и Stories.<br><br>
+    <strong>Особенности:</strong><br>
+    • Поддержка видео в 4K и 60 FPS<br>
+    • AI‑фильтры и автоматическая цветокоррекция<br>
+    • Интеграция с TikTok и Instagram Reels<br>
+    • Переходы, музыка, текст и стикеры<br>
+    • Многослойные проекты`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Android: 5.0+<br>
+      • iOS: 15.0+<br>
+      • Mac: macOS 13+ (M1+), visionOS 1.0+<br>
+      • Эмулятор: Windows 7+/macOS 11+, 4 ГБ RAM, 10 ГБ HDD
+    `
   },
   
   'airbrush': {
     id: 'airbrush',
     title: 'Airbrush',
     category: 'Дизайн',
-    price: 550,
-    oldPrice: 800,
-    discount: '-31%',
+    price: 199,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -408,22 +446,30 @@ export const products = {
       'https://images.unsplash.com/photo-1526318472351-c75fcf070305?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 550 },
-      { id: 'period-12', name: '12 мес', price: 4200 }
-    ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 550 } ],
-    description: `Airbrush — ретушь и улучшение фото.`,
-    systemRequirements: `iOS/Android или веб.`
+    periods: [ { id: 'period-12', name: '12 мес', price: 199 } ],
+    editions: [ { id: 'edition-1', name: 'Pro', price: 199, periodPricing: { 'period-12': 199 } } ],
+    description: `AirBrush — AI‑фоторедактор с профессиональной портретной ретушью. Сглаживание кожи, отбеливание зубов, макияж, фильтры и цветокоррекция.<br><br>
+    <strong>Особенности:</strong><br>
+    • Автоматическая AI‑ретушь лица<br>
+    • Фильтры и художественные эффекты<br>
+    • AI‑инструменты для изменения фона и деталей<br>
+    • Поддержка HDR и RAW`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Android: 7.0+<br>
+      • iOS: 13.0+<br>
+      • Эмулятор (BlueStacks): Windows 7+/macOS 11+, 4 ГБ RAM, 10 ГБ SSD<br>
+      • GameLoop: Windows 8.1/10, GPU GTX 1050, CPU i3-8300, 8 ГБ RAM (рек. 16 ГБ), 1 ГБ HDD
+    `
   },
   
   'gopro-quik': {
     id: 'gopro-quik',
     title: 'GoPro Quik',
     category: 'Дизайн',
-    price: 600,
-    oldPrice: 850,
-    discount: '-29%',
+    price: 1290,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -431,42 +477,68 @@ export const products = {
       'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 600 },
-      { id: 'period-12', name: '12 мес', price: 5000 }
+    periods: [ { id: 'period-12', name: '12 мес', price: 1290 } ],
+    editions: [
+      { id: 'edition-1', name: 'Quik', price: 1290, periodPricing: { 'period-12': 1290 } },
+      { id: 'edition-2', name: 'Premium', price: 1999, periodPricing: { 'period-12': 1999 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Premium', price: 600 } ],
-    description: `GoPro Quik — подписка на функции редактирования и облако.`,
-    systemRequirements: `iOS/Android.`
+    description: `GoPro Quik — официальное приложение для автоматического монтажа и редактирования клипов с GoPro и смартфона. Управление камерой из приложения, шаблоны и эффекты, синхронизация через GoPro Cloud.<br><br>
+    <strong>Особенности:</strong><br>
+    • Автоматическая нарезка из фото и клипов<br>
+    • Профессиональные шаблоны и эффекты<br>
+    • Поддержка GoPro Cloud<br>
+    • Экспорт в 4K и интеграции с соцсетями`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Windows: Windows 10 (64‑bit desktop)<br>
+      • macOS: 10.9+<br>
+      • ОЗУ: 8 ГБ для FullHD, 16 ГБ для 4K<br>
+      • Хранилище: от 512 ГБ SSD<br>
+      • Mobile: iOS 17.0+, iPadOS 17.0+, Android 9.0+
+    `
   },
   
   'photomechanic': {
     id: 'photomechanic',
     title: 'PhotoMechanic',
     category: 'Дизайн',
-    price: 1800,
-    oldPrice: 2200,
-    discount: '-18%',
+    price: 1990,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
       'https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=600&h=400&fit=crop&crop=center'
     ],
-    variants: [ { id: 'variant-3', name: 'Ключ' } ],
-    periods: [ { id: 'period-12', name: 'Лицензия', price: 1800 } ],
-    editions: [ { id: 'edition-1', name: 'Single', price: 1800 } ],
-    description: `PhotoMechanic — быстрый просмотр, отбор и метаданные для фото.`,
-    systemRequirements: `Windows/macOS.`
+    variants: [ { id: 'variant-1', name: 'Подписка' } ],
+    periods: [ { id: 'period-1', name: '1 мес', price: 1990 }, { id: 'period-12', name: '12 мес', price: 15990 } ],
+    editions: [
+      { id: 'edition-1', name: 'Standard', price: 1990, periodPricing: { 'period-1': 1990, 'period-12': 15990 } },
+      { id: 'edition-2', name: 'Plus', price: 3190, periodPricing: { 'period-1': 3190, 'period-12': 26990 } }
+    ],
+    description: `PhotoMechanic — инструмент для быстрого просмотра, отбора и каталогизации изображений, работы с RAW и метаданными. Идеален для спортивной и репортажной фотографии.<br><br>
+    <strong>Особенности:</strong><br>
+    • Мгновенный просмотр тысяч RAW‑снимков<br>
+    • Метаданные, теги, авторские права<br>
+    • Пакетное переименование и экспорт<br>
+    • Интеграция с Adobe Lightroom и Photoshop`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Windows: Windows 10+<br>
+      • macOS: 10.14+<br>
+      • ОЗУ: от 4 ГБ (рек. 8 ГБ)<br>
+      • Хранилище: SSD для быстрой работы с RAW
+    `
   },
   
   'yazio-ai': {
     id: 'yazio-ai',
     title: 'Yazio AI',
     category: 'Нейросети',
-    price: 450,
-    oldPrice: 600,
-    discount: '-25%',
+    price: 400,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -474,22 +546,29 @@ export const products = {
       'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 450 },
-      { id: 'period-12', name: '12 мес', price: 3600 }
-    ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 450 } ],
-    description: `Yazio AI — персональные рекомендации по питанию на базе ИИ.`,
-    systemRequirements: `iOS/Android.`
+    periods: [ { id: 'period-12', name: '12 мес', price: 400 } ],
+    editions: [ { id: 'edition-1', name: 'Pro', price: 400, periodPricing: { 'period-12': 400 } } ],
+    description: `Yazio AI — приложение для персонального питания: контроль калорий, меню и дневник питания. Подбор диеты с AI и интеграция с фитнес‑трекерами.<br><br>
+    <strong>Особенности:</strong><br>
+    • Автоподбор питания под цель<br>
+    • База 2+ млн продуктов<br>
+    • Генерация меню и рецептов с AI<br>
+    • Интеграция с Fitbit, Garmin, Google Fit, Apple Health`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Android: 8.0+<br>
+      • iOS: 14.0+<br>
+      • Web‑версия: современные браузеры
+    `
   },
   
   'krea-ai': {
     id: 'krea-ai',
     title: 'Krea AI',
     category: 'Нейросети',
-    price: 700,
-    oldPrice: 950,
-    discount: '-26%',
+    price: 1350,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -497,62 +576,92 @@ export const products = {
       'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 700 },
-      { id: 'period-3', name: '3 мес', price: 1800 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 1350 } ],
+    editions: [
+      { id: 'edition-1', name: 'Basic', price: 1350, periodPricing: { 'period-1': 1350 } },
+      { id: 'edition-2', name: 'Pro', price: 3600, periodPricing: { 'period-1': 3600 } },
+      { id: 'edition-3', name: 'Max', price: 6000, periodPricing: { 'period-1': 6000 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 700 } ],
-    description: `Krea AI — генерация и редактирование изображений в реальном времени.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Krea AI — платформа для генерации изображений, анимаций и видео по текстовым подсказкам. Динамические стили, генерация в высоком разрешении и кастомные модели.<br><br>
+    <strong>Особенности:</strong><br>
+    • Генерация по тексту<br>
+    • Динамические стили и цветовые схемы<br>
+    • AI‑инструменты для анимации и видео<br>
+    • Кастомизация моделей под бренд`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Web‑версия: современный браузер (Chrome/Safari/Edge/Firefox)<br>
+      • Интернет: стабильное соединение от 5 Мбит/с
+    `
   },
   
   'office': {
     id: 'office',
-    title: 'Office',
+    title: 'Microsoft Office / Office 365',
     category: 'Microsoft',
     price: 900,
-    oldPrice: 1300,
-    discount: '-31%',
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
       'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&h=400&fit=crop&crop=center'
     ],
-    variants: [ { id: 'variant-3', name: 'Ключ' } ],
-    periods: [ { id: 'period-12', name: 'Лицензия', price: 900 } ],
-    editions: [ { id: 'edition-1', name: 'Home/Student', price: 900 } ],
-    description: `Microsoft Office — ключ/активация офисного пакета.`,
-    systemRequirements: `Windows/macOS.`
+    variants: [ { id: 'variant-1', name: 'Подписка' } ],
+    periods: [ { id: 'period-1', name: '1 мес', price: 900 } ],
+    editions: [ { id: 'edition-1', name: 'Personal/Home', price: 900, periodPricing: { 'period-1': 900 } } ],
+    description: `Microsoft Office — пакет приложений для документов, таблиц и презентаций (Word, Excel, PowerPoint, Outlook, OneNote и др.). В версии Office 365 — OneDrive, Teams, SharePoint и интеграция с AI‑ассистентом Copilot.<br><br>
+    <strong>Особенности:</strong><br>
+    • Совместная работа в реальном времени<br>
+    • Облачное хранилище до 1 ТБ<br>
+    • Поддержка всех устройств и платформ<br>
+    • Интеграция с Microsoft Teams`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Windows: Windows 10+<br>
+      • macOS: Big Sur (11)+<br>
+      • Интернет: обязателен для Office 365<br>
+      • Мобильные устройства: Android 8.0+, iOS 14.0+
+    `
   },
   
   'windows': {
     id: 'windows',
     title: 'Windows',
     category: 'Microsoft',
-    price: 1100,
-    oldPrice: 1600,
-    discount: '-31%',
+    price: 500,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
       'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?w=600&h=400&fit=crop&crop=center'
     ],
-    variants: [ { id: 'variant-3', name: 'Ключ' } ],
-    periods: [ { id: 'period-12', name: 'Лицензия', price: 1100 } ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 1100 } ],
-    description: `Windows — лицензионный ключ активации.`,
-    systemRequirements: `PC с совместимыми характеристиками.`
+    variants: [ { id: 'variant-1', name: 'Подписка' } ],
+    periods: [ { id: 'period-12', name: '12 мес', price: 500 } ],
+    editions: [ { id: 'edition-1', name: 'Windows 11', price: 500, periodPricing: { 'period-12': 500 } } ],
+    description: `Microsoft Windows — ОС для работы, игр, бизнеса и разработки. DirectX 12 и HDR для игр, интеграция с Xbox и Microsoft Store, безопасность (TPM 2.0), оптимизация и современный дизайн. Windows 11: поддержка Android‑приложений, новый Microsoft Store, обновлённая панель задач и AI Copilot.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования (Windows 11):</strong><br>
+      • ОС: Windows 11 (64‑bit)<br>
+      • Процессор: 1 ГГц, 2 ядра, 64‑bit<br>
+      • ОЗУ: минимум 4 ГБ (рек. 8 ГБ)<br>
+      • Хранилище: 64 ГБ SSD<br>
+      • Видеокарта: DirectX 12, драйвер WDDM 2.0<br>
+      • Экран: минимум 9″, 720p<br>
+      • Интернет: обязателен для активации
+    `
   },
   
   'claude-ai': {
     id: 'claude-ai',
     title: 'Claude AI',
     category: 'Нейросети',
-    price: 950,
-    oldPrice: 1250,
-    discount: '-24%',
+    price: 2249,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -560,22 +669,33 @@ export const products = {
       'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 950 },
-      { id: 'period-3', name: '3 мес', price: 2550 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 2249 }, { id: 'period-12', name: '12 мес', price: 19000 } ],
+    editions: [
+      { id: 'edition-1', name: 'Pro', price: 2249, periodPricing: { 'period-1': 2249, 'period-12': 19000 } },
+      { id: 'edition-2', name: 'Max 5x лимиты', price: 9500, periodPricing: { 'period-1': 9500 } },
+      { id: 'edition-3', name: 'Max 20x лимиты', price: 19000, periodPricing: { 'period-1': 19000 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Pro', price: 950 } ],
-    description: `Claude — продвинутый ИИ‑ассистент для текста и анализа.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Claude AI — ассистент от Anthropic для генерации текстов, анализа документов, написания кода и работы с большими файлами. Версия Claude 3.5 Sonnet повысила точность и производительность.<br><br>
+    <strong>Особенности:</strong><br>
+    • Большие PDF и Excel<br>
+    • Генерация кода и работа с API<br>
+    • Конфиденциальная обработка данных<br>
+    • Командная работа`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Desktop: Windows 10+, macOS Big Sur+<br>
+      • CLI (Claude Code): Windows/macOS/Linux, 4 ГБ RAM, Node.js 18+<br>
+      • Web‑версия: современный браузер
+    `
   },
   
   'freepik': {
     id: 'freepik',
     title: 'Freepik',
     category: 'Дизайн',
-    price: 650,
-    oldPrice: 900,
-    discount: '-28%',
+    price: 1250,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -583,22 +703,27 @@ export const products = {
       'https://images.unsplash.com/photo-1472289065668-ce650ac443d2?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 650 },
-      { id: 'period-12', name: '12 мес', price: 5400 }
+    periods: [ { id: 'period-1', name: '1 мес', price: 1250 }, { id: 'period-12', name: '12 мес', price: 8990 } ],
+    editions: [
+      { id: 'edition-1', name: 'Essential', price: 1250, periodPricing: { 'period-1': 1250, 'period-12': 8990 } },
+      { id: 'edition-2', name: 'Premium', price: 2250, periodPricing: { 'period-1': 2250 } },
+      { id: 'edition-3', name: 'Premium+', price: 4650, periodPricing: { 'period-1': 4650 } }
     ],
-    editions: [ { id: 'edition-1', name: 'Premium', price: 650 } ],
-    description: `Freepik — премиум‑доступ к стоковым ресурсам.`,
-    systemRequirements: `Браузер, интернет.`
+    description: `Freepik — платформа для стоковой графики, иллюстраций, иконок, PSD‑макетов, фото и шаблонов. Интеграции с Photoshop, Figma и Illustrator. Есть бесплатные и премиум‑ресурсы.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Web‑версия: современный браузер<br>
+      • Интернет: стабильное соединение 5 Мбит/с и выше
+    `
   },
   
   'spotify': {
     id: 'spotify',
     title: 'Spotify',
     category: 'Подписки',
-    price: 399,
-    oldPrice: 499,
-    discount: '-20%',
+    price: 199,
+    oldPrice: null,
+    discount: null,
     priceUSDT: 'для юрлиц',
     labels: ['Лицензия'],
     labelColors: ['violet'],
@@ -606,16 +731,17 @@ export const products = {
       'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&h=400&fit=crop&crop=center'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
-    periods: [
-      { id: 'period-1', name: '1 мес', price: 399 },
-      { id: 'period-12', name: '12 мес', price: 3990 }
-    ],
-    editions: [
-      { id: 'edition-1', name: 'Individual', price: 399 },
-      { id: 'edition-2', name: 'Family', price: 699 }
-    ],
-    description: `Spotify — подписка на музыку без ограничений.`,
-    systemRequirements: `iOS/Android/Windows/macOS или веб.`
+    periods: [ { id: 'period-1', name: '1 мес', price: 199 } ],
+    editions: [ { id: 'edition-1', name: 'Individual', price: 199, periodPricing: { 'period-1': 199 } } ],
+    description: `Spotify — музыкальный стриминговый сервис с миллионами треков, подкастов и плейлистов. Персональные рекомендации, офлайн‑загрузка, совместные плейлисты и интеграция с соцсетями. Работает на ПК, смартфонах, ТВ, колонках и в авто.`,
+    systemRequirements: `
+      <strong>Минимальные системные требования:</strong><br>
+      • Android: 7.0+<br>
+      • iOS: 14.0+<br>
+      • Windows: Windows 10 (64‑bit)+<br>
+      • macOS: 10.13+<br>
+      • Web‑версия: современные браузеры (Chrome/Safari/Edge/Firefox)
+    `
   },
   
   'microsoft-office': {
