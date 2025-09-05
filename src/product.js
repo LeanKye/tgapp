@@ -231,6 +231,51 @@ function scrollToSelectedButton(container, selectedElement) {
   }
 }
 
+// Вспомогательная функция: получить цену для пары (издание, период) по тем же правилам, что и конечная цена
+function getPriceForEditionAndPeriod(product, edition, periodId) {
+  const periodObj = product.periods.find(p => p.id === periodId);
+  if (edition && edition.periodPricing && periodId && Object.prototype.hasOwnProperty.call(edition.periodPricing, periodId)) {
+    const val = edition.periodPricing[periodId];
+    if (typeof val === 'number') return val;
+  }
+  if (periodObj && typeof periodObj.price === 'number') return periodObj.price;
+  if (edition && typeof edition.price === 'number') return edition.price;
+  return product.price;
+}
+
+// Обновить ценники на кнопках изданий согласно текущему выбранному периоду
+function updateEditionPriceLabels(product) {
+  const container = document.querySelector('#edition-group');
+  const periodInput = document.querySelector('input[name="period"]:checked');
+  const periodId = periodInput?.value;
+  if (!container || !periodId) return;
+  (product.editions || []).forEach((edition) => {
+    const label = container.querySelector(`label[for="${edition.id}"]`);
+    if (!label) return;
+    const priceEl = label.querySelector('.edition-price');
+    const previewPrice = getPriceForEditionAndPeriod(product, edition, periodId);
+    if (priceEl) {
+      priceEl.textContent = formatPriceSimple(previewPrice);
+    }
+  });
+}
+
+// Обновить отображение цены для юрлиц (если применимо) от текущей цены
+function setCorporatePriceDisplayIfApplicable(product, baseAmount) {
+  const priceUsdtElement = document.querySelector('.price-usdt');
+  if (!priceUsdtElement) return;
+  const usdtText = product.priceUSDT;
+  if (usdtText === 'для юрлиц') {
+    const corporatePrice = Math.round((typeof baseAmount === 'number' ? baseAmount : product.price) * 0.97);
+    const span = priceUsdtElement.querySelector('.corporate-price');
+    if (span) {
+      span.innerHTML = formatPrice(corporatePrice);
+    } else {
+      priceUsdtElement.innerHTML = `для юрлиц <span class="corporate-price">${formatPrice(corporatePrice)}</span>`;
+    }
+  }
+}
+
 // Применение визуальных изменений при выборе издания (плана)
 function applyEditionVisuals(product, edition) {
   if (!product || !edition) return;
@@ -341,15 +386,22 @@ function updatePeriods(product) {
       if (input.checked) {
         const productObj = getProductById(getUrlParameter('product'));
         const selectedOptions = getSelectedOptions();
+        let baseAmount;
         if (productObj && selectedOptions) {
           const final = calculateFinalPrice(productObj, selectedOptions);
+          baseAmount = final;
           document.querySelector('.price-value').innerHTML = formatPrice(final);
         } else {
+          baseAmount = period.price;
           document.querySelector('.price-value').innerHTML = formatPrice(period.price);
         }
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
         const product = getProductById(getUrlParameter('product'));
+        // Обновляем ценники на изданиях под выбранный период
+        if (product) updateEditionPriceLabels(product);
+        // Обновляем цену для юрлиц, если необходимо
+        if (product) setCorporatePriceDisplayIfApplicable(product, baseAmount);
         if (product) refreshBuyControls(product);
       }
     });
@@ -370,12 +422,17 @@ function updateEditions(product) {
 
     const label = document.createElement('label');
     label.htmlFor = edition.id;
-    const editionMonthly = (edition.periodPricing && edition.periodPricing['period-1']) || edition.price;
-    const priceHtml = editionMonthly ? `${formatPriceSimple(editionMonthly)}` : '';
+    // Изначальный ценник на кнопке издания — согласно текущему выбранному периоду
+    const selectedPeriodInput = document.querySelector('input[name="period"]:checked');
+    const selectedPeriodId = selectedPeriodInput ? selectedPeriodInput.value : null;
+    const initialEditionPrice = selectedPeriodId
+      ? getPriceForEditionAndPeriod(product, edition, selectedPeriodId)
+      : ((edition.periodPricing && edition.periodPricing['period-1']) || edition.price || product.price);
+    const priceHtml = initialEditionPrice ? `${formatPriceSimple(initialEditionPrice)}` : '';
     label.innerHTML = `
       <div>
         <div>${edition.name}</div>
-        <div>${priceHtml}</div>
+        <div class="edition-price">${priceHtml}</div>
       </div>
     `;
 
@@ -392,15 +449,23 @@ function updateEditions(product) {
         // Пересчитываем итоговую цену исходя из выбранных опций
         const productObj = getProductById(getUrlParameter('product'));
         const selectedOptions = getSelectedOptions();
+        let baseAmount;
         if (productObj && selectedOptions) {
           const final = calculateFinalPrice(productObj, selectedOptions);
+          baseAmount = final;
           document.querySelector('.price-value').innerHTML = formatPrice(final);
         } else if (edition.price) {
+          baseAmount = edition.price;
           document.querySelector('.price-value').innerHTML = formatPrice(edition.price);
+        } else {
+          baseAmount = product.price;
+          document.querySelector('.price-value').innerHTML = formatPrice(product.price);
         }
         // Добавляем автоматический скролл к выбранной кнопке
         scrollToSelectedButton(container, label);
         if (productObj) refreshBuyControls(productObj);
+        // Обновляем цену для юрлиц, если необходимо
+        if (productObj) setCorporatePriceDisplayIfApplicable(productObj, baseAmount);
       }
     });
   });
@@ -418,6 +483,9 @@ function updateEditions(product) {
     const final = calculateFinalPrice(productObj, selectedOptions);
     const priceEl = document.querySelector('.price-value');
     if (priceEl) priceEl.innerHTML = formatPrice(final);
+    // Синхронизируем ценники на изданиях и цену для юрлиц
+    updateEditionPriceLabels(productObj);
+    setCorporatePriceDisplayIfApplicable(productObj, final);
   }
 }
 
@@ -1152,7 +1220,15 @@ function setCartItem(product, qty, selectedOptions) {
       title: product.title,
       // Цена фиксируется с учётом выбранных опций (если переданы)
       price: selectedOptions ? calculateFinalPrice(product, selectedOptions) : (product.price),
-      image: product.images?.[0] || '',
+      image: (() => {
+        if (selectedOptions && selectedOptions.editionId) {
+          const editionObj = (product.editions || []).find(e => e.id === selectedOptions.editionId);
+          if (editionObj && Array.isArray(editionObj.images) && editionObj.images.length > 0) {
+            return editionObj.images[0];
+          }
+        }
+        return product.images?.[0] || '';
+      })(),
       qty,
       // Сохраняем выбранные опции, чтобы показывать в корзине и модалке
       variantId: selectedOptions?.variantId,
