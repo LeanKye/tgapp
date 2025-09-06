@@ -218,10 +218,9 @@ body.has-bottom-nav {
 
   /* Специальные отступы для кнопки "Купить" на iOS */
   .add-to-cart {
-    /* Увеличиваем отступ снизу для лучшего позиционирования на iOS */
-    bottom: 20px;
-    /* Дополнительный отступ снизу для безопасной зоны */
-    margin-bottom: calc(env(safe-area-inset-bottom) + 4px);
+    /* Компактнее прижимаем кнопку к низу на iOS */
+    bottom: 16px;
+    margin-bottom: 0;
   }
 }
 
@@ -439,7 +438,7 @@ body:has(.product)::before {
 
 .add-to-cart {
   position: fixed;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: calc(10px + env(safe-area-inset-bottom));
   left: 16px;
   right: 16px;
   display: block;
@@ -460,9 +459,9 @@ body:has(.product)::before {
   cursor: pointer;
 }
 
-/* Поднимаем кнопку над нижней навигацией */
+/* Поднимаем кнопку над нижней навигацией, но ещё ближе к панели */
 body.has-bottom-nav .add-to-cart {
-  bottom: calc(8px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  bottom: calc(4px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
 /* Удалён пустой hover-блок для .add-to-cart */
@@ -585,19 +584,19 @@ body:has(.product) .add-to-cart:active {
 
 /* Иконки способов оплаты на странице товара */
 .payment-methods { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-/* Бейджи способов оплаты */
+/* Иконки способов оплаты без фона, крупнее */
 .payment-methods .pm-icon {
   display: inline-block;
-  height: 22px;
+  height: 28px;
   width: auto;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background: #29A5FF;
-  border: 1px solid #3f3f3f;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   vertical-align: middle;
 }
-.payment-methods .pm-sbp { height: 22px; }
-.payment-methods .pm-mir { height: 22px; }
+.payment-methods .pm-sbp { height: 28px; }
+.payment-methods .pm-mir { height: 28px; }
 
 .price-usdt .usdt-currency {
   font-size: 12px;
@@ -1183,14 +1182,16 @@ body.info-page.has-bottom-nav {
   padding-bottom: max(0px, calc(env(safe-area-inset-bottom) - 2px));
   z-index: 800; /* ниже модалок и кнопки Купить */
   /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
-  transform: none;
+  transform: translateZ(0);
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-/* При открытой клавиатуре скрываем нижнюю навигацию ниже видимой области */
+/* Не скрываем нижнюю навигацию при открытой клавиатуре */
 body.keyboard-open .bottom-nav {
-  transform: translateY(100%);
-  pointer-events: none;
+  transform: none;
+  pointer-events: auto;
 }
 
 .bottom-nav .nav-item {
@@ -1250,9 +1251,7 @@ body.keyboard-open .bottom-nav {
   .bottom-nav {
     transform: none;
   }
-  body.keyboard-open .bottom-nav {
-    transform: translateY(100%);
-  }
+  body.keyboard-open .bottom-nav { transform: none; }
 }
 
 /* ===== Корзина ===== */
@@ -1316,7 +1315,7 @@ body.keyboard-open .bottom-nav {
 .cart-summary-row.total { color: #fff; font-weight: 600; font-size: 16px; }
 
 /* кнопка оформления как на странице товара */
-.cart-checkout { position: fixed; left: 16px; right: 16px; bottom: calc(8px + env(safe-area-inset-bottom)); z-index: 2000; pointer-events: auto; }
+.cart-checkout { position: fixed; left: 16px; right: 16px; bottom: calc(6px + env(safe-area-inset-bottom)); z-index: 2000; pointer-events: auto; }
 .cart-checkout .checkout-button { background-color: #29A5FF; height: 46px; border-radius: 8px; font-size: clamp(13px, 3.8vw, 16px); font-weight: 600; padding: 0 12px; white-space: nowrap; }
 .cart-checkout .checkout-button { position: relative; z-index: 1; }
 .cart-checkout .checkout-button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
@@ -1324,7 +1323,7 @@ body.keyboard-open .bottom-nav {
 .cart-checkout .checkout-button .center { font-weight: 600; font-size: 1em; flex: 1 1 auto; text-align: center; }
 
 /* отступ под нижний навбар */
-body.has-bottom-nav .cart-checkout { bottom: calc(8px + var(--bottom-nav-height) + env(safe-area-inset-bottom)); }
+body.has-bottom-nav .cart-checkout { bottom: calc(4px + var(--bottom-nav-height) + env(safe-area-inset-bottom)); }
 
 /* Подложка под нижними кнопками (визуально объединяет с навбаром) */
 .bottom-actions-bg {
@@ -1333,7 +1332,7 @@ body.has-bottom-nav .cart-checkout { bottom: calc(8px + var(--bottom-nav-height)
   right: 0;
   bottom: 0;
   border-radius: 16px 16px 0 0;
-  height: calc(var(--bottom-nav-height) + 65px + env(safe-area-inset-bottom));
+  height: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom));
   background: #1f1f1f;
   z-index: 400; /* значительно ниже навбара и кнопок */
   pointer-events: none;
@@ -1343,14 +1342,14 @@ body.has-checkout-bar .bottom-actions-bg { display: block; }
 
 /* Добавляем дополнительный отступ снизу под навигацию и панель оформления на страницах корзины */
 body.has-checkout-bar .catalog {
-  padding-bottom: calc(var(--bottom-nav-height) + 65px + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom));
 }
 /* ===== Контролы товара (перейти в корзину + счётчик) ===== */
 .product-cart-controls {
   position: fixed;
   left: 16px;
   right: 16px;
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  bottom: calc(10px + env(safe-area-inset-bottom));
   display: flex;
   gap: 8px;
   z-index: 2000; /* выше подложки и навбара */
@@ -1402,7 +1401,7 @@ body.has-checkout-bar .catalog {
 
 /* Поднимаем блок над нижней навигацией */
 body.has-bottom-nav .product-cart-controls {
-  bottom: calc(8px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  bottom: calc(4px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
 /* ===== Панель массовых действий корзины ===== */
@@ -2027,6 +2026,15 @@ body.has-bottom-nav .product-cart-controls {
   display: flex;
   gap: 16px;
   margin-bottom: 8px;
+}
+
+/* Недоступный для текущего периода план: серый, без цены */
+.edition-group label.unavailable {
+  opacity: 0.6;
+  filter: grayscale(1);
+}
+.edition-group label.unavailable .edition-price {
+  display: none;
 }
 
 .product-sub img {

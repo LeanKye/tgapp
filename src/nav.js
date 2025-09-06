@@ -99,59 +99,12 @@ function initNav() {
   });
   window.addEventListener('cart:updated', () => updateCartBadge());
 
-  // iOS клавиатура: удерживаем нижнюю навигацию у нижнего края экрана
-  const setKeyboardOffset = () => {
-    try {
-      const vv = window.visualViewport;
-      // Полностью отключаем любое смещение навбара
-      document.documentElement.style.setProperty('--keyboard-offset', '0px');
-
-      // Определяем состояние открытой клавиатуры и скрываем нижнюю навигацию
-      let keyboardOpen = false;
-      if (vv) {
-        const viewportBottom = vv.height + vv.offsetTop;
-        const windowBottom = window.innerHeight;
-        const overlap = windowBottom - viewportBottom;
-        const KEYBOARD_THRESHOLD = 80; // заметная высота
-        keyboardOpen = overlap > KEYBOARD_THRESHOLD;
-      }
-
-      // Дополнительно: считаем, что клавиатура открыта только для ТЕКСТОВЫХ полей
-      if (!keyboardOpen) {
-        const el = document.activeElement;
-        const tag = (el && el.tagName ? el.tagName.toLowerCase() : '');
-        const isContentEditable = !!(el && el.isContentEditable);
-        let isTextualInput = false;
-        if (tag === 'textarea') {
-          isTextualInput = true;
-        } else if (tag === 'input') {
-          const type = String(el.getAttribute('type') || '').toLowerCase();
-          const TEXT_TYPES = new Set(['text', 'email', 'password', 'search', 'tel', 'url', 'number']);
-          isTextualInput = TEXT_TYPES.has(type) || type === '';
-        }
-        if ((isTextualInput || isContentEditable) && !el.readOnly && !el.disabled) {
-          keyboardOpen = true;
-        }
-      }
-
-      document.body.classList.toggle('keyboard-open', keyboardOpen);
-    } catch {
-      document.documentElement.style.setProperty('--keyboard-offset', '0px');
-      document.body.classList.remove('keyboard-open');
-    }
-  };
-
-  // Привязываемся к событиям visualViewport (iOS Safari)
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', setKeyboardOffset);
-    window.visualViewport.addEventListener('scroll', setKeyboardOffset);
-    setKeyboardOffset();
-  }
-
-  // Также реагируем на фокус/расфокус инпутов, чтобы сразу убирать смещение
-  // Поддерживаем значение 0 вне зависимости от фокуса
-  window.addEventListener('focusin', setKeyboardOffset, { capture: true });
-  window.addEventListener('focusout', () => setTimeout(setKeyboardOffset, 0), { capture: true });
+  // Упрощение поведения с клавиатурой: панель не скрываем и не смещаем.
+  // Если ранее был установлен CSS-переменная для смещений — сбрасываем.
+  try {
+    document.documentElement.style.setProperty('--keyboard-offset', '0px');
+    document.body.classList.remove('keyboard-open');
+  } catch {}
 }
 
 document.addEventListener('DOMContentLoaded', initNav);

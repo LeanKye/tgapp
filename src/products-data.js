@@ -13,11 +13,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
     images: [
-      'https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1504805572947-34fad45aed93?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1609921212029-bb5a28e60960?w=600&h=400&fit=crop&crop=center'
+      'img/adobecreativecloud.webp'
     ],
     variants: [
       { id: 'variant-1', name: 'Активация' },
@@ -33,8 +29,7 @@ export const products = {
       { id: 'edition-1', name: 'Adobe Creative Cloud', price: 1890,
         displayTitle: 'Adobe Creative Cloud — Полный пакет',
         images: [
-          'https://images.unsplash.com/photo-1561736778-92e52a7769ef?w=600&h=400&fit=crop&crop=center',
-          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop&crop=center'
+          'img/adobecreativecloud.webp'
         ],
         periodPricing: {
           'period-week': 500,
@@ -46,8 +41,7 @@ export const products = {
       { id: 'edition-2', name: 'Photoshop + Lightroom', price: 1290,
         displayTitle: 'Adobe Photoshop + Lightroom',
         images: [
-          'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=600&h=400&fit=crop&crop=center',
-          'https://images.unsplash.com/photo-1504805572947-34fad45aed93?w=600&h=400&fit=crop&crop=center'
+          'img/adobecreativecloud.webp'
         ],
         periodPricing: {
           'period-1': 1290,
@@ -85,8 +79,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
     images: [
-      'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1495567720989-cebdbdd97913?w=600&h=400&fit=crop&crop=center'
+      'img/photoroom.webp'
     ],
     variants: [
       { id: 'variant-1', name: 'Активация' },
@@ -130,8 +123,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия', 'Нужен VPN'],
     labelColors: ['orange', 'violet', 'blue'],
     images: [
-      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=600&h=400&fit=crop&crop=center'
+      'img/midjorneyai.webp'
     ],
     variants: [
       { id: 'variant-1', name: 'Подписка' }
@@ -163,8 +155,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1526378722484-bd91ca387e72?w=600&h=400&fit=crop&crop=center'
+      'img/chatgptai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1990 } ],
@@ -196,8 +187,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1487014679447-9f8336841d58?w=600&h=400&fit=crop&crop=center'
+      'img/сanva.webp'
     ],
     variants: [
       { id: 'variant-1', name: 'Подписка' },
@@ -231,7 +221,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1512427691650-5fed1f2e5d37?w=600&h=400&fit=crop&crop=center'
+      'img/runwayai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1890 } ],
@@ -266,7 +256,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop&crop=center'
+      'img/sunoai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1390 } ],
@@ -300,7 +290,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1495020689067-958852a7765e?w=600&h=400&fit=crop&crop=center'
+      'img/leonardoai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1350 } ],
@@ -329,7 +319,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1503602642458-232111445657?w=600&h=400&fit=crop&crop=center'
+      'img/recraftai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1290 } ],
@@ -357,7 +347,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1518779578993-ec3579fee39f?w=600&h=400&fit=crop&crop=center'
+      'img/cursor.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 2490 } ],
@@ -386,7 +376,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?w=600&h=400&fit=crop&crop=center'
+      'img/flo.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-12', name: '12 мес', price: 399 } ],
@@ -411,7 +401,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=400&fit=crop&crop=center'
+      'img/inshot.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-12', name: '12 мес', price: 199 } ],
@@ -443,7 +433,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1526318472351-c75fcf070305?w=600&h=400&fit=crop&crop=center'
+      'img/airbrush.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-12', name: '12 мес', price: 199 } ],
@@ -474,7 +464,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=600&h=400&fit=crop&crop=center'
+      'img/goproquik.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-12', name: '12 мес', price: 1290 } ],
@@ -509,7 +499,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1471341971476-ae15ff5dd4ea?w=600&h=400&fit=crop&crop=center'
+      'img/photomechanic.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1990 }, { id: 'period-12', name: '12 мес', price: 15990 } ],
@@ -543,7 +533,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&h=400&fit=crop&crop=center'
+      'img/yazioai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-12', name: '12 мес', price: 400 } ],
@@ -573,7 +563,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&h=400&fit=crop&crop=center'
+      'img/kreaai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1350 } ],
@@ -597,7 +587,7 @@ export const products = {
   
   'office': {
     id: 'office',
-    title: 'Microsoft Office / Office 365',
+    title: 'Microsoft Office',
     category: 'Microsoft',
     price: 900,
     oldPrice: null,
@@ -606,7 +596,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=600&h=400&fit=crop&crop=center'
+      'img/microsoftoffice.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 900 } ],
@@ -637,7 +627,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1517433456452-f9633a875f6f?w=600&h=400&fit=crop&crop=center'
+      'img/microsoftwindows.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-12', name: '12 мес', price: 500 } ],
@@ -666,7 +656,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=600&h=400&fit=crop&crop=center'
+      'img/claudeai.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 2249 }, { id: 'period-12', name: '12 мес', price: 19000 } ],
@@ -700,7 +690,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1472289065668-ce650ac443d2?w=600&h=400&fit=crop&crop=center'
+      'img/freepik.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 1250 }, { id: 'period-12', name: '12 мес', price: 8990 } ],
@@ -728,7 +718,7 @@ export const products = {
     labels: ['Лицензия'],
     labelColors: ['violet'],
     images: [
-      'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&h=400&fit=crop&crop=center'
+      'img/spotify.webp'
     ],
     variants: [ { id: 'variant-1', name: 'Подписка' } ],
     periods: [ { id: 'period-1', name: '1 мес', price: 199 } ],
@@ -755,9 +745,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=600&h=400&fit=crop&crop=center',
-      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop&crop=center'
+      'img/microsoftoffice365.webp'
     ],
     variants: [
       { id: 'variant-1', name: 'Активация' },
@@ -929,17 +917,17 @@ export const categoryData = {
   'Дизайн': {
     name: 'Дизайн',
     description: 'Инструменты для графики и видео',
-    image: 'img/design.png'
+    image: 'img/design.webp'
   },
   'Нейросети': {
     name: 'Нейросети',
     description: 'Искусственный интеллект и нейронные сети',
-    image: 'img/ai.png'
+    image: 'img/ai.webp'
   },
   'Microsoft': {
     name: 'Microsoft',
     description: 'Office и другие продукты Microsoft',
-    image: 'img/microsoft.png'
+    image: 'img/microsoft.webp'
   },
   'Игры': {
     name: 'Игры',
@@ -950,6 +938,6 @@ export const categoryData = {
   'Подписки': {
     name: 'Подписки',
     description: 'Подписки на сервисы и программы',
-    image: 'img/subscriptions.png'
+    image: 'img/subscriptions.webp'
   }
 };

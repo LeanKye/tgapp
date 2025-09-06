@@ -253,9 +253,20 @@ function updateEditionPriceLabels(product) {
     const label = container.querySelector(`label[for="${edition.id}"]`);
     if (!label) return;
     const priceEl = label.querySelector('.edition-price');
-    const previewPrice = getPriceForEditionAndPeriod(product, edition, periodId);
-    if (priceEl) {
-      priceEl.textContent = formatPriceSimple(previewPrice);
+    const hasMap = edition && edition.periodPricing && typeof edition.periodPricing === 'object';
+    const supports = hasMap ? (typeof edition.periodPricing[periodId] === 'number') : true;
+    if (supports) {
+      label.classList.remove('unavailable');
+      if (priceEl) {
+        const previewPrice = getPriceForEditionAndPeriod(product, edition, periodId);
+        priceEl.textContent = formatPriceSimple(previewPrice);
+      }
+    } else {
+      // Помечаем план как недоступный для текущего периода: серый и без цены
+      label.classList.add('unavailable');
+      if (priceEl) {
+        priceEl.textContent = '';
+      }
     }
   });
 }
@@ -439,13 +450,13 @@ function updateEditions(product) {
     container.appendChild(input);
     container.appendChild(label);
 
-    // Обновляем цену при выборе издания
+    // Обновляем состояние при выборе издания
     input.addEventListener('change', () => {
       if (input.checked) {
+        // Если текущий период недоступен — переключаем на первый доступный для этого издания
+        ensurePeriodForEdition(product, edition);
         // Визуальные изменения (заголовок + изображения)
         applyEditionVisuals(product, edition);
-        // Обновляем доступность периодов под выбранное издание
-        updatePeriodAvailabilityForEdition(product, edition);
         // Пересчитываем итоговую цену исходя из выбранных опций
         const productObj = getProductById(getUrlParameter('product'));
         const selectedOptions = getSelectedOptions();
@@ -474,7 +485,8 @@ function updateEditions(product) {
   const defaultEdition = product.editions[0];
   if (defaultEdition) {
     applyEditionVisuals(product, defaultEdition);
-    updatePeriodAvailabilityForEdition(product, defaultEdition);
+    // Синхронизируем период, если первый изначально не поддерживает выбранный период
+    ensurePeriodForEdition(product, defaultEdition);
   }
   // Устанавливаем корректную цену согласно выбранным по умолчанию опциям
   const productObj = getProductById(getUrlParameter('product'));
@@ -489,52 +501,38 @@ function updateEditions(product) {
   }
 }
 
-// Включаем/выключаем периоды в зависимости от выбранного издания,
-// если у издания задана карта цен periodPricing
-function updatePeriodAvailabilityForEdition(product, edition) {
+// Обеспечить корректный период для выбранного издания:
+// если текущий период недоступен у издания, переключаемся на первый доступный
+function ensurePeriodForEdition(product, edition) {
   const container = document.querySelector('#period-group');
   if (!container) return;
+  const currentInput = container.querySelector('input[name="period"]:checked');
+  const currentId = currentInput?.value;
+  const hasMap = edition && edition.periodPricing && typeof edition.periodPricing === 'object';
+  let supportsCurrent = true;
+  if (hasMap) supportsCurrent = typeof edition.periodPricing[currentId] === 'number';
 
-  // Если у издания нет periodPricing — ничего не ограничиваем
-  const hasPricingMap = edition && edition.periodPricing && typeof edition.periodPricing === 'object';
-  const inputs = Array.from(container.querySelectorAll('input[name="period"]'));
-  let firstAvailable = null;
+  if (supportsCurrent) return;
 
-  inputs.forEach((input) => {
-    const label = container.querySelector(`label[for="${input.id}"]`);
-    let available = true;
-    if (hasPricingMap) {
-      const priceValue = edition.periodPricing[input.id];
-      available = typeof priceValue === 'number';
-    }
-
-    if (available) {
-      input.disabled = false;
-      if (label) {
-        label.style.display = '';
-        label.classList.remove('disabled');
-        label.style.opacity = '';
-      }
-      if (!firstAvailable) firstAvailable = input;
-    } else {
-      // Скрываем/блокируем недоступные периоды для издания
-      input.disabled = true;
-      if (label) {
-        label.style.display = 'none';
-        label.classList.add('disabled');
-        label.style.opacity = '0.5';
-      }
-      if (input.checked) {
-        input.checked = false;
+  // Находим первый доступный период в порядке объявления товара
+  let targetId = null;
+  if (hasMap) {
+    for (const p of product.periods) {
+      if (typeof edition.periodPricing[p.id] === 'number') {
+        targetId = p.id;
+        break;
       }
     }
-  });
+  }
+  // Если карта не задана или ничего не найдено — оставляем как есть
+  if (!targetId) return;
 
-  // Если текущий выбор стал недоступным — выбираем первый доступный период
-  const currentlyChecked = container.querySelector('input[name="period"]:checked');
-  if (!currentlyChecked && firstAvailable) {
-    firstAvailable.checked = true;
-    try { firstAvailable.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
+  const targetInput = container.querySelector(`input[id="${targetId}"]`);
+  const targetLabel = container.querySelector(`label[for="${targetId}"]`);
+  if (targetInput && !targetInput.checked) {
+    targetInput.checked = true;
+    try { targetInput.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
+    if (targetLabel) scrollToSelectedButton(container, targetLabel);
   }
 }
 
