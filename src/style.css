@@ -1246,12 +1246,18 @@ body.keyboard-open .bottom-nav {
   .bottom-nav .nav-item span { font-size: 10px; }
 }
 
-/* iOS 16+: используем нативный inset клавиатуры, смещая панель вниз (в пределах экрана это 0) */
+/* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
 @supports (bottom: env(keyboard-inset-height)) {
   .bottom-nav {
+    /* Когда клавиатура открыта, Safari смещает fixed-элементы вверх.
+       Негативным bottom компенсируем высоту клавиатуры, чтобы панель оставалась внизу страницы. */
+    bottom: calc(0px - env(keyboard-inset-height));
     transform: none;
   }
-  body.keyboard-open .bottom-nav { transform: none; }
+  body.keyboard-open .bottom-nav {
+    bottom: calc(0px - env(keyboard-inset-height));
+    transform: none;
+  }
 }
 
 /* ===== Корзина ===== */
