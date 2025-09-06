@@ -105,6 +105,35 @@ function initNav() {
     document.documentElement.style.setProperty('--keyboard-offset', '0px');
     document.body.classList.remove('keyboard-open');
   } catch {}
+
+  // Детектор открытия клавиатуры: iOS/Android (visualViewport + фокусы)
+  try {
+    const setKeyboardState = (isOpen) => {
+      document.body.classList.toggle('keyboard-open', Boolean(isOpen));
+    };
+
+    const vv = window.visualViewport;
+    if (vv && typeof vv.addEventListener === 'function') {
+      // Базовая высота для сравнения (после загрузки страницы)
+      const baseHeight = vv.height;
+      const updateFromViewport = () => {
+        const shrunkBy = Math.max(0, baseHeight - vv.height);
+        // Порог ~120px — типичная высота сокращения при появлении клавиатуры
+        setKeyboardState(shrunkBy > 120);
+      };
+      vv.addEventListener('resize', updateFromViewport);
+      vv.addEventListener('scroll', updateFromViewport);
+    } else {
+      // Фолбэк через фокус
+      const isEditable = (el) => {
+        if (!el) return false;
+        const tag = el.tagName;
+        return tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+      };
+      window.addEventListener('focusin', (e) => isEditable(e.target) && setKeyboardState(true));
+      window.addEventListener('focusout', () => setTimeout(() => setKeyboardState(false), 100));
+    }
+  } catch {}
 }
 
 document.addEventListener('DOMContentLoaded', initNav);

@@ -1249,12 +1249,12 @@ body.keyboard-open .bottom-nav {
 /* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
 @supports (bottom: env(keyboard-inset-height)) {
   .bottom-nav {
-    /* Когда клавиатура открыта, Safari смещает fixed-элементы вверх.
-       Негативным bottom компенсируем высоту клавиатуры, чтобы панель оставалась внизу страницы. */
-    bottom: calc(0px - env(keyboard-inset-height));
+    /* По умолчанию прижата к низу */
+    bottom: 0;
     transform: none;
   }
   body.keyboard-open .bottom-nav {
+    /* Когда клавиатура открыта, компенсируем её высоту */
     bottom: calc(0px - env(keyboard-inset-height));
     transform: none;
   }
