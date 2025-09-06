@@ -453,8 +453,8 @@ function updateEditions(product) {
     // Обновляем состояние при выборе издания
     input.addEventListener('change', () => {
       if (input.checked) {
-        // Если текущий период недоступен — переключаем на первый доступный для этого издания
-        ensurePeriodForEdition(product, edition);
+        // Скрываем недоступные периоды и переключаемся на первый доступный, если нужно
+        updatePeriodAvailabilityForEdition(product, edition);
         // Визуальные изменения (заголовок + изображения)
         applyEditionVisuals(product, edition);
         // Пересчитываем итоговую цену исходя из выбранных опций
@@ -485,8 +485,8 @@ function updateEditions(product) {
   const defaultEdition = product.editions[0];
   if (defaultEdition) {
     applyEditionVisuals(product, defaultEdition);
-    // Синхронизируем период, если первый изначально не поддерживает выбранный период
-    ensurePeriodForEdition(product, defaultEdition);
+    // Скрываем недоступные периоды под дефолтное издание и выбираем первый доступный
+    updatePeriodAvailabilityForEdition(product, defaultEdition);
   }
   // Устанавливаем корректную цену согласно выбранным по умолчанию опциям
   const productObj = getProductById(getUrlParameter('product'));
@@ -533,6 +533,53 @@ function ensurePeriodForEdition(product, edition) {
     targetInput.checked = true;
     try { targetInput.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
     if (targetLabel) scrollToSelectedButton(container, targetLabel);
+  }
+}
+
+// Показ/скрытие периодов в зависимости от выбранного издания.
+// Недоступные периоды полностью скрываем; если текущий период стал недоступным —
+// автоматически выбираем первый доступный и инициируем пересчёт.
+function updatePeriodAvailabilityForEdition(product, edition) {
+  const container = document.querySelector('#period-group');
+  if (!container) return;
+
+  const hasPricingMap = edition && edition.periodPricing && typeof edition.periodPricing === 'object';
+  const inputs = Array.from(container.querySelectorAll('input[name="period"]'));
+  let firstAvailable = null;
+
+  inputs.forEach((input) => {
+    const label = container.querySelector(`label[for="${input.id}"]`);
+    let available = true;
+    if (hasPricingMap) {
+      const priceValue = edition.periodPricing[input.id];
+      available = typeof priceValue === 'number';
+    }
+
+    if (available) {
+      input.disabled = false;
+      if (label) {
+        label.style.display = '';
+        label.classList.remove('disabled');
+        label.style.opacity = '';
+      }
+      if (!firstAvailable) firstAvailable = input;
+    } else {
+      input.disabled = true;
+      if (label) {
+        label.style.display = 'none';
+        label.classList.add('disabled');
+        label.style.opacity = '0.5';
+      }
+      if (input.checked) {
+        input.checked = false;
+      }
+    }
+  });
+
+  const currentlyChecked = container.querySelector('input[name="period"]:checked');
+  if (!currentlyChecked && firstAvailable) {
+    firstAvailable.checked = true;
+    try { firstAvailable.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
   }
 }
 
