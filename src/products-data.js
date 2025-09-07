@@ -752,9 +752,9 @@ export const products = {
       { id: 'variant-2', name: 'Ключ' }
     ],
     periods: [
-      { id: 'period-1', name: '1 месяц', price: 800 },
-      { id: 'period-2', name: '6 месяцев', price: 4000 },
-      { id: 'period-3', name: '12 месяцев', price: 7000 }
+      { id: 'period-1', name: '1 мес', price: 800 },
+      { id: 'period-2', name: '6 мес', price: 4000 },
+      { id: 'period-3', name: '12 мес', price: 7000 }
     ],
     editions: [
       { id: 'edition-1', name: 'Personal', price: 800 },
