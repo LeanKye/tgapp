@@ -595,8 +595,8 @@ body:has(.product) .add-to-cart:active {
   border: none;
   vertical-align: middle;
 }
-.payment-methods .pm-sbp { height: 28px; }
-.payment-methods .pm-mir { height: 28px; }
+.payment-methods .pm-sbp { height: 18px; }
+.payment-methods .pm-mir { height: 22px; }
 
 .price-usdt .usdt-currency {
   font-size: 12px;
