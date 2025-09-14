@@ -137,7 +137,12 @@ function applyScale() {
   if (stableTopInset == null) stableTopInset = measuredTop;
   // Update only on significant change (>6px) to avoid micro-jumps when scrolling
   if (!nearlyEqual(measuredTop, stableTopInset, 6)) stableTopInset = measuredTop;
-  const topInsetPx = stableTopInset;
+  let topInsetPx = stableTopInset;
+  // Чуть больший отступ на главной (есть .logo)
+  try {
+    const isHome = !!document.querySelector('.logo');
+    if (isHome) topInsetPx += 8; // добавляем 8px пространства сверху только на главной
+  } catch {}
   // Expose state for CSS overrides (e.g., disable env-safe-area duplication)
   try {
     document.body.classList.toggle('scaled-safe', topInsetPx > 0);
