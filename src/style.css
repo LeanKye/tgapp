@@ -1529,19 +1529,9 @@ body.has-bottom-nav .product-cart-controls {
 .period-group.button-group {
   display: grid;
   grid-auto-flow: column;
-  /* Минимальная ширина ячейки, дальше равномерно растягиваем; при нехватке места включится скролл */
-  grid-auto-columns: minmax(96px, 1fr);
+  grid-auto-columns: 1fr;
   align-items: center;
-  overflow-x: auto;
-  overflow-y: hidden;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  /* Разрешаем горизонтальные жесты прокрутки, вертикальные не блокируем */
-  touch-action: pan-x pan-y;
 }
-
-.period-group.button-group::-webkit-scrollbar { display: none; }
 
 .period-group.button-group label {
   display: block;
