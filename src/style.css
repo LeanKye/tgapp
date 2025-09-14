@@ -1524,6 +1524,29 @@ body.has-bottom-nav .product-cart-controls {
   -webkit-touch-callout: none;
 }
 
+/* Гарантируем, что кнопки периодов всегда умещаются в одну строку
+   и равномерно распределяются по ширине контейнера (как на 16 Pro Max) */
+.period-group.button-group {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  align-items: center;
+}
+
+.period-group.button-group label {
+  display: block;
+  width: 100%;
+  min-width: 0; /* разрешаем ужиматься внутри сетки */
+}
+
+.period-group.button-group span {
+  display: block;
+  width: 100%;
+  text-align: center;
+  white-space: nowrap; /* исключаем перенос «12 мес» на две строки */
+  padding-inline: 12px; /* чуть компактнее, чтобы всегда влезало */
+}
+
 /* Специальные стили для кнопок плана */
 .edition-group.button-group {
   display: flex;
