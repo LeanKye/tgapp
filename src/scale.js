@@ -82,6 +82,13 @@ function getViewportSize() {
 
 function getTopInset() {
   try {
+    // Telegram WebApp header compensation (fullsize mode)
+    const wa = window.Telegram && window.Telegram.WebApp;
+    if (wa && typeof wa.viewportHeight === 'number') {
+      // innerHeight may include area under Telegram header; viewportHeight — видимая часть WebApp
+      const diff = Math.max(0, window.innerHeight - wa.viewportHeight);
+      if (diff > 0) return diff;
+    }
     if (window.visualViewport) {
       return Math.max(0, window.visualViewport.offsetTop || 0);
     }
