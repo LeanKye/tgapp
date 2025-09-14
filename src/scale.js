@@ -107,6 +107,10 @@ function applyScale() {
   const root = ensureScaledRoot();
   const { width: vw, height: vh } = getViewportSize();
   const topInsetPx = getTopInset();
+  // Expose state for CSS overrides (e.g., disable env-safe-area duplication)
+  try {
+    document.body.classList.toggle('scaled-safe', topInsetPx > 0);
+  } catch {}
 
   // Account for fixed bottom navigation
   const bottomNav = document.querySelector('.bottom-nav');
