@@ -8,6 +8,7 @@ const BASE_HEIGHT = 932;  // Fallback baseline height (used only as hint)
 let lastApplied = { vw: 0, vh: 0, scale: 0, topInset: 0, offsetX: 0, bottomNavHeight: 0, spacerHeight: 0 };
 let isApplying = false;
 function nearlyEqual(a, b, eps) { return Math.abs(a - b) <= (eps || 0.5); }
+let stableTopInset = null; // keep stable header inset to avoid jitter
 
 /**
  * Create a wrapper for all non-script body children and apply transform scale.
@@ -132,7 +133,11 @@ function applyScale() {
   isApplying = true;
   const root = ensureScaledRoot();
   const { width: vw, height: vh } = getViewportSize();
-  const topInsetPx = Math.round(getTopInset());
+  const measuredTop = Math.round(getTopInset());
+  if (stableTopInset == null) stableTopInset = measuredTop;
+  // Update only on significant change (>6px) to avoid micro-jumps when scrolling
+  if (!nearlyEqual(measuredTop, stableTopInset, 6)) stableTopInset = measuredTop;
+  const topInsetPx = stableTopInset;
   // Expose state for CSS overrides (e.g., disable env-safe-area duplication)
   try {
     document.body.classList.toggle('scaled-safe', topInsetPx > 0);
@@ -230,13 +235,13 @@ function initScale() {
   window.addEventListener('orientationchange', schedule);
   if (window.visualViewport) {
     const vv = window.visualViewport;
-    const onVvChange = () => {
+    const onVvResize = () => {
       const w = Math.round(vv.width);
       const h = Math.round(vv.height);
       if (!nearlyEqual(w, lastApplied.vw, 1) || !nearlyEqual(h, lastApplied.vh, 1)) schedule();
     };
-    vv.addEventListener('resize', onVvChange, { passive: true });
-    vv.addEventListener('scroll', onVvChange, { passive: true });
+    vv.addEventListener('resize', onVvResize, { passive: true });
+    // Не слушаем scroll, это источник дребезга на iOS
   }
 
   // Re-apply once window fully loaded (images/fonts)
