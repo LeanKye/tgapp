@@ -4,6 +4,11 @@
 const BASE_WIDTH = 430;   // iPhone 16 Pro Max logical CSS width in portrait
 const BASE_HEIGHT = 932;  // Fallback baseline height (used only as hint)
 
+// Cache to avoid reflows and jitter while scrolling
+let lastApplied = { vw: 0, vh: 0, scale: 0, topInset: 0, offsetX: 0, bottomNavHeight: 0, spacerHeight: 0 };
+let isApplying = false;
+function nearlyEqual(a, b, eps) { return Math.abs(a - b) <= (eps || 0.5); }
+
 /**
  * Create a wrapper for all non-script body children and apply transform scale.
  * We avoid moving <script> tags to keep script loading/execution order intact.
@@ -123,9 +128,11 @@ function getTopInset() {
 }
 
 function applyScale() {
+  if (isApplying) return; // prevent recursive thrashing
+  isApplying = true;
   const root = ensureScaledRoot();
   const { width: vw, height: vh } = getViewportSize();
-  const topInsetPx = getTopInset();
+  const topInsetPx = Math.round(getTopInset());
   // Expose state for CSS overrides (e.g., disable env-safe-area duplication)
   try {
     document.body.classList.toggle('scaled-safe', topInsetPx > 0);
@@ -161,6 +168,19 @@ function applyScale() {
   const scaledWidth = BASE_WIDTH * scale;
   const offsetX = Math.max(0, (vw - scaledWidth) / 2);
 
+  // Skip re-apply if metrics effectively unchanged
+  if (
+    nearlyEqual(vw, lastApplied.vw, 1) &&
+    nearlyEqual(vh, lastApplied.vh, 1) &&
+    nearlyEqual(scale, lastApplied.scale, 0.002) &&
+    nearlyEqual(topInsetPx, lastApplied.topInset, 1) &&
+    nearlyEqual(offsetX, lastApplied.offsetX, 1) &&
+    nearlyEqual(bottomNavHeightPx, lastApplied.bottomNavHeight, 1)
+  ) {
+    isApplying = false;
+    return;
+  }
+
   root.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
 
   // Mirror transform to fixed layers so their children remain pixel-perfect but fixed to viewport
@@ -169,11 +189,11 @@ function applyScale() {
   if (under) {
     under.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
     // Height so that children with bottom: X are anchored to viewport bottom in base coords
-    under.style.height = `${Math.ceil((vh - topInsetPx) / scale)}px`;
+    under.style.height = `${Math.ceil((vh - topInsetPx) / Math.max(scale, 0.0001))}px`;
   }
   if (over) {
     over.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
-    over.style.height = `${Math.ceil((vh - topInsetPx) / scale)}px`;
+    over.style.height = `${Math.ceil((vh - topInsetPx) / Math.max(scale, 0.0001))}px`;
   }
 
   // Update spacer height so the document scroll height matches scaled content
@@ -185,7 +205,13 @@ function applyScale() {
     spacer.style.pointerEvents = 'none';
     document.body.appendChild(spacer);
   }
-  spacer.style.height = `${baseHeight * scale}px`;
+  const newSpacerHeight = Math.ceil(baseHeight * scale);
+  if (!nearlyEqual(newSpacerHeight, lastApplied.spacerHeight, 1)) {
+    spacer.style.height = `${newSpacerHeight}px`;
+  }
+
+  lastApplied = { vw, vh, scale, topInset: topInsetPx, offsetX, bottomNavHeight: bottomNavHeightPx, spacerHeight: newSpacerHeight };
+  isApplying = false;
 }
 
 // Apply on load and on changes that can affect viewport size
@@ -200,10 +226,17 @@ function initScale() {
     });
   };
 
-  window.addEventListener('resize', schedule);
+  window.addEventListener('resize', schedule, { passive: true });
   window.addEventListener('orientationchange', schedule);
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', schedule);
+    const vv = window.visualViewport;
+    const onVvChange = () => {
+      const w = Math.round(vv.width);
+      const h = Math.round(vv.height);
+      if (!nearlyEqual(w, lastApplied.vw, 1) || !nearlyEqual(h, lastApplied.vh, 1)) schedule();
+    };
+    vv.addEventListener('resize', onVvChange, { passive: true });
+    vv.addEventListener('scroll', onVvChange, { passive: true });
   }
 
   // Re-apply once window fully loaded (images/fonts)
