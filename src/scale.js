@@ -141,7 +141,7 @@ function applyScale() {
   // Чуть больший отступ на главной (есть .logo)
   try {
     const isHome = !!document.querySelector('.logo');
-    if (isHome) topInsetPx += 64; // увеличенный отступ сверху только на главной
+    if (isHome) topInsetPx += 48; // увеличенный отступ сверху только на главной
   } catch {}
   // Expose state for CSS overrides (e.g., disable env-safe-area duplication)
   try {
