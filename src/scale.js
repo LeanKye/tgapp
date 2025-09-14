@@ -87,10 +87,15 @@ function getTopInset() {
     if (wa && typeof wa.viewportHeight === 'number') {
       // innerHeight may include area under Telegram header; viewportHeight — видимая часть WebApp
       const diff = Math.max(0, window.innerHeight - wa.viewportHeight);
-      if (diff > 0) return diff;
+      // viewportStableHeight иногда точнее
+      const stable = typeof wa.viewportStableHeight === 'number' ? Math.max(0, window.innerHeight - wa.viewportStableHeight) : 0;
+      const maxWa = Math.max(diff, stable);
+      if (maxWa > 0) return Math.ceil(maxWa);
     }
     if (window.visualViewport) {
-      return Math.max(0, window.visualViewport.offsetTop || 0);
+      const vv = window.visualViewport;
+      const vvTop = Math.max(0, (vv.offsetTop || 0), (vv.pageTop || 0));
+      if (vvTop > 0) return Math.ceil(vvTop);
     }
   } catch {}
   // Fallback via CSS env probe
@@ -107,7 +112,14 @@ function getTopInset() {
     probe.style.opacity = '0';
     document.body.appendChild(probe);
   }
-  return probe.offsetHeight || 0;
+  const envTop = probe.offsetHeight || 0;
+  if (envTop > 0) return envTop;
+
+  // Last resort: conservative constant for iOS Telegram header
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isTG = !!(window.Telegram && window.Telegram.WebApp);
+  if (isIOS && isTG) return 64; // приблизительно высота шапки TG + статус-бара
+  return 0;
 }
 
 function applyScale() {
