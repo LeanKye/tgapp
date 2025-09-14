@@ -210,7 +210,11 @@ function applyScale() {
     spacer.style.pointerEvents = 'none';
     document.body.appendChild(spacer);
   }
-  const newSpacerHeight = Math.ceil(baseHeight * scale);
+  let newSpacerHeight = Math.ceil(baseHeight * scale);
+  // Никогда не уменьшаем spacer во время сессии, чтобы не выбивать текущую позицию скролла
+  if (lastApplied.spacerHeight && newSpacerHeight < lastApplied.spacerHeight) {
+    newSpacerHeight = lastApplied.spacerHeight;
+  }
   if (!nearlyEqual(newSpacerHeight, lastApplied.spacerHeight, 1)) {
     spacer.style.height = `${newSpacerHeight}px`;
   }
@@ -231,7 +235,7 @@ function initScale() {
     });
   };
 
-  window.addEventListener('resize', schedule, { passive: true });
+  // Не слушаем window.resize на iOS Telegram — он стреляет при резиновой прокрутке и даёт дёргания
   window.addEventListener('orientationchange', schedule);
   if (window.visualViewport) {
     const vv = window.visualViewport;
@@ -286,26 +290,20 @@ function initScale() {
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
         if (m.type === 'childList') {
-          // If bottom-nav appeared or content changed significantly, rescale
-          if ([...m.addedNodes].some((n) => n.nodeType === 1 && (n.classList?.contains('bottom-nav') || n.id === 'scaled-root' || n.classList?.contains('add-to-cart') || n.classList?.contains('product-cart-controls') || n.classList?.contains('cart-checkout') || n.classList?.contains('bottom-actions-bg')))) {
-            moveFixedIntoLayers();
-            schedule();
-            return;
-          }
-        }
-        if (m.type === 'attributes') {
-          if (m.target && m.target.classList && (m.target.classList.contains('bottom-nav') || m.target.classList.contains('add-to-cart') || m.target.classList.contains('product-cart-controls') || m.target.classList.contains('cart-checkout') || m.target.classList.contains('bottom-actions-bg'))) {
+          if ([...m.addedNodes].some((n) => n.nodeType === 1 && n.classList?.contains('bottom-nav'))) {
             moveFixedIntoLayers();
             schedule();
             return;
           }
         }
       }
-      // Fallback debounce for generic content changes
-      schedule();
     });
-    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    // Наблюдаем только верхний уровень body — без subtree и без attributes
+    observer.observe(document.body, { childList: true, subtree: false });
   } catch {}
+
+  // Дополнительная одноразовая проверка через 300мс — на случай поздней вставки навбара
+  setTimeout(() => applyScale(), 300);
 }
 
 if (document.readyState === 'loading') {
