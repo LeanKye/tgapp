@@ -274,19 +274,6 @@ body.has-bottom-nav {
   }
 }
 
-/* Отключаем дублирование safe-area сверху при глобальном скейлинге */
-body.scaled-safe .product { margin-top: 0 !important; }
-body.scaled-safe .product-cover { padding-top: 0 !important; }
-@media (max-width: 375px) {
-  body.scaled-safe .product-cover { height: 220px !important; }
-}
-@media (max-width: 768px) and (min-width: 376px) {
-  body.scaled-safe .product-cover { height: 250px !important; }
-}
-@media (min-width: 1024px) {
-  body.scaled-safe .product-cover { height: 320px !important; }
-}
-
 /* Убираем фоновый элемент body::before на странице товара */
 body:has(.product)::before {
   display: none;

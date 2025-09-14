@@ -4,12 +4,6 @@
 const BASE_WIDTH = 430;   // iPhone 16 Pro Max logical CSS width in portrait
 const BASE_HEIGHT = 932;  // Fallback baseline height (used only as hint)
 
-// Cache to avoid reflows and jitter while scrolling
-let lastApplied = { vw: 0, vh: 0, scale: 0, topInset: 0, offsetX: 0, bottomNavHeight: 0, spacerHeight: 0 };
-let isApplying = false;
-function nearlyEqual(a, b, eps) { return Math.abs(a - b) <= (eps || 0.5); }
-let stableTopInset = null; // keep stable header inset to avoid jitter
-
 /**
  * Create a wrapper for all non-script body children and apply transform scale.
  * We avoid moving <script> tags to keep script loading/execution order intact.
@@ -86,72 +80,14 @@ function getViewportSize() {
   return { width: window.innerWidth, height: window.innerHeight };
 }
 
-function getTopInset() {
-  try {
-    // Telegram WebApp header compensation (fullsize mode)
-    const wa = window.Telegram && window.Telegram.WebApp;
-    if (wa && typeof wa.viewportHeight === 'number') {
-      // innerHeight may include area under Telegram header; viewportHeight — видимая часть WebApp
-      const diff = Math.max(0, window.innerHeight - wa.viewportHeight);
-      // viewportStableHeight иногда точнее
-      const stable = typeof wa.viewportStableHeight === 'number' ? Math.max(0, window.innerHeight - wa.viewportStableHeight) : 0;
-      const maxWa = Math.max(diff, stable);
-      if (maxWa > 0) return Math.ceil(maxWa);
-    }
-    if (window.visualViewport) {
-      const vv = window.visualViewport;
-      const vvTop = Math.max(0, (vv.offsetTop || 0), (vv.pageTop || 0));
-      if (vvTop > 0) return Math.ceil(vvTop);
-    }
-  } catch {}
-  // Fallback via CSS env probe
-  let probe = document.getElementById('safe-area-top-probe');
-  if (!probe) {
-    probe = document.createElement('div');
-    probe.id = 'safe-area-top-probe';
-    probe.style.position = 'fixed';
-    probe.style.top = '0';
-    probe.style.left = '0';
-    probe.style.width = '0';
-    probe.style.height = 'env(safe-area-inset-top)';
-    probe.style.pointerEvents = 'none';
-    probe.style.opacity = '0';
-    document.body.appendChild(probe);
-  }
-  const envTop = probe.offsetHeight || 0;
-  if (envTop > 0) return envTop;
-
-  // Last resort: conservative constant for iOS Telegram header
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isTG = !!(window.Telegram && window.Telegram.WebApp);
-  if (isIOS && isTG) return 64; // приблизительно высота шапки TG + статус-бара
-  return 0;
-}
-
 function applyScale() {
-  if (isApplying) return; // prevent recursive thrashing
-  isApplying = true;
   const root = ensureScaledRoot();
   const { width: vw, height: vh } = getViewportSize();
-  const measuredTop = Math.round(getTopInset());
-  if (stableTopInset == null) stableTopInset = measuredTop;
-  // Update only on significant change (>6px) to avoid micro-jumps when scrolling
-  if (!nearlyEqual(measuredTop, stableTopInset, 6)) stableTopInset = measuredTop;
-  let topInsetPx = stableTopInset;
-  // Чуть больший отступ на главной (есть .logo)
-  try {
-    const isHome = !!document.querySelector('.logo');
-    if (isHome) topInsetPx += 44; // увеличенный отступ сверху только на главной
-  } catch {}
-  // Expose state for CSS overrides (e.g., disable env-safe-area duplication)
-  try {
-    document.body.classList.toggle('scaled-safe', topInsetPx > 0);
-  } catch {}
 
   // Account for fixed bottom navigation
   const bottomNav = document.querySelector('.bottom-nav');
   const bottomNavHeightPx = bottomNav ? bottomNav.offsetHeight : 0; // includes safe area
-  const availableHeight = Math.max(0, vh - bottomNavHeightPx - topInsetPx);
+  const availableHeight = Math.max(0, vh - bottomNavHeightPx);
 
   // Two candidate scales
   const scaleWidth = vw / BASE_WIDTH;
@@ -178,32 +114,19 @@ function applyScale() {
   const scaledWidth = BASE_WIDTH * scale;
   const offsetX = Math.max(0, (vw - scaledWidth) / 2);
 
-  // Skip re-apply if metrics effectively unchanged
-  if (
-    nearlyEqual(vw, lastApplied.vw, 1) &&
-    nearlyEqual(vh, lastApplied.vh, 1) &&
-    nearlyEqual(scale, lastApplied.scale, 0.002) &&
-    nearlyEqual(topInsetPx, lastApplied.topInset, 1) &&
-    nearlyEqual(offsetX, lastApplied.offsetX, 1) &&
-    nearlyEqual(bottomNavHeightPx, lastApplied.bottomNavHeight, 1)
-  ) {
-    isApplying = false;
-    return;
-  }
-
-  root.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
+  root.style.transform = `translate(${offsetX}px, 0) scale(${scale})`;
 
   // Mirror transform to fixed layers so their children remain pixel-perfect but fixed to viewport
   const under = document.getElementById('scaled-fixed-under');
   const over = document.getElementById('scaled-fixed-over');
   if (under) {
-    under.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
+    under.style.transform = `translate(${offsetX}px, 0) scale(${scale})`;
     // Height so that children with bottom: X are anchored to viewport bottom in base coords
-    under.style.height = `${Math.ceil((vh - topInsetPx) / Math.max(scale, 0.0001))}px`;
+    under.style.height = `${Math.ceil(vh / scale)}px`;
   }
   if (over) {
-    over.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
-    over.style.height = `${Math.ceil((vh - topInsetPx) / Math.max(scale, 0.0001))}px`;
+    over.style.transform = `translate(${offsetX}px, 0) scale(${scale})`;
+    over.style.height = `${Math.ceil(vh / scale)}px`;
   }
 
   // Update spacer height so the document scroll height matches scaled content
@@ -215,17 +138,7 @@ function applyScale() {
     spacer.style.pointerEvents = 'none';
     document.body.appendChild(spacer);
   }
-  let newSpacerHeight = Math.ceil(baseHeight * scale);
-  // Никогда не уменьшаем spacer во время сессии, чтобы не выбивать текущую позицию скролла
-  if (lastApplied.spacerHeight && newSpacerHeight < lastApplied.spacerHeight) {
-    newSpacerHeight = lastApplied.spacerHeight;
-  }
-  if (!nearlyEqual(newSpacerHeight, lastApplied.spacerHeight, 1)) {
-    spacer.style.height = `${newSpacerHeight}px`;
-  }
-
-  lastApplied = { vw, vh, scale, topInset: topInsetPx, offsetX, bottomNavHeight: bottomNavHeightPx, spacerHeight: newSpacerHeight };
-  isApplying = false;
+  spacer.style.height = `${baseHeight * scale}px`;
 }
 
 // Apply on load and on changes that can affect viewport size
@@ -240,17 +153,10 @@ function initScale() {
     });
   };
 
-  // Не слушаем window.resize на iOS Telegram — он стреляет при резиновой прокрутке и даёт дёргания
+  window.addEventListener('resize', schedule);
   window.addEventListener('orientationchange', schedule);
   if (window.visualViewport) {
-    const vv = window.visualViewport;
-    const onVvResize = () => {
-      const w = Math.round(vv.width);
-      const h = Math.round(vv.height);
-      if (!nearlyEqual(w, lastApplied.vw, 1) || !nearlyEqual(h, lastApplied.vh, 1)) schedule();
-    };
-    vv.addEventListener('resize', onVvResize, { passive: true });
-    // Не слушаем scroll, это источник дребезга на iOS
+    window.visualViewport.addEventListener('resize', schedule);
   }
 
   // Re-apply once window fully loaded (images/fonts)
@@ -295,20 +201,26 @@ function initScale() {
     const observer = new MutationObserver((mutations) => {
       for (const m of mutations) {
         if (m.type === 'childList') {
-          if ([...m.addedNodes].some((n) => n.nodeType === 1 && n.classList?.contains('bottom-nav'))) {
+          // If bottom-nav appeared or content changed significantly, rescale
+          if ([...m.addedNodes].some((n) => n.nodeType === 1 && (n.classList?.contains('bottom-nav') || n.id === 'scaled-root' || n.classList?.contains('add-to-cart') || n.classList?.contains('product-cart-controls') || n.classList?.contains('cart-checkout') || n.classList?.contains('bottom-actions-bg')))) {
+            moveFixedIntoLayers();
+            schedule();
+            return;
+          }
+        }
+        if (m.type === 'attributes') {
+          if (m.target && m.target.classList && (m.target.classList.contains('bottom-nav') || m.target.classList.contains('add-to-cart') || m.target.classList.contains('product-cart-controls') || m.target.classList.contains('cart-checkout') || m.target.classList.contains('bottom-actions-bg'))) {
             moveFixedIntoLayers();
             schedule();
             return;
           }
         }
       }
+      // Fallback debounce for generic content changes
+      schedule();
     });
-    // Наблюдаем только верхний уровень body — без subtree и без attributes
-    observer.observe(document.body, { childList: true, subtree: false });
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
   } catch {}
-
-  // Дополнительная одноразовая проверка через 300мс — на случай поздней вставки навбара
-  setTimeout(() => applyScale(), 300);
 }
 
 if (document.readyState === 'loading') {
