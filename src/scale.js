@@ -80,14 +80,38 @@ function getViewportSize() {
   return { width: window.innerWidth, height: window.innerHeight };
 }
 
+function getTopInset() {
+  try {
+    if (window.visualViewport) {
+      return Math.max(0, window.visualViewport.offsetTop || 0);
+    }
+  } catch {}
+  // Fallback via CSS env probe
+  let probe = document.getElementById('safe-area-top-probe');
+  if (!probe) {
+    probe = document.createElement('div');
+    probe.id = 'safe-area-top-probe';
+    probe.style.position = 'fixed';
+    probe.style.top = '0';
+    probe.style.left = '0';
+    probe.style.width = '0';
+    probe.style.height = 'env(safe-area-inset-top)';
+    probe.style.pointerEvents = 'none';
+    probe.style.opacity = '0';
+    document.body.appendChild(probe);
+  }
+  return probe.offsetHeight || 0;
+}
+
 function applyScale() {
   const root = ensureScaledRoot();
   const { width: vw, height: vh } = getViewportSize();
+  const topInsetPx = getTopInset();
 
   // Account for fixed bottom navigation
   const bottomNav = document.querySelector('.bottom-nav');
   const bottomNavHeightPx = bottomNav ? bottomNav.offsetHeight : 0; // includes safe area
-  const availableHeight = Math.max(0, vh - bottomNavHeightPx);
+  const availableHeight = Math.max(0, vh - bottomNavHeightPx - topInsetPx);
 
   // Two candidate scales
   const scaleWidth = vw / BASE_WIDTH;
@@ -114,19 +138,19 @@ function applyScale() {
   const scaledWidth = BASE_WIDTH * scale;
   const offsetX = Math.max(0, (vw - scaledWidth) / 2);
 
-  root.style.transform = `translate(${offsetX}px, 0) scale(${scale})`;
+  root.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
 
   // Mirror transform to fixed layers so their children remain pixel-perfect but fixed to viewport
   const under = document.getElementById('scaled-fixed-under');
   const over = document.getElementById('scaled-fixed-over');
   if (under) {
-    under.style.transform = `translate(${offsetX}px, 0) scale(${scale})`;
+    under.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
     // Height so that children with bottom: X are anchored to viewport bottom in base coords
-    under.style.height = `${Math.ceil(vh / scale)}px`;
+    under.style.height = `${Math.ceil((vh - topInsetPx) / scale)}px`;
   }
   if (over) {
-    over.style.transform = `translate(${offsetX}px, 0) scale(${scale})`;
-    over.style.height = `${Math.ceil(vh / scale)}px`;
+    over.style.transform = `translate(${offsetX}px, ${topInsetPx}px) scale(${scale})`;
+    over.style.height = `${Math.ceil((vh - topInsetPx) / scale)}px`;
   }
 
   // Update spacer height so the document scroll height matches scaled content
