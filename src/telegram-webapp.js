@@ -84,20 +84,19 @@ class TelegramWebApp {
       this.tg.BackButton.hide();
       this.tg.MainButton.hide();
     } else {
-      // На остальных страницах показываем кнопку "Назад"
+      // На остальных страницах показываем кнопку "Назад" (стандартное поведение)
       this.tg.MainButton.hide();
       this.tg.BackButton.show();
       
       // Удаляем предыдущие обработчики
       this.tg.BackButton.offClick();
       this.tg.BackButton.onClick(() => {
-        // Возвращаем по истории, если есть куда идти, иначе на главную
+        // Стандартный back
         if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          const basePath = window.location.pathname.replace(/[^/]*$/, '');
-          window.location.href = basePath + 'index.html';
+          return window.history.back();
         }
+        const basePath = window.location.pathname.replace(/[^/]*$/, '');
+        window.location.href = basePath + 'index.html';
       });
     }
   }

@@ -1,8 +1,11 @@
 import './style.css'
 import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
  
-// Универсальная навигация относительно текущей директории
+// Универсальная навигация: используем стек AppNav при наличии
 function navigate(path) {
+  if (window.AppNav && typeof window.AppNav.go === 'function') {
+    return window.AppNav.go(path);
+  }
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
   const normalized = path.startsWith('/') ? path.slice(1) : path;
   window.location.href = basePath + normalized;

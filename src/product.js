@@ -2,8 +2,11 @@ import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import ModalManager from './modal-manager.js'
  
-// Универсальная навигация относительно текущей директории
+// Универсальная навигация: используем стек AppNav при наличии
 function navigate(path) {
+  if (window.AppNav && typeof window.AppNav.go === 'function') {
+    return window.AppNav.go(path);
+  }
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
   const normalized = path.startsWith('/') ? path.slice(1) : path;
   window.location.href = basePath + normalized;
@@ -1304,6 +1307,9 @@ function renderBuyOrControls(product) {
 
   // Обработчики
   controls.querySelector('.go-to-cart').addEventListener('click', () => {
+    if (window.AppNav && typeof window.AppNav.go === 'function') {
+      return window.AppNav.go('cart.html');
+    }
     const basePath = window.location.pathname.replace(/[^/]*$/, '');
     window.location.href = basePath + 'cart.html';
   });

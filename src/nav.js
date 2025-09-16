@@ -56,6 +56,124 @@ function buildBottomNav() {
   document.body.appendChild(nav);
 }
 
+// --- Стековая навигация как в маркетплейсах ---
+const NAV_STACK_KEY = 'hooli_nav_stack_v1';
+
+function getBasePath() {
+  return window.location.pathname.replace(/[^/]*$/, '');
+}
+
+function normalizeEntry(path) {
+  const p = (path || '').replace(/^\//, '').toLowerCase();
+  return p || 'index.html';
+}
+
+function getCurrentEntry() {
+  const file = (location.pathname.split('/').pop() || 'index.html');
+  const qs = location.search || '';
+  return normalizeEntry(file + qs);
+}
+
+function readNavStack() {
+  try { return JSON.parse(sessionStorage.getItem(NAV_STACK_KEY) || '[]'); } catch { return []; }
+}
+
+function writeNavStack(stack) {
+  try { sessionStorage.setItem(NAV_STACK_KEY, JSON.stringify(stack)); } catch {}
+}
+
+function getLastProductFromStack() {
+  const stack = readNavStack();
+  for (let i = stack.length - 1; i >= 0; i -= 1) {
+    const entry = String(stack[i] || '').toLowerCase();
+    if (entry.startsWith('product.html')) return stack[i];
+  }
+  return null;
+}
+
+function recordPageLoad() {
+  const current = getCurrentEntry();
+  let stack = readNavStack();
+  if (stack.length === 0) {
+    writeNavStack([current]);
+    // Сохраняем последний просмотренный товар (одно значение)
+    if (current.includes('product.html')) {
+      try { sessionStorage.setItem('hooli_last_product', current); } catch {}
+    }
+    return;
+  }
+  const top = stack[stack.length - 1];
+  if (top === current) return;
+  const existingIdx = stack.lastIndexOf(current);
+  if (existingIdx >= 0) {
+    // Навигация назад/вперёд — обрежем стек до текущей страницы
+    stack = stack.slice(0, existingIdx + 1);
+    writeNavStack(stack);
+    // Обновим последний товар
+    if (current.includes('product.html')) {
+      try { sessionStorage.setItem('hooli_last_product', current); } catch {}
+    }
+    return;
+  }
+  // Внешний переход — добавляем текущую страницу в стек
+  stack.push(current);
+  writeNavStack(stack);
+  if (current.includes('product.html')) {
+    try { sessionStorage.setItem('hooli_last_product', current); } catch {}
+  }
+}
+
+function go(path) {
+  const entry = normalizeEntry(path);
+  const stack = readNavStack();
+  // Если идём на карточку товара — сразу запомним её как последнюю
+  if (entry.startsWith('product.html')) {
+    try { sessionStorage.setItem('hooli_last_product', entry); } catch {}
+  }
+  if (stack[stack.length - 1] !== entry) {
+    stack.push(entry);
+    writeNavStack(stack);
+  }
+  const basePath = getBasePath();
+  const normalized = path.startsWith('/') ? path.slice(1) : path;
+  window.location.href = basePath + normalized;
+}
+
+function goHomeSmart() {
+  const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+  // Если уже на главной — ничего не делаем (никаких переходов/перезагрузок)
+  if (file.includes('index')) {
+    return; 
+  }
+  // Если мы на карточке товара — кнопка «Главная» ведёт на главную, и сбрасываем «последний товар»
+  if (file.includes('product')) {
+    try { sessionStorage.removeItem('hooli_last_product'); } catch {}
+    // Чистим из стека все product.html, чтобы исключить повторные возвраты
+    try {
+      const stack = readNavStack();
+      const cleaned = Array.isArray(stack) ? stack.filter(e => !String(e || '').toLowerCase().startsWith('product.html')) : [];
+      writeNavStack(cleaned.length ? cleaned : ['index.html']);
+    } catch {}
+    return go('index.html');
+  }
+  // Если есть последний просмотренный товар — сначала ведём на него
+  const lastProduct = sessionStorage.getItem('hooli_last_product');
+  if (lastProduct && normalizeEntry(lastProduct) !== normalizeEntry(file + (location.search || ''))) {
+    const basePath = getBasePath();
+    window.location.href = basePath + lastProduct.replace(/^\//, '');
+    return;
+  }
+  // Иначе сразу на главную
+  return go('index.html');
+}
+
+// Глобальный объект для использования из других модулей
+window.AppNav = {
+  go,
+  goHomeSmart,
+  recordPageLoad,
+};
+
 function setActiveItem() {
   const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   const key = file.includes('profile') ? 'profile'
@@ -74,6 +192,8 @@ function setActiveItem() {
 function initNav() {
   if (document.querySelector('.bottom-nav')) return;
   document.body.classList.add('has-bottom-nav');
+  // Фиксируем загрузку страницы в стек навигации
+  try { window.AppNav && window.AppNav.recordPageLoad(); } catch {}
   buildBottomNav();
   setActiveItem();
 
@@ -86,10 +206,23 @@ function initNav() {
   document.querySelectorAll('.bottom-nav .nav-item').forEach((btn) => {
     btn.addEventListener('click', () => {
       const key = btn.dataset.key;
-      if (key === 'home') return go('index.html');
-      if (key === 'categories') return go('category.html');
-      if (key === 'cart') return go('cart.html');
-      if (key === 'profile') return go('profile.html');
+      // Если уже на соответствующей странице — ничего не делаем
+      const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      const currentKey = file.includes('profile') ? 'profile'
+                    : file.includes('cart') ? 'cart'
+                    : file.includes('category') ? 'categories'
+                    : file.includes('index') ? 'home'
+                    : '';
+      if (key && key === currentKey) {
+        return; // no-op
+      }
+      if (key === 'home') {
+        // Умный переход: сначала назад по стеку, затем на главную
+        return (window.AppNav ? window.AppNav.goHomeSmart() : (window.location.href = getBasePath() + 'index.html'));
+      }
+      if (key === 'categories') return (window.AppNav ? window.AppNav.go('category.html') : go('category.html'));
+      if (key === 'cart') return (window.AppNav ? window.AppNav.go('cart.html') : go('cart.html'));
+      if (key === 'profile') return (window.AppNav ? window.AppNav.go('profile.html') : go('profile.html'));
       // Для корзины и профиля пока заглушка
     });
   });
