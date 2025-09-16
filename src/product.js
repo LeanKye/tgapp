@@ -1,7 +1,6 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import ModalManager from './modal-manager.js'
-import { initLazyImages, observeWithin } from './lazy-images.js'
  
 // Универсальная навигация относительно текущей директории
 function navigate(path) {
@@ -47,17 +46,10 @@ function renderProduct(product) {
   product.images.forEach((image, index) => {
     const slide = document.createElement('div');
     slide.className = 'swiper-slide';
-    slide.innerHTML = `<img class="lazy-image img-skeleton" data-src="${image}" alt="${product.title} ${index + 1}" loading="lazy" decoding="async" />`;
+    slide.innerHTML = `<img src="${image}" alt="${product.title} ${index + 1}" />`;
     swiperWrapper.appendChild(slide);
   });
 
-  // Загружаем первый слайд сразу (eager), остальные — лениво
-  const firstImg = swiperWrapper.querySelector('.swiper-slide img');
-  if (firstImg && firstImg.dataset.src) {
-    firstImg.loading = 'eager';
-    firstImg.src = firstImg.dataset.src;
-  }
-  observeWithin(swiperWrapper);
 
   // Инициализируем слайдер сразу после создания слайдов
   setTimeout(() => {
@@ -318,16 +310,10 @@ function applyEditionVisuals(product, edition) {
   imagesToUse.forEach((image, index) => {
     const slide = document.createElement('div');
     slide.className = 'swiper-slide';
-    slide.innerHTML = `<img class="lazy-image img-skeleton" data-src="${image}" alt="${newTitle} ${index + 1}" loading="lazy" decoding="async" />`;
+    slide.innerHTML = `<img src="${image}" alt="${newTitle} ${index + 1}" />`;
     swiperWrapper.appendChild(slide);
   });
 
-  const firstImg = swiperWrapper.querySelector('.swiper-slide img');
-  if (firstImg && firstImg.dataset.src) {
-    firstImg.loading = 'eager';
-    firstImg.src = firstImg.dataset.src;
-  }
-  observeWithin(swiperWrapper);
 
   setTimeout(() => {
     initImageSlider();
@@ -1532,7 +1518,6 @@ function openCheckoutModal(product, selectedOptions, finalPrice) {
 document.addEventListener('DOMContentLoaded', () => {
   // Инициализируем ModalManager
   modalManager = new ModalManager();
-  initLazyImages();
   
   const productId = getUrlParameter('product');
   console.log('DEBUG: productId from URL:', productId);

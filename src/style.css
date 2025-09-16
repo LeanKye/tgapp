@@ -2189,22 +2189,7 @@ body.has-bottom-nav .product-cart-controls {
 
 
 
-/* Lazy images */
-.lazy-image { opacity: 0; transition: opacity 0.2s ease; background: #2f2f2f; display: block; }
-.lazy-image.is-loaded { opacity: 1; background: none; }
-.img-skeleton { position: relative; overflow: hidden; }
-.img-skeleton::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.06) 50%, rgba(255,255,255,0) 100%);
-  transform: translateX(-100%);
-  animation: imgShimmer 1.2s infinite;
-}
-.img-skeleton.is-loaded::after { display: none; }
-@keyframes imgShimmer { 100% { transform: translateX(100%); } }
-.lazy-bg { background-color: #2f2f2f; }
-.lazy-bg.bg-loaded { background-color: transparent; }
+/* Убраны стили ленивой загрузки */
 /* Стили для больших экранов */
 /* Пагинация баннеров */
 .banner-pagination {

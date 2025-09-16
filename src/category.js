@@ -1,6 +1,5 @@
 import './style.css'
 import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
-import { initLazyImages, observeWithin } from './lazy-images.js'
  
 // Универсальная навигация относительно текущей директории
 function navigate(path) {
@@ -172,7 +171,6 @@ class CategoryPage {
       const suggestion = this.createSearchSuggestion(product);
       dropdown.appendChild(suggestion);
     });
-    observeWithin(dropdown);
 
     dropdown.classList.add('show');
 
@@ -205,7 +203,7 @@ class CategoryPage {
     }
 
     suggestion.innerHTML = `
-      <img class="lazy-image img-skeleton" data-src="${product.images[0]}" alt="${product.title}" loading="lazy" decoding="async" />
+      <img src="${product.images[0]}" alt="${product.title}" />
       <div class="search-suggestion-content">
         <div class="search-suggestion-title">${product.title}</div>
         <div class="search-suggestion-category">${product.category}</div>
@@ -462,7 +460,6 @@ class CategoryPage {
       const card = this.createProductCard(product);
       container.appendChild(card);
     });
-    observeWithin(container);
   }
 
   createProductCard(product) {
@@ -475,7 +472,7 @@ class CategoryPage {
     }
     
     card.innerHTML = `
-      <img class="lazy-image img-skeleton" data-src="${product.images[0]}" alt="${product.title}" loading="lazy" decoding="async" />
+      <img src="${product.images[0]}" alt="${product.title}" />
       <div class="category-product-title">${product.title}</div>
       <div class="category-product-category">${product.category}</div>
       <div class="category-product-price">${priceHTML}</div>
@@ -563,5 +560,4 @@ class ClickBlocker {
 document.addEventListener('DOMContentLoaded', () => {
   new CategoryPage();
   const clickBlocker = new ClickBlocker();
-  initLazyImages();
 });
