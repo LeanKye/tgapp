@@ -361,13 +361,19 @@ function updatePeriods(product) {
   container.innerHTML = '';
   container.classList.add('period-buttons');
   
+  const isAdobe = String(product?.id) === 'adobe-creative-cloud';
+  const defaultPeriodId = isAdobe ? 'period-1' : (product.periods[0]?.id);
+
   product.periods.forEach((period, index) => {
     const input = document.createElement('input');
     input.type = 'radio';
     input.name = 'period';
     input.id = period.id;
     input.value = period.id;
-    if (index === 0) input.checked = true;
+    if ((index === 0 && !isAdobe) || (isAdobe && period.id === defaultPeriodId)) {
+      input.checked = true;
+      input.setAttribute('checked', 'checked');
+    }
 
     const label = document.createElement('label');
     label.htmlFor = period.id;

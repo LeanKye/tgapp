@@ -1526,25 +1526,32 @@ body.has-bottom-nav .product-cart-controls {
 
 /* Гарантируем, что кнопки периодов всегда умещаются в одну строку
    и равномерно распределяются по ширине контейнера (как на 16 Pro Max) */
+/* Прекращаем растягивание period на всю ширину (грид) и возвращаем горизонтальный скролл */
 .period-group.button-group {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  align-items: center;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  justify-content: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-bottom: 4px;
 }
 
 .period-group.button-group label {
   display: block;
-  width: 100%;
-  min-width: 0; /* разрешаем ужиматься внутри сетки */
+  width: auto;
+  min-width: 0;
 }
 
 .period-group.button-group span {
   display: block;
-  width: 100%;
+  width: auto;
   text-align: center;
-  white-space: nowrap; /* исключаем перенос «12 мес» на две строки */
-  padding-inline: 12px; /* чуть компактнее, чтобы всегда влезало */
+  white-space: nowrap;
+  padding-inline: 12px;
 }
 
 /* Специальные стили для кнопок плана */
@@ -2511,7 +2518,7 @@ body.has-bottom-nav .product-cart-controls {
   display: flex;
   flex-wrap: nowrap;
   gap: 8px; /* фиксированный отступ как у .edition-group */
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -2529,8 +2536,10 @@ body.has-bottom-nav .product-cart-controls {
 }
 
 .period-buttons label {
-  flex: 0 0 auto;
-  min-width: 100px; /* Оптимальная ширина кнопок */
+  /* 4 кнопки ровно по ширине контейнера (как на iPhone 16 Pro Max) */
+  flex: 0 0 calc((100% - 24px) / 4);
+  min-width: calc((100% - 24px) / 4);
+  max-width: calc((100% - 24px) / 4);
   white-space: nowrap;
   position: relative;
 }
@@ -2539,7 +2548,7 @@ body.has-bottom-nav .product-cart-controls {
   font-size: clamp(13px, 2.5vw, 16px);
   padding: clamp(10px, 2.5vw, 14px) clamp(16px, 2vw, 20px);
   text-align: center;
-  width: auto;
+  width: 100%;
   box-sizing: border-box;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2547,6 +2556,15 @@ body.has-bottom-nav .product-cart-controls {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Переопределяем растягивание на 100% из .period-group.button-group */
+.period-group.button-group.period-buttons label {
+  width: auto;
+}
+
+.period-group.button-group.period-buttons span {
+  width: auto;
 }
 
 /* Адаптивный горизонтальный слайдер товаров */
@@ -2773,7 +2791,9 @@ body.has-bottom-nav .product-cart-controls {
   }
   
   .period-buttons label {
-    min-width: 85px;
+    flex: 0 0 calc((100% - 24px) / 4);
+    min-width: calc((100% - 24px) / 4);
+    max-width: calc((100% - 24px) / 4);
   }
   
   .period-group,
@@ -2923,7 +2943,9 @@ body.has-bottom-nav .product-cart-controls {
   }
   
   .period-buttons label {
-    min-width: 95px;
+    flex: 0 0 calc((100% - 24px) / 4);
+    min-width: calc((100% - 24px) / 4);
+    max-width: calc((100% - 24px) / 4);
   }
   
   .period-group,
@@ -3026,7 +3048,9 @@ body.has-bottom-nav .product-cart-controls {
   }
   
   .period-buttons label {
-    min-width: 120px;
+    flex: 0 0 calc((100% - 24px) / 4);
+    min-width: calc((100% - 24px) / 4);
+    max-width: calc((100% - 24px) / 4);
   }
   
   .period-group,
@@ -3931,7 +3955,7 @@ body.modal-open {
 
   /* Переключатели периодов/вариантов/планов */
   .period-buttons { gap: 8px; }
-  .period-buttons label { min-width: 78px; }
+  .period-buttons label { flex: 0 0 calc((100% - 24px) / 4); min-width: calc((100% - 24px) / 4); max-width: calc((100% - 24px) / 4); }
   .period-buttons span {
     font-size: 11px;
     padding: 8px 10px;
