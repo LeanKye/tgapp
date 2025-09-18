@@ -278,6 +278,30 @@ function initNav() {
       }, 0);
     });
   } catch {}
+
+  // Привязка нижней панели к визуальному viewport (iOS Safari тулбар/бабл bounce)
+  try {
+    const navEl = document.querySelector('.bottom-nav');
+    const vv = window.visualViewport;
+    if (navEl && vv && typeof vv.addEventListener === 'function') {
+      let rafId = 0;
+      const apply = () => {
+        rafId = 0;
+        // Смещение между layout viewport и visual viewport
+        const extraBottom = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
+        // Фиксируем bottom относительно визуального окна, не затрагивая padding для safe-area
+        navEl.style.bottom = `${extraBottom}px`;
+      };
+      const schedule = () => {
+        if (rafId) return;
+        rafId = requestAnimationFrame(apply);
+      };
+      vv.addEventListener('resize', schedule, { passive: true });
+      vv.addEventListener('scroll', schedule, { passive: true });
+      // первичная установка
+      schedule();
+    }
+  } catch {}
 }
 
 document.addEventListener('DOMContentLoaded', initNav);

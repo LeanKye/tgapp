@@ -1172,15 +1172,15 @@ body.info-page.has-bottom-nav {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: env(safe-area-inset-bottom);
+  bottom: 0;
   height: var(--bottom-nav-height);
   background: #1f1f1f;
   border-top: none;
   display: flex;
   align-items: stretch; /* растягиваем элементы по высоте бара */
   justify-content: space-around;
-  /* фиксированная высота — не зависим от изменения safe-area при скролле */
-  padding-bottom: 0;
+  /* внутренний отступ под safe area, чтобы сохранить прижатие к физическому низу */
+  padding-bottom: max(0px, calc(env(safe-area-inset-bottom) - 2px));
   z-index: 800; /* ниже модалок и кнопки Купить */
   /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
   transform: translateZ(0);
@@ -1250,13 +1250,13 @@ body.keyboard-open .bottom-nav {
 /* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
 @supports (bottom: env(keyboard-inset-height)) {
   .bottom-nav {
-    /* По умолчанию прижата с учётом safe-area */
-    bottom: env(safe-area-inset-bottom);
+    /* По умолчанию прижата к физическому низу */
+    bottom: 0;
     transform: none;
   }
   body.keyboard-open .bottom-nav {
     /* Когда клавиатура открыта, уводим панель под клавиатуру */
-    bottom: calc(env(safe-area-inset-bottom) - env(keyboard-inset-height));
+    bottom: calc(0px - env(keyboard-inset-height));
     transform: none;
   }
 }
