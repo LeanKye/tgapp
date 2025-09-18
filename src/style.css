@@ -40,7 +40,7 @@ html, body {
   /* Включаем естественный bounce только для вертикального скролла */
   overscroll-behavior-x: none;
   overscroll-behavior-y: auto;
-  -webkit-overflow-scrolling: touch;
+  /* -webkit-overflow-scrolling: touch;  УДАЛЕНО: ломает position: fixed на iOS */
   /* Предотвращаем сворачивание приложения */
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -186,7 +186,7 @@ body::-webkit-scrollbar {
 @media (prefers-reduced-motion: reduce) {
   html, body {
     overscroll-behavior: none !important;
-    -webkit-overflow-scrolling: auto !important;
+    /* -webkit-overflow-scrolling: auto !important;  УДАЛЕНО: не нужно глобально */
   }
 }
 

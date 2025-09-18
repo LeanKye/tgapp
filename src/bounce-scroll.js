@@ -33,15 +33,17 @@ class BounceScroll {
         /* Включаем нативный bounce только для вертикального скролла */
         overscroll-behavior-x: none;
         overscroll-behavior-y: auto;
-        /* Включаем плавный скролл на мобильных */
-        -webkit-overflow-scrolling: touch;
+        /* ВАЖНО: не трогаем -webkit-overflow-scrolling глобально, чтобы не ломать position: fixed */
       }
       
-      /* Для iOS - включаем momentum scrolling */
+      /* Для iOS - включаем momentum scrolling ТОЛЬКО на внутренних скролл-контейнерах по необходимости */
       @supports (-webkit-overflow-scrolling: touch) {
-        html, body {
+        .scroll-area,
+        .search-dropdown,
+        .modal-content,
+        .checkout-modal-body,
+        .category-products-slider {
           -webkit-overflow-scrolling: touch;
-          overscroll-behavior-y: auto;
         }
       }
       
@@ -61,10 +63,9 @@ class BounceScroll {
       /* Убираем системные эффекты только там где нужно */
       .no-bounce {
         overscroll-behavior: none;
+        /* Сбрасываем momentum, если явно запрещаем bounce */
         -webkit-overflow-scrolling: auto;
       }
-      
-
       
       /* Исключаем конфликты с горизонтальными слайдерами */
       .category-products-slider {
