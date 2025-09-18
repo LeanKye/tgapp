@@ -247,15 +247,19 @@ function initNav() {
 
     const vv = window.visualViewport;
     if (vv && typeof vv.addEventListener === 'function') {
-      // Базовая высота для сравнения (после загрузки страницы)
-      const baseHeight = vv.height;
+      // Фикс iOS: игнорируем мелкие колебания высоты (тулбар/баги bounce)
+      let baseHeight = vv.height;
+      // При первой прокрутке сохраняем максимальную высоту как базовую
+      const syncBase = () => { baseHeight = Math.max(baseHeight, vv.height); };
+      vv.addEventListener('resize', syncBase, { passive: true });
+      vv.addEventListener('scroll', syncBase, { passive: true });
       const updateFromViewport = () => {
         const shrunkBy = Math.max(0, baseHeight - vv.height);
-        // Порог ~80px — более чувствительный порог для быстрого реагирования
-        setKeyboardState(shrunkBy > 80);
+        // Увеличиваем порог, чтобы не реагировать на системный тулбар/bounce
+        setKeyboardState(shrunkBy > 140);
       };
-      vv.addEventListener('resize', updateFromViewport);
-      vv.addEventListener('scroll', updateFromViewport);
+      vv.addEventListener('resize', updateFromViewport, { passive: true });
+      vv.addEventListener('scroll', updateFromViewport, { passive: true });
     }
 
     // Независимо от visualViewport — мгновенная реакция по фокусу
