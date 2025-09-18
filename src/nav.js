@@ -303,4 +303,46 @@ function updateCartBadge() {
   }
 }
 
+function isLegacyIOS() {
+  try {
+    const ua = navigator.userAgent || navigator.vendor || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    // Ориентировочно считаем legacy: iOS < 15.4 (XR часто на старых версиях Safari/WebKit)
+    // Без точной версии — эвристика: отсутствие поддержек некоторых env/compat признаков
+    const supportsKeyboardEnv = CSS && CSS.supports && CSS.supports('(bottom: env(keyboard-inset-height))');
+    const supportsDvh = CSS && CSS.supports && CSS.supports('height: 100dvh');
+    return isIOS && !(supportsKeyboardEnv && supportsDvh);
+  } catch {
+    return false;
+  }
+}
+
+function computeStaticSafeBottom() {
+  // Если доступен env(safe-area-inset-bottom), используем его, иначе 0
+  // На старых iOS env может работать только в CSS, поэтому fallback к 0
+  // Попробуем оценить через визуальный viewport
+  try {
+    const vv = window.visualViewport;
+    // Эвристика: если доступен window.visualViewport и есть layout offset снизу
+    if (vv) {
+      // Часто inset ~ devicePixelRatio округления, оставим 0
+      return 0;
+    }
+  } catch {}
+  return 0;
+}
+
+function setStaticSafeArea() {
+  const root = document.documentElement;
+  const isLegacy = isLegacyIOS();
+  if (isLegacy) {
+    document.body.classList.add('ios-legacy');
+  }
+  const value = computeStaticSafeBottom();
+  try { root.style.setProperty('--safe-bottom-static', value + 'px'); } catch {}
+}
+
+// Вызов до инициализации навигации
+try { setStaticSafeArea(); } catch {}
+
 

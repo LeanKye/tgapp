@@ -1179,19 +1179,45 @@ body.info-page.has-bottom-nav {
   display: flex;
   align-items: stretch; /* растягиваем элементы по высоте бара */
   justify-content: space-around;
-  padding-bottom: max(0px, calc(env(safe-area-inset-bottom) - 2px));
+  padding-bottom: var(--safe-bottom-static, env(safe-area-inset-bottom));
   z-index: 800; /* ниже модалок и кнопки Купить */
-  /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
-  transform: translateZ(0);
-  will-change: transform;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
+  /* Удалено, т.к. на старых iOS может вызывать смещения фиксированных элементов */
+  /* transform: translateZ(0); */
+  /* will-change: transform; */
+  /* backface-visibility: hidden; */
+  /* -webkit-backface-visibility: hidden; */
 }
 
 /* Не скрываем нижнюю навигацию при открытой клавиатуре */
 body.keyboard-open .bottom-nav {
   transform: none;
   pointer-events: auto;
+}
+
+/* Оверрайды для старых iOS (XR и др.) */
+body.ios-legacy .bottom-nav {
+  transform: none !important;
+  will-change: auto !important;
+  backface-visibility: visible !important;
+  -webkit-backface-visibility: visible !important;
+}
+
+/* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
+@supports (bottom: env(keyboard-inset-height)) {
+  .bottom-nav {
+    /* По умолчанию прижата к низу */
+    bottom: 0;
+    transform: none;
+  }
+  body.keyboard-open .bottom-nav {
+    /* Когда клавиатура открыта, компенсируем её высоту */
+    bottom: calc(0px - env(keyboard-inset-height));
+    transform: none;
+  }
+  /* На старых iOS оставляем панель внизу, не двигаем под клавиатуру */
+  body.ios-legacy.keyboard-open .bottom-nav {
+    bottom: 0 !important;
+  }
 }
 
 .bottom-nav .nav-item {
@@ -1244,20 +1270,6 @@ body.keyboard-open .bottom-nav {
 @media (max-width: 375px) {
   :root { --bottom-nav-height: 48px; }
   .bottom-nav .nav-item span { font-size: 10px; }
-}
-
-/* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
-@supports (bottom: env(keyboard-inset-height)) {
-  .bottom-nav {
-    /* По умолчанию прижата к низу */
-    bottom: 0;
-    transform: none;
-  }
-  body.keyboard-open .bottom-nav {
-    /* Когда клавиатура открыта, компенсируем её высоту */
-    bottom: calc(0px - env(keyboard-inset-height));
-    transform: none;
-  }
 }
 
 /* ===== Корзина ===== */
