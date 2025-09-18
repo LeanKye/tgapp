@@ -173,6 +173,9 @@ function initScale() {
         '.product-cart-controls',
         '.cart-checkout',
         '.info-header',
+        // Переносим нижнюю навигацию в трансформированный фикс-слой,
+        // чтобы избежать «оторвания» на iOS при rubber-bounce
+        '.bottom-nav',
       ];
       const toUnder = [
         '.bottom-actions-bg',

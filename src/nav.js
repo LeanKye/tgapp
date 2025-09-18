@@ -247,19 +247,15 @@ function initNav() {
 
     const vv = window.visualViewport;
     if (vv && typeof vv.addEventListener === 'function') {
-      // Фикс iOS: игнорируем мелкие колебания высоты (тулбар/баги bounce)
-      let baseHeight = vv.height;
-      // При первой прокрутке сохраняем максимальную высоту как базовую
-      const syncBase = () => { baseHeight = Math.max(baseHeight, vv.height); };
-      vv.addEventListener('resize', syncBase, { passive: true });
-      vv.addEventListener('scroll', syncBase, { passive: true });
+      // Базовая высота для сравнения (после загрузки страницы)
+      const baseHeight = vv.height;
       const updateFromViewport = () => {
         const shrunkBy = Math.max(0, baseHeight - vv.height);
-        // Увеличиваем порог, чтобы не реагировать на системный тулбар/bounce
-        setKeyboardState(shrunkBy > 140);
+        // Порог ~80px — более чувствительный порог для быстрого реагирования
+        setKeyboardState(shrunkBy > 80);
       };
-      vv.addEventListener('resize', updateFromViewport, { passive: true });
-      vv.addEventListener('scroll', updateFromViewport, { passive: true });
+      vv.addEventListener('resize', updateFromViewport);
+      vv.addEventListener('scroll', updateFromViewport);
     }
 
     // Независимо от visualViewport — мгновенная реакция по фокусу
@@ -277,30 +273,6 @@ function initNav() {
         setKeyboardState(isEditable(document.activeElement));
       }, 0);
     });
-  } catch {}
-
-  // Привязка нижней панели к визуальному viewport (iOS Safari тулбар/бабл bounce)
-  try {
-    const navEl = document.querySelector('.bottom-nav');
-    const vv = window.visualViewport;
-    if (navEl && vv && typeof vv.addEventListener === 'function') {
-      let rafId = 0;
-      const apply = () => {
-        rafId = 0;
-        // Смещение между layout viewport и visual viewport
-        const extraBottom = Math.max(0, (window.innerHeight - vv.height - vv.offsetTop));
-        // Фиксируем bottom относительно визуального окна, не затрагивая padding для safe-area
-        navEl.style.bottom = `${extraBottom}px`;
-      };
-      const schedule = () => {
-        if (rafId) return;
-        rafId = requestAnimationFrame(apply);
-      };
-      vv.addEventListener('resize', schedule, { passive: true });
-      vv.addEventListener('scroll', schedule, { passive: true });
-      // первичная установка
-      schedule();
-    }
   } catch {}
 }
 
