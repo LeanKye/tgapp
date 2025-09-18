@@ -1181,8 +1181,11 @@ body.info-page.has-bottom-nav {
   justify-content: space-around;
   padding-bottom: max(0px, calc(env(safe-area-inset-bottom) - 2px));
   z-index: 800; /* ниже модалок и кнопки Купить */
-  /* Фиксы iOS: избегаем любых трансформаций у fixed-элемента */
-  transform: none;
+  /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
+  transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Не скрываем нижнюю навигацию при открытой клавиатуре */
