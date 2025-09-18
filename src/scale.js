@@ -141,22 +141,57 @@ function applyScale() {
   spacer.style.height = `${baseHeight * scale}px`;
 }
 
+// Корректируем позицию bottom-nav относительно визуального viewport на iOS,
+// чтобы панель не «оторвалась» при rubber-bounce.
+function syncBottomNavToVisualViewport() {
+  try {
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (!bottomNav) return;
+    const vv = window.visualViewport;
+    if (!vv) {
+      // Нет visualViewport — сбрасываем любые смещения
+      bottomNav.style.transform = '';
+      return;
+    }
+    // Если открыта клавиатура — не вмешиваемся (есть отдельная логика)
+    if (document.body.classList.contains('keyboard-open')) {
+      bottomNav.style.transform = '';
+      return;
+    }
+    // Разница между высотой визуального и layout viewport
+    const deltaY = (vv.height + vv.offsetTop) - window.innerHeight;
+    // Небольшие шумы игнорируем
+    const adjust = Math.abs(deltaY) > 0.5 ? deltaY : 0;
+    // Смещаем панель вниз/вверх на величину «отрыва»
+    bottomNav.style.transform = adjust ? `translateY(${adjust}px)` : '';
+  } catch {}
+}
+
 // Apply on load and on changes that can affect viewport size
 function initScale() {
   applyScale();
+  syncBottomNavToVisualViewport();
   let resizeRaf = 0;
   const schedule = () => {
     if (resizeRaf) return;
     resizeRaf = requestAnimationFrame(() => {
       resizeRaf = 0;
       applyScale();
+      syncBottomNavToVisualViewport();
     });
   };
 
   window.addEventListener('resize', schedule);
   window.addEventListener('orientationchange', schedule);
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', schedule);
+    window.visualViewport.addEventListener('resize', () => {
+      schedule();
+      syncBottomNavToVisualViewport();
+    });
+    window.visualViewport.addEventListener('scroll', () => {
+      // scroll события visualViewport возникают при rubber-bounce
+      syncBottomNavToVisualViewport();
+    });
   }
 
   // Re-apply once window fully loaded (images/fonts)
