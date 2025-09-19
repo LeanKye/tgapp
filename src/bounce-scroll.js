@@ -96,19 +96,48 @@ class BounceScroll {
   optimizeTouchBehavior() {
     // Предотвращаем двойное срабатывание на некоторых устройствах
     let touchStartTime = 0;
-    
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let lastScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    let lastScrollTime = performance.now();
+
     document.addEventListener('touchstart', (e) => {
       touchStartTime = Date.now();
+      const t = e.touches && e.touches[0];
+      touchStartX = t ? t.clientX : 0;
+      touchStartY = t ? t.clientY : 0;
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
       const touchDuration = Date.now() - touchStartTime;
-      
-      // Оптимизируем короткие касания
-      if (touchDuration < 150) {
-        // Короткое касание - оставляем как есть
-        return;
+      const changed = e.changedTouches && e.changedTouches[0];
+      const endX = changed ? changed.clientX : 0;
+      const endY = changed ? changed.clientY : 0;
+      const move = Math.hypot(endX - touchStartX, endY - touchStartY);
+      const now = performance.now();
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      const scrollDelta = Math.abs(currentScrollY - lastScrollY);
+      const timeDelta = Math.max(1, now - lastScrollTime);
+      const scrollVelocity = scrollDelta / timeDelta; // px/ms
+
+      // Если был короткий тап без существенного движения, а страница находится в инерции/баунсе —
+      // синтетически пробрасываем click по элементу под пальцем, чтобы клик не "терялся".
+      const SHORT_TAP_MS = 180;
+      const MOVE_THRESHOLD_PX = 8;
+      const INERTIA_VELOCITY_MIN = 0.15; // эвристика: есть инерция
+      if (touchDuration <= SHORT_TAP_MS && move <= MOVE_THRESHOLD_PX && scrollVelocity >= INERTIA_VELOCITY_MIN) {
+        const target = document.elementFromPoint(endX, endY);
+        if (target) {
+          try {
+            const evt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+            target.dispatchEvent(evt);
+          } catch {}
+        }
       }
+
+      // обновляем метрики скролла для следующего вычисления
+      lastScrollY = currentScrollY;
+      lastScrollTime = now;
     }, { passive: true });
 
     // Улучшаем поведение на границах скролла
@@ -121,6 +150,12 @@ class BounceScroll {
         document.body.classList.add('is-scrolling');
         isScrolling = true;
       }
+
+      // Запоминаем скорость/позицию для эвристики инерции
+      const now = performance.now();
+      const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      lastScrollY = currentScrollY;
+      lastScrollTime = now;
 
       // Очищаем предыдущий таймаут
       clearTimeout(scrollTimeout);
