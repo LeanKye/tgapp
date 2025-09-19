@@ -6,6 +6,10 @@ class BounceScroll {
     
     if (!this.isMobile || this.reducedMotion) return;
     
+    // Гард от двойного клика после синтетического
+    this._lastSynthClickTs = 0;
+    this._lastSynthClickPos = { x: 0, y: 0 };
+    
     this.init();
   }
 
@@ -94,18 +98,43 @@ class BounceScroll {
   }
 
   optimizeTouchBehavior() {
-    // Предотвращаем двойное срабатывание на некоторых устройствах
+    // Предотвращаем двойное срабатывание на некоторых устройствах + помощь тапу
     let touchStartTime = 0;
     let touchStartX = 0;
     let touchStartY = 0;
-    let lastScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-    let lastScrollTime = performance.now();
+    let touchMoved = false;
+    let touchStartTarget = null;
+
+    // Глобальный гард: если только что отправляли синтетический клик — гасим ближайший нативный
+    window.addEventListener('click', (e) => {
+      const now = Date.now();
+      if (now - this._lastSynthClickTs < 220) {
+        const dx = Math.abs(e.clientX - this._lastSynthClickPos.x);
+        const dy = Math.abs(e.clientY - this._lastSynthClickPos.y);
+        if (dx <= 12 && dy <= 12) {
+          try {
+            e.preventDefault();
+            e.stopPropagation();
+          } catch {}
+        }
+      }
+    }, { capture: true });
 
     document.addEventListener('touchstart', (e) => {
       touchStartTime = Date.now();
       const t = e.touches && e.touches[0];
       touchStartX = t ? t.clientX : 0;
       touchStartY = t ? t.clientY : 0;
+      touchMoved = false;
+      // Запоминаем исходную цель тапа
+      touchStartTarget = document.elementFromPoint(touchStartX, touchStartY);
+    }, { passive: true });
+
+    document.addEventListener('touchmove', (e) => {
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      const move = Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY);
+      if (move > 8) touchMoved = true;
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
@@ -113,32 +142,31 @@ class BounceScroll {
       const changed = e.changedTouches && e.changedTouches[0];
       const endX = changed ? changed.clientX : 0;
       const endY = changed ? changed.clientY : 0;
-      const move = Math.hypot(endX - touchStartX, endY - touchStartY);
-      const now = performance.now();
-      const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      const scrollDelta = Math.abs(currentScrollY - lastScrollY);
-      const timeDelta = Math.max(1, now - lastScrollTime);
-      const scrollVelocity = scrollDelta / timeDelta; // px/ms
+      const totalMove = Math.hypot(endX - touchStartX, endY - touchStartY);
 
-      // Если был короткий тап без существенного движения, а страница находится в инерции/баунсе —
-      // синтетически пробрасываем click по элементу под пальцем, чтобы клик не "терялся".
-      const SHORT_TAP_MS = 180;
+      // Эвристика «быстрый тап»: коротко и без смещения — всегда пробрасываем клик сами
+      const SHORT_TAP_MS = 220;
       const MOVE_THRESHOLD_PX = 8;
-      const INERTIA_VELOCITY_MIN = 0.15; // эвристика: есть инерция
-      if (touchDuration <= SHORT_TAP_MS && move <= MOVE_THRESHOLD_PX && scrollVelocity >= INERTIA_VELOCITY_MIN) {
-        const target = document.elementFromPoint(endX, endY);
+      if (touchDuration <= SHORT_TAP_MS && totalMove <= MOVE_THRESHOLD_PX && !touchMoved) {
+        // Блокируем нативный клик, который может прийти позже/не прийти из-за инерции
+        try {
+          e.preventDefault();
+          e.stopPropagation();
+        } catch {}
+
+        // Целимся в исходную цель тапа (стабильнее на баунсе)
+        const target = touchStartTarget || document.elementFromPoint(endX, endY);
         if (target) {
           try {
-            const evt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+            const evt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: endX, clientY: endY });
+            // Гард от двойного срабатывания
+            this._lastSynthClickTs = Date.now();
+            this._lastSynthClickPos = { x: endX, y: endY };
             target.dispatchEvent(evt);
           } catch {}
         }
       }
-
-      // обновляем метрики скролла для следующего вычисления
-      lastScrollY = currentScrollY;
-      lastScrollTime = now;
-    }, { passive: true });
+    }, { passive: false });
 
     // Улучшаем поведение на границах скролла
     let isScrolling = false;
@@ -150,12 +178,6 @@ class BounceScroll {
         document.body.classList.add('is-scrolling');
         isScrolling = true;
       }
-
-      // Запоминаем скорость/позицию для эвристики инерции
-      const now = performance.now();
-      const currentScrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      lastScrollY = currentScrollY;
-      lastScrollTime = now;
 
       // Очищаем предыдущий таймаут
       clearTimeout(scrollTimeout);
