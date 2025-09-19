@@ -89,18 +89,10 @@ function applyScale() {
   const bottomNavHeightPx = bottomNav ? bottomNav.offsetHeight : 0; // includes safe area
   const availableHeight = Math.max(0, vh - bottomNavHeightPx);
 
-  // Two candidate scales
-  const scaleWidth = vw / BASE_WIDTH;
-  const scaleHeight = availableHeight / BASE_HEIGHT;
-
-  // Default: fit both (may cause side letterbox). If that produces side gaps,
-  // switch to width-based scale to remove lateral gaps and allow extra vertical scroll.
-  let scale = Math.min(scaleWidth, scaleHeight);
-  const sideGapPx = (vw - BASE_WIDTH * scale);
-  if (sideGapPx > 8) {
-    scale = scaleWidth;
-  }
-  if (scale > 1) scale = 1; // never upscale
+  // Fit-by-both rule: always use the smaller ratio so the same base content fits
+  // within the visible area (above bottom nav). Never upscale above 1.
+  let scale = Math.min(vw / BASE_WIDTH, availableHeight / BASE_HEIGHT);
+  if (scale > 1) scale = 1;
 
   // Add unscaled padding so scrollable content never hides behind bottom nav
   const extraPaddingUnscaled = bottomNavHeightPx > 0 ? Math.ceil(bottomNavHeightPx / scale) : 0;
