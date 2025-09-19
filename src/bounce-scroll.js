@@ -170,8 +170,14 @@ class BounceScroll {
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
-      // Работает только если страница сейчас прокручивается (в т.ч. bounce)
-      if (!document.body.classList.contains('is-scrolling')) return;
+      // Разрешаем тапы если страница прокручивается ИЛИ находимся у границы (эффект резинки)
+      const docEl = document.documentElement;
+      const atTop = (window.scrollY || docEl.scrollTop || 0) <= 0;
+      const docHeight = Math.max(docEl.scrollHeight, document.body.scrollHeight || 0);
+      const viewBottom = (window.innerHeight || docEl.clientHeight || 0) + (window.scrollY || docEl.scrollTop || 0);
+      const atBottom = viewBottom >= docHeight - 1;
+      const isBounceContext = document.body.classList.contains('is-scrolling') || atTop || atBottom;
+      if (!isBounceContext) return;
 
       const dx = (e.changedTouches?.[0]?.clientX || 0) - startX;
       const dy = (e.changedTouches?.[0]?.clientY || 0) - startY;
