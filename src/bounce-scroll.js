@@ -9,6 +9,14 @@ class BounceScroll {
     // Гард от двойного клика после синтетического
     this._lastSynthClickTs = 0;
     this._lastSynthClickPos = { x: 0, y: 0 };
+    // Трекинг инерции
+    this._lastScrollTime = performance.now();
+    this._cancelMomentumOnTap = false;
+    this._tapStartTarget = null;
+    this._tapStartX = 0;
+    this._tapStartY = 0;
+    this._tapMoved = false;
+    this._tapStartTs = 0;
     
     this.init();
   }
@@ -98,13 +106,6 @@ class BounceScroll {
   }
 
   optimizeTouchBehavior() {
-    // Предотвращаем двойное срабатывание на некоторых устройствах + помощь тапу
-    let touchStartTime = 0;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let touchMoved = false;
-    let touchStartTarget = null;
-
     // Глобальный гард: если только что отправляли синтетический клик — гасим ближайший нативный
     window.addEventListener('click', (e) => {
       const now = Date.now();
@@ -120,74 +121,83 @@ class BounceScroll {
       }
     }, { capture: true });
 
-    document.addEventListener('touchstart', (e) => {
-      touchStartTime = Date.now();
-      const t = e.touches && e.touches[0];
-      touchStartX = t ? t.clientX : 0;
-      touchStartY = t ? t.clientY : 0;
-      touchMoved = false;
-      // Запоминаем исходную цель тапа
-      touchStartTarget = document.elementFromPoint(touchStartX, touchStartY);
+    // Трекинг скролла (для детекции инерции/баунса)
+    let isScrolling = false;
+    let scrollTimeout;
+    document.addEventListener('scroll', () => {
+      this._lastScrollTime = performance.now();
+      if (!isScrolling) {
+        document.body.classList.add('is-scrolling');
+        isScrolling = true;
+      }
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        document.body.classList.remove('is-scrolling');
+        isScrolling = false;
+      }, 150);
     }, { passive: true });
+
+    // Управление тапом для остановки инерции и надёжного клика
+    document.addEventListener('touchstart', (e) => {
+      this._tapStartTs = Date.now();
+      const t = e.touches && e.touches[0];
+      this._tapStartX = t ? t.clientX : 0;
+      this._tapStartY = t ? t.clientY : 0;
+      this._tapMoved = false;
+      this._tapStartTarget = document.elementFromPoint(this._tapStartX, this._tapStartY);
+
+      // Если только что был скролл (инерция/баунс), останавливаем его и готовим синтетический клик
+      const sinceScrollMs = performance.now() - this._lastScrollTime;
+      if (sinceScrollMs < 220 || document.body.classList.contains('is-scrolling')) {
+        this._cancelMomentumOnTap = true;
+        try { e.preventDefault(); } catch {}
+      } else {
+        this._cancelMomentumOnTap = false;
+      }
+    }, { passive: false });
 
     document.addEventListener('touchmove', (e) => {
       const t = e.touches && e.touches[0];
       if (!t) return;
-      const move = Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY);
-      if (move > 8) touchMoved = true;
+      const move = Math.hypot(t.clientX - this._tapStartX, t.clientY - this._tapStartY);
+      if (move > 8) this._tapMoved = true;
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
-      const touchDuration = Date.now() - touchStartTime;
+      const duration = Date.now() - this._tapStartTs;
       const changed = e.changedTouches && e.changedTouches[0];
-      const endX = changed ? changed.clientX : 0;
-      const endY = changed ? changed.clientY : 0;
-      const totalMove = Math.hypot(endX - touchStartX, endY - touchStartY);
+      const endX = changed ? changed.clientX : this._tapStartX;
+      const endY = changed ? changed.clientY : this._tapStartY;
+      const totalMove = Math.hypot(endX - this._tapStartX, endY - this._tapStartY);
 
-      // Эвристика «быстрый тап»: коротко и без смещения — всегда пробрасываем клик сами
-      const SHORT_TAP_MS = 220;
-      const MOVE_THRESHOLD_PX = 8;
-      if (touchDuration <= SHORT_TAP_MS && totalMove <= MOVE_THRESHOLD_PX && !touchMoved) {
-        // Блокируем нативный клик, который может прийти позже/не прийти из-за инерции
+      const SHORT_TAP_MS = 260;
+      const MOVE_THRESHOLD_PX = 10;
+
+      const shouldSynthClick = (
+        duration <= SHORT_TAP_MS && totalMove <= MOVE_THRESHOLD_PX && !this._tapMoved
+      );
+
+      if (this._cancelMomentumOnTap && shouldSynthClick) {
         try {
           e.preventDefault();
           e.stopPropagation();
         } catch {}
-
-        // Целимся в исходную цель тапа (стабильнее на баунсе)
-        const target = touchStartTarget || document.elementFromPoint(endX, endY);
+        const target = this._tapStartTarget || document.elementFromPoint(endX, endY);
         if (target) {
           try {
             const evt = new MouseEvent('click', { bubbles: true, cancelable: true, view: window, clientX: endX, clientY: endY });
-            // Гард от двойного срабатывания
             this._lastSynthClickTs = Date.now();
             this._lastSynthClickPos = { x: endX, y: endY };
             target.dispatchEvent(evt);
           } catch {}
         }
       }
+
+      // Сброс флагов
+      this._cancelMomentumOnTap = false;
+      this._tapStartTarget = null;
+      this._tapMoved = false;
     }, { passive: false });
-
-    // Улучшаем поведение на границах скролла
-    let isScrolling = false;
-    let scrollTimeout;
-
-    document.addEventListener('scroll', () => {
-      if (!isScrolling) {
-        // Начало скролла
-        document.body.classList.add('is-scrolling');
-        isScrolling = true;
-      }
-
-      // Очищаем предыдущий таймаут
-      clearTimeout(scrollTimeout);
-
-      // Устанавливаем новый таймаут для окончания скролла
-      scrollTimeout = setTimeout(() => {
-        document.body.classList.remove('is-scrolling');
-        isScrolling = false;
-      }, 150);
-    }, { passive: true });
   }
 
   // Метод для отключения bounce на конкретном элементе
