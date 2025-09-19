@@ -96,16 +96,9 @@ class BounceScroll {
   optimizeTouchBehavior() {
     // Предотвращаем двойное срабатывание на некоторых устройствах
     let touchStartTime = 0;
-    let touchStartX = 0;
-    let touchStartY = 0;
-    let synthClickLock = false;
     
     document.addEventListener('touchstart', (e) => {
       touchStartTime = Date.now();
-      if (e.touches && e.touches.length > 0) {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-      }
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
@@ -113,30 +106,7 @@ class BounceScroll {
       
       // Оптимизируем короткие касания
       if (touchDuration < 150) {
-        // Если идёт инерционный скролл/резинка — разрешим тап по элементам
-        const isMomentumScroll = document.body.classList.contains('is-scrolling');
-        if (isMomentumScroll && e.cancelable && !synthClickLock) {
-          const touch = e.changedTouches && e.changedTouches[0];
-          const dx = touch ? Math.abs(touch.clientX - touchStartX) : 0;
-          const dy = touch ? Math.abs(touch.clientY - touchStartY) : 0;
-          // Считаем как «тап», если движения почти нет
-          if (dx < 8 && dy < 8) {
-            // Блокируем нативный click, чтобы не продублировать
-            e.preventDefault();
-            // Небольшая защита от двойного синтетического клика
-            synthClickLock = true;
-            setTimeout(() => { synthClickLock = false; }, 300);
-
-            // Пытаемся кликнуть по ближайшей интерактивной цели
-            const target = (e.target && e.target.closest) ? e.target.closest('button, a, .add-to-cart, .checkout-button, .banner-dot, .category-product-card, .category-card, .search-suggestion, .checkout-more, [role="button"]') : null;
-            if (target && typeof target.click === 'function') {
-              // Останавливаем инерцию мягко
-              try { window.scrollTo(window.scrollX, window.scrollY); } catch (_) {}
-              // Синтезируем клик в следующий кадр, чтобы слой стабилизировался
-              requestAnimationFrame(() => target.click());
-            }
-          }
-        }
+        // Короткое касание - оставляем как есть
         return;
       }
     }, { passive: true });
@@ -159,7 +129,7 @@ class BounceScroll {
       scrollTimeout = setTimeout(() => {
         document.body.classList.remove('is-scrolling');
         isScrolling = false;
-      }, 120);
+      }, 150);
     }, { passive: true });
   }
 
