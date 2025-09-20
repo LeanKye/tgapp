@@ -353,6 +353,23 @@ function updateVariants(product) {
         if (product) refreshBuyControls(product);
       }
     });
+
+    // Fast-tap: выбираем по pointerup/touchend даже во время bounce
+    const fastTap = (e) => {
+      // Предотвращаем двойные срабатывания (последующий click)
+      if (label.__fastTapLock) return;
+      label.__fastTapLock = true;
+      try {
+        if (!input.checked) {
+          input.checked = true;
+          try { input.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
+        }
+      } finally {
+        setTimeout(() => { label.__fastTapLock = false; }, 300);
+      }
+    };
+    label.addEventListener('pointerup', fastTap, { passive: true });
+    label.addEventListener('touchend', fastTap, { passive: true });
   });
 }
 
@@ -411,6 +428,22 @@ function updatePeriods(product) {
         if (product) refreshBuyControls(product);
       }
     });
+
+    // Fast-tap: выбираем по pointerup/touchend даже во время bounce
+    const fastTap = (e) => {
+      if (label.__fastTapLock) return;
+      label.__fastTapLock = true;
+      try {
+        if (!input.checked && !input.disabled) {
+          input.checked = true;
+          try { input.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
+        }
+      } finally {
+        setTimeout(() => { label.__fastTapLock = false; }, 300);
+      }
+    };
+    label.addEventListener('pointerup', fastTap, { passive: true });
+    label.addEventListener('touchend', fastTap, { passive: true });
   });
 }
 
@@ -474,6 +507,22 @@ function updateEditions(product) {
         if (productObj) setCorporatePriceDisplayIfApplicable(productObj, baseAmount);
       }
     });
+
+    // Fast-tap: выбираем по pointerup/touchend даже во время bounce
+    const fastTap = (e) => {
+      if (label.__fastTapLock) return;
+      label.__fastTapLock = true;
+      try {
+        if (!input.checked) {
+          input.checked = true;
+          try { input.dispatchEvent(new Event('change', { bubbles: true })); } catch {}
+        }
+      } finally {
+        setTimeout(() => { label.__fastTapLock = false; }, 300);
+      }
+    };
+    label.addEventListener('pointerup', fastTap, { passive: true });
+    label.addEventListener('touchend', fastTap, { passive: true });
   });
 
   // Применяем визуалы для издания по умолчанию (первого), если указаны спец. данные
@@ -1198,6 +1247,15 @@ function initPayment() {
   const buyButton = document.querySelector('.add-to-cart');
   if (!buyButton) return;
   // Больше не открываем модалку — переключаемся на контролы корзины
+  const fastHandler = (e) => {
+    if (buyButton.__fastTapLock) return;
+    buyButton.__fastTapLock = true;
+    try { handleAddToCartFromProduct(); } finally {
+      setTimeout(() => { buyButton.__fastTapLock = false; }, 300);
+    }
+  };
+  buyButton.addEventListener('pointerup', fastHandler, { passive: true });
+  buyButton.addEventListener('touchend', fastHandler, { passive: true });
   buyButton.addEventListener('click', handleAddToCartFromProduct);
 }
 
@@ -1312,14 +1370,25 @@ function renderBuyOrControls(product) {
   document.body.appendChild(controls);
 
   // Обработчики
-  controls.querySelector('.go-to-cart').addEventListener('click', () => {
+  const goToCartBtn = controls.querySelector('.go-to-cart');
+  const goToCart = () => {
     if (window.AppNav && typeof window.AppNav.go === 'function') {
       return window.AppNav.go('cart.html');
     }
     const basePath = window.location.pathname.replace(/[^/]*$/, '');
     window.location.href = basePath + 'cart.html';
-  });
-  controls.addEventListener('click', (e) => {
+  };
+  goToCartBtn.addEventListener('click', goToCart);
+  // Fast-tap для перехода в корзину
+  const goToCartFast = (e) => {
+    if (goToCartBtn.__fastTapLock) return;
+    goToCartBtn.__fastTapLock = true;
+    try { goToCart(); } finally { setTimeout(() => { goToCartBtn.__fastTapLock = false; }, 300); }
+  };
+  goToCartBtn.addEventListener('pointerup', goToCartFast, { passive: true });
+  goToCartBtn.addEventListener('touchend', goToCartFast, { passive: true });
+
+  const clickHandler = (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const action = btn.getAttribute('data-action');
@@ -1338,7 +1407,18 @@ function renderBuyOrControls(product) {
     } else {
       controls.querySelector('.qty-value').textContent = String(nextQty);
     }
-  });
+  };
+  controls.addEventListener('click', clickHandler);
+  // Fast-tap для −/+
+  const controlsFastTap = (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    if (btn.__fastTapLock) return;
+    btn.__fastTapLock = true;
+    try { clickHandler(e); } finally { setTimeout(() => { btn.__fastTapLock = false; }, 250); }
+  };
+  controls.addEventListener('pointerup', controlsFastTap, { passive: true });
+  controls.addEventListener('touchend', controlsFastTap, { passive: true });
 }
 
 function handleAddToCartFromProduct() {

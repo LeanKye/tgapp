@@ -203,28 +203,44 @@ function initNav() {
     window.location.href = basePath + normalized;
   };
 
+  const activateNav = (btn) => {
+    const key = btn.dataset.key;
+    // Если уже на соответствующей странице — ничего не делаем
+    const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    const currentKey = file.includes('profile') ? 'profile'
+                  : file.includes('cart') ? 'cart'
+                  : file.includes('category') ? 'categories'
+                  : file.includes('index') ? 'home'
+                  : '';
+    if (key && key === currentKey) {
+      return; // no-op
+    }
+    if (key === 'home') {
+      return (window.AppNav ? window.AppNav.goHomeSmart() : (window.location.href = getBasePath() + 'index.html'));
+    }
+    if (key === 'categories') return (window.AppNav ? window.AppNav.go('category.html') : go('category.html'));
+    if (key === 'cart') return (window.AppNav ? window.AppNav.go('cart.html') : go('cart.html'));
+    if (key === 'profile') return (window.AppNav ? window.AppNav.go('profile.html') : go('profile.html'));
+  };
+
+  const addFastTap = (btn) => {
+    const handler = (e) => {
+      // Защита от двойных срабатываний (pointerup/touchend/click)
+      if (btn.__activated) return;
+      btn.__activated = true;
+      try { activateNav(btn); } finally {
+        setTimeout(() => { btn.__activated = false; }, 350);
+      }
+    };
+    // Мгновенная активация при окончании тача/поинтера во время инерционного скролла
+    btn.addEventListener('pointerup', handler, { passive: true });
+    btn.addEventListener('touchend', handler, { passive: true });
+    // Резерв на случай отсутствия pointer событий
+    btn.addEventListener('click', handler);
+  };
+
   document.querySelectorAll('.bottom-nav .nav-item').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const key = btn.dataset.key;
-      // Если уже на соответствующей странице — ничего не делаем
-      const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-      const currentKey = file.includes('profile') ? 'profile'
-                    : file.includes('cart') ? 'cart'
-                    : file.includes('category') ? 'categories'
-                    : file.includes('index') ? 'home'
-                    : '';
-      if (key && key === currentKey) {
-        return; // no-op
-      }
-      if (key === 'home') {
-        // Умный переход: сначала назад по стеку, затем на главную
-        return (window.AppNav ? window.AppNav.goHomeSmart() : (window.location.href = getBasePath() + 'index.html'));
-      }
-      if (key === 'categories') return (window.AppNav ? window.AppNav.go('category.html') : go('category.html'));
-      if (key === 'cart') return (window.AppNav ? window.AppNav.go('cart.html') : go('cart.html'));
-      if (key === 'profile') return (window.AppNav ? window.AppNav.go('profile.html') : go('profile.html'));
-      // Для корзины и профиля пока заглушка
-    });
+    addFastTap(btn);
   });
   updateCartBadge();
   window.addEventListener('storage', (e) => {

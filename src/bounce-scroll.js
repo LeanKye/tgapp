@@ -47,57 +47,15 @@ class BounceScroll {
       
       /* Улучшенная производительность для bounce анимаций */
       @media (max-width: 1024px) and (hover: none) {
-        /* Убираем will-change для body чтобы не блокировать клики */
         body {
+          will-change: scroll-position;
+        }
+        
+        /* Оптимизация для плавности */
+        * {
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
         }
-        
-        /* Гарантируем что кнопки всегда кликабельны */
-        button, 
-        .nav-item, 
-        .button-group label,
-        .button-group input,
-        .add-to-cart,
-        .go-to-cart,
-        .counter-btn,
-        .checkout-toggle,
-        .cart-controls,
-        .cart-controls button,
-        [data-action="decrease"],
-        [data-action="increase"],
-        .tabs .tab,
-        #more-info-btn,
-        #checkout-toggle,
-        .checkout-button {
-          pointer-events: auto !important;
-          -webkit-tap-highlight-color: transparent;
-          touch-action: manipulation;
-        }
-        
-        /* Убедимся что формы ввода работают */
-        input[type="radio"],
-        input[type="checkbox"] {
-          pointer-events: auto !important;
-        }
-      }
-      
-      /* Дополнительная защита для навигационной панели */
-      .bottom-nav {
-        pointer-events: auto !important;
-        z-index: 9999;
-      }
-      
-      .bottom-nav .nav-item {
-        pointer-events: auto !important;
-      }
-      
-      /* Убедимся что кнопки на странице товара работают */
-      body.is-scrolling button,
-      body.is-scrolling .button-group,
-      body.is-scrolling .add-to-cart,
-      body.is-scrolling .cart-controls {
-        pointer-events: auto !important;
       }
       
       /* Убираем системные эффекты только там где нужно */
@@ -141,13 +99,6 @@ class BounceScroll {
     
     document.addEventListener('touchstart', (e) => {
       touchStartTime = Date.now();
-      
-      // Если нажали на кнопку - сразу убираем класс is-scrolling
-      const target = e.target;
-      if (target.matches('button, .nav-item, input, label, .add-to-cart, .go-to-cart, [data-action]') || 
-          target.closest('button, .nav-item, .button-group, .add-to-cart, .cart-controls, .bottom-nav')) {
-        document.body.classList.remove('is-scrolling');
-      }
     }, { passive: true });
 
     document.addEventListener('touchend', (e) => {
@@ -157,15 +108,6 @@ class BounceScroll {
       if (touchDuration < 150) {
         // Короткое касание - оставляем как есть
         return;
-      }
-    }, { passive: true });
-
-    // Также обрабатываем обычные клики (для устройств с мышью)
-    document.addEventListener('click', (e) => {
-      const target = e.target;
-      if (target.matches('button, .nav-item, input, label, .add-to-cart, .go-to-cart, [data-action]') || 
-          target.closest('button, .nav-item, .button-group, .add-to-cart, .cart-controls, .bottom-nav')) {
-        document.body.classList.remove('is-scrolling');
       }
     }, { passive: true });
 
@@ -187,7 +129,7 @@ class BounceScroll {
       scrollTimeout = setTimeout(() => {
         document.body.classList.remove('is-scrolling');
         isScrolling = false;
-      }, 50); // Уменьшаем таймаут для быстрой разблокировки
+      }, 150);
     }, { passive: true });
   }
 
