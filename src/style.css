@@ -1186,6 +1186,7 @@ body.info-page.has-bottom-nav {
   will-change: transform;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  touch-action: none; /* отключаем жесты на самой панели, клики мгновенные */
 }
 
 /* Не скрываем нижнюю навигацию при открытой клавиатуре */
