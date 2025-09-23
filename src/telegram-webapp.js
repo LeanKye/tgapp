@@ -89,7 +89,8 @@ class TelegramWebApp {
     if (this.currentPage === "home") {
       // На главной странице скрываем все кнопки
       this.tg.BackButton.hide();
-      this.tg.MainButton.hide();
+      this.tg.MainButton.show();
+      this.tg.MainButton.setText('Закрыть');
     } else {
       // На остальных страницах показываем кнопку "Назад" (стандартное поведение)
       this.tg.MainButton.hide();
