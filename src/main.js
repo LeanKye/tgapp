@@ -124,49 +124,34 @@ function createCategoryCard(category, index) {
   card.addEventListener('click', () => {
     navigate(`category.html?category=${encodeURIComponent(category.name)}`);
   });
-  // Fast-tap с повышенной устойчивостью во время bounce (iOS)
-  let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0, ftRect2 = null;
+  // Fast-tap с защитой от скролла/удержания (такая же логика, как у карточек товаров)
+  let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0, ftScrollY2 = 0, ftScrollX2 = 0;
+  const FT_MOVE = 8; const FT_HOLD = 300;
   const onPD2 = (e) => {
-    ftStartX2 = e.clientX;
-    ftStartY2 = e.clientY;
-    ftStartTime2 = performance.now();
-    card.__ftMoved2 = false;
-    try { ftRect2 = card.getBoundingClientRect(); } catch { ftRect2 = null; }
+    ftStartX2 = e.clientX; ftStartY2 = e.clientY; ftStartTime2 = performance.now();
+    ftScrollY2 = window.scrollY; ftScrollX2 = window.scrollX; card.__ftMoved2 = false;
   };
   const onPM2 = (e) => {
     if (!ftStartTime2) return;
-    if (Math.abs(e.clientX - ftStartX2) > FT_MOVE || Math.abs(e.clientY - ftStartY2) > FT_MOVE) card.__ftMoved2 = true;
+    if (
+      Math.abs(e.clientX - ftStartX2) > FT_MOVE ||
+      Math.abs(e.clientY - ftStartY2) > FT_MOVE ||
+      Math.abs(window.scrollY - ftScrollY2) > 0 ||
+      Math.abs(window.scrollX - ftScrollX2) > 0
+    ) card.__ftMoved2 = true;
   };
-  const triggerNav2 = () => {
+  const onPU2 = () => {
+    const dur = performance.now() - (ftStartTime2 || performance.now());
+    const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
+    ftStartTime2 = 0;
+    if (!shouldFire) return;
     if (card.__fastTapLock2) return;
     card.__fastTapLock2 = true;
     try { navigate(`category.html?category=${encodeURIComponent(category.name)}`); } finally { setTimeout(() => { card.__fastTapLock2 = false; }, 300); }
   };
-  const onPU2 = () => {
-    const dur = performance.now() - (ftStartTime2 || performance.now());
-    const movedByPointer = !!card.__ftMoved2;
-    let movedByLayout = false;
-    if (ftRect2) {
-      try {
-        const nowRect = card.getBoundingClientRect();
-        movedByLayout = Math.abs((nowRect?.top || 0) - (ftRect2?.top || 0)) > 6 || Math.abs((nowRect?.left || 0) - (ftRect2?.left || 0)) > 6;
-      } catch {}
-    }
-    ftStartTime2 = 0;
-    // Если во время bounce layout слегка дёрнулся, даём 120мс стабилизироваться и кликаем
-    if (!movedByPointer && movedByLayout) {
-      return setTimeout(triggerNav2, 120);
-    }
-    // Обычный быстрый тап
-    if (!movedByPointer && dur <= FT_HOLD) {
-      return triggerNav2();
-    }
-  };
-  const onPCancel2 = () => { ftStartTime2 = 0; };
   card.addEventListener('pointerdown', onPD2, { passive: true });
   card.addEventListener('pointermove', onPM2, { passive: true });
   card.addEventListener('pointerup', onPU2, { passive: true });
-  card.addEventListener('pointercancel', onPCancel2, { passive: true });
   card.addEventListener('touchend', onPU2, { passive: true });
   
   return card;
