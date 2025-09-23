@@ -86,22 +86,28 @@ class TelegramWebApp {
   updateTelegramHeader() {
     if (!this.tg) return;
 
-    if (this.currentPage === "home") {
-      // На главной странице скрываем все кнопки
+    // Сбрасываем старые обработчики на всякий случай
+    try { this.tg.BackButton.offClick(); } catch {}
+    try { this.tg.MainButton.offClick(); } catch {}
+
+    if (this.currentPage === 'home') {
+      // На главной: показываем кнопку «Закрыть» как MainButton
       this.tg.BackButton.hide();
-      this.tg.MainButton.hide();
+      this.tg.MainButton.setText('Закрыть');
+      this.tg.MainButton.show();
+      this.tg.MainButton.onClick(() => {
+        try {
+          this.tg.close();
+        } catch {
+          // Фоллбэк вне Telegram
+          window.close();
+        }
+      });
     } else {
-      // На остальных страницах показываем кнопку "Назад" (стандартное поведение)
+      // На остальных страницах: Back всегда ведёт на главную
       this.tg.MainButton.hide();
       this.tg.BackButton.show();
-      
-      // Удаляем предыдущие обработчики
-      this.tg.BackButton.offClick();
       this.tg.BackButton.onClick(() => {
-        // Стандартный back
-        if (window.history.length > 1) {
-          return window.history.back();
-        }
         const basePath = window.location.pathname.replace(/[^/]*$/, '');
         window.location.href = basePath + 'index.html';
       });
