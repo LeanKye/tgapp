@@ -232,15 +232,6 @@ function initNav() {
         setTimeout(() => { btn.__activated = false; }, 350);
       }
     };
-    // Мгновенная активация на pointerdown (надёжно во время bounce/inertia)
-    const handlerDown = (e) => {
-      if (btn.__activated) return;
-      btn.__activated = true;
-      try { activateNav(btn); } finally {
-        setTimeout(() => { btn.__activated = false; }, 350);
-      }
-    };
-    btn.addEventListener('pointerdown', handlerDown, { passive: true });
     // Мгновенная активация при окончании тача/поинтера во время инерционного скролла
     btn.addEventListener('pointerup', handler, { passive: true });
     btn.addEventListener('touchend', handler, { passive: true });
