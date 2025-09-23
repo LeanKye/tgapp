@@ -1073,6 +1073,17 @@ body.info-page.has-bottom-nav .bottom-nav {
   position: fixed;
 }
 
+/* Инфо: гарантия отступа под нижний навбар на всех платформах */
+body.info-page.has-bottom-nav main {
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
+}
+
+body.info-page.has-bottom-nav main::after {
+  content: '';
+  display: block;
+  height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
+}
+
 .info-header {
     position: fixed;
     top: 0;
