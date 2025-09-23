@@ -4136,4 +4136,18 @@ body.modal-open {
     overscroll-behavior-x: none;
     /* отступы уже учитывают кнопку и панель */
   }
+
+  /* Информационная страница: переносим скролл внутрь main, панель остаётся фиксированной */
+  body.has-bottom-nav.info-page {
+    overflow: hidden;
+  }
+
+  body.has-bottom-nav.info-page main {
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: none;
+    padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  }
 }
