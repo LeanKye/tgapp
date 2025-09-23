@@ -245,22 +245,13 @@ function initNav() {
 
   // Делегированный fast-tap для любых элементов с классом .fast-tap-nav (если появятся)
   const root = document.body;
-  const delegatedFastTap = (e) => {
-    const target = e.target.closest('.fast-tap-nav');
-    if (!target) return;
-    if (target.__activated) return;
-    target.__activated = true;
-    try {
-      const to = target.getAttribute('data-target');
-      if (to) {
-        if (window.AppNav) window.AppNav.go(to); else go(to);
-      }
-    } finally {
-      setTimeout(() => { target.__activated = false; }, 350);
-    }
-  };
-  root.addEventListener('pointerup', delegatedFastTap, { passive: true });
-  root.addEventListener('touchend', delegatedFastTap, { passive: true });
+  // Делегированный fast-tap с защитой от скролла/удержания
+  let nx=0,ny=0,nt=0,nsy=0,nsx=0; const MOVE=8,HOLD=300;
+  const nd=(e)=>{ const target=e.target.closest('.fast-tap-nav,.bottom-nav .nav-item'); if(!target) return; nx=e.clientX; ny=e.clientY; nt=performance.now(); nsy=window.scrollY; nsx=window.scrollX; target.__moved=false; target.__ftNav=true; };
+  const nu=(e)=>{ const target=e.target.closest('.fast-tap-nav,.bottom-nav .nav-item'); if(!target) return; const moved=Math.abs(e.clientX-nx)>MOVE||Math.abs(e.clientY-ny)>MOVE||Math.abs(window.scrollY-nsy)>0||Math.abs(window.scrollX-nsx)>0; const dur=performance.now()-(nt||performance.now()); nt=0; if(moved||dur>HOLD) return; if(target.__activated) return; target.__activated=true; try { const to=target.getAttribute('data-target'); if (to) { if (window.AppNav) window.AppNav.go(to); else go(to); } else { activateNav && activateNav(target); } } finally { setTimeout(()=>{ target.__activated=false; },350);} };
+  root.addEventListener('pointerdown', nd, { passive: true });
+  root.addEventListener('pointerup', nu, { passive: true });
+  root.addEventListener('touchend', nu, { passive: true });
   updateCartBadge();
   window.addEventListener('storage', (e) => {
     if (e.key === 'hooli_cart') updateCartBadge();

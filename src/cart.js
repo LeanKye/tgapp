@@ -155,21 +155,14 @@ function attachEvents() {
     renderCart();
   });
 
-  // Fast-tap: делегированный для кнопок действий в корзине
-  const fastTap = (e) => {
-    const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn');
-    if (!actionBtn) return;
-    if (actionBtn.__fastTapLock) return;
-    actionBtn.__fastTapLock = true;
-    try {
-      const clickEvent = new Event('click', { bubbles: true });
-      actionBtn.dispatchEvent(clickEvent);
-    } finally {
-      setTimeout(() => { actionBtn.__fastTapLock = false; }, 250);
-    }
-  };
-  document.body.addEventListener('pointerup', fastTap, { passive: true });
-  document.body.addEventListener('touchend', fastTap, { passive: true });
+  // Fast-tap: делегированный с защитой от скролла/удержания
+  let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=8,HOLD=300;
+  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!t) return; dSX=e.clientX; dSY=e.clientY; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; t.__moved=false; t.__ftTarget=true; };
+  const onPM=(e)=>{ const t=document.querySelector('[__ftTarget]'); /* not used */ };
+  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!actionBtn) return; const moved = Math.abs(e.clientX-dSX)>MOVE || Math.abs(e.clientY-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); dST=0; if(moved || dur>HOLD) return; if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { actionBtn.dispatchEvent(new Event('click', { bubbles:true })); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
+  document.body.addEventListener('pointerdown', onPD, { passive: true });
+  document.body.addEventListener('pointerup', onPU, { passive: true });
+  document.body.addEventListener('touchend', onPU, { passive: true });
 
   // Обновление суммы/счётчика и состояния "выбрать все" при смене любого чекбокса товара
   document.getElementById('cart-list')?.addEventListener('change', (e) => {

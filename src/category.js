@@ -225,16 +225,15 @@ class CategoryPage {
       }, 120);
     });
 
-    // Fast-tap: мгновенный переход по pointerup/touchend
-    const fastTap = () => {
-      if (suggestion.__fastTapLock) return;
-      suggestion.__fastTapLock = true;
-      try { navigate(`product.html?product=${product.id}`); } finally {
-        setTimeout(() => { suggestion.__fastTapLock = false; }, 250);
-      }
-    };
-    suggestion.addEventListener('pointerup', fastTap, { passive: true });
-    suggestion.addEventListener('touchend', fastTap, { passive: true });
+    // Fast-tap с защитой от скролла/удержания
+    let sX=0,sY=0,sT=0,sScY=0,sScX=0; const S_MOVE=8,S_HOLD=300;
+    const sPD=(e)=>{ sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; suggestion.__moved=false; };
+    const sPM=(e)=>{ if(!sT) return; if (Math.abs(e.clientX-sX)>S_MOVE || Math.abs(e.clientY-sY)>S_MOVE || Math.abs(window.scrollY-sScY)>0 || Math.abs(window.scrollX-sScX)>0) suggestion.__moved=true; };
+    const sPU=()=>{ const dur=performance.now()-(sT||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+    suggestion.addEventListener('pointerdown', sPD, { passive: true });
+    suggestion.addEventListener('pointermove', sPM, { passive: true });
+    suggestion.addEventListener('pointerup', sPU, { passive: true });
+    suggestion.addEventListener('touchend', sPU, { passive: true });
 
     return suggestion;
   }
@@ -496,16 +495,15 @@ class CategoryPage {
     card.addEventListener('click', () => {
       navigate(`product.html?product=${product.id}`);
     });
-    // Fast-tap: мгновенный переход по pointerup/touchend даже во время bounce
-    const fastTap = () => {
-      if (card.__fastTapLock) return;
-      card.__fastTapLock = true;
-      try { navigate(`product.html?product=${product.id}`); } finally {
-        setTimeout(() => { card.__fastTapLock = false; }, 300);
-      }
-    };
-    card.addEventListener('pointerup', fastTap, { passive: true });
-    card.addEventListener('touchend', fastTap, { passive: true });
+    // Fast-tap с защитой от скролла/удержания
+    let ftX=0, ftY=0, ftT=0, scY=0, scX=0; const MOVE=8, HOLD=300;
+    const pd=(e)=>{ ftX=e.clientX; ftY=e.clientY; ftT=performance.now(); scY=window.scrollY; scX=window.scrollX; card.__moved=false; };
+    const pm=(e)=>{ if(!ftT) return; if(Math.abs(e.clientX-ftX)>MOVE || Math.abs(e.clientY-ftY)>MOVE || Math.abs(window.scrollY-scY)>0 || Math.abs(window.scrollX-scX)>0) card.__moved=true; };
+    const pu=()=>{ const dur=performance.now()-(ftT||performance.now()); const ok=!card.__moved && dur<=HOLD; ftT=0; if(!ok) return; if(card.__fastTapLock) return; card.__fastTapLock=true; try{ navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ card.__fastTapLock=false; },300);} };
+    card.addEventListener('pointerdown', pd, { passive: true });
+    card.addEventListener('pointermove', pm, { passive: true });
+    card.addEventListener('pointerup', pu, { passive: true });
+    card.addEventListener('touchend', pu, { passive: true });
     
     return card;
   }

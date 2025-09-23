@@ -33,16 +33,24 @@ function createProductCard(product) {
   card.addEventListener('click', () => {
     navigate(`product.html?product=${product.id}`);
   });
-  // Fast-tap: мгновенный переход по pointerup/touchend даже во время bounce
-  const fastTap = () => {
+  // Fast-tap с защитой от скролла/удержания
+  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
+  const FT_MOVE = 8; const FT_HOLD = 300;
+  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
+  const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
+  const onPU = () => {
+    const dur = performance.now() - (ftStartTime || performance.now());
+    const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
+    ftStartTime = 0;
+    if (!shouldFire) return;
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
-    try { navigate(`product.html?product=${product.id}`); } finally {
-      setTimeout(() => { card.__fastTapLock = false; }, 300);
-    }
+    try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
   };
-  card.addEventListener('pointerup', fastTap, { passive: true });
-  card.addEventListener('touchend', fastTap, { passive: true });
+  card.addEventListener('pointerdown', onPD, { passive: true });
+  card.addEventListener('pointermove', onPM, { passive: true });
+  card.addEventListener('pointerup', onPU, { passive: true });
+  card.addEventListener('touchend', onPU, { passive: true });
   
   return card;
 }
@@ -116,16 +124,23 @@ function createCategoryCard(category, index) {
   card.addEventListener('click', () => {
     navigate(`category.html?category=${encodeURIComponent(category.name)}`);
   });
-  // Fast-tap для мгновенной навигации
-  const fastTap = () => {
-    if (card.__fastTapLock) return;
-    card.__fastTapLock = true;
-    try { navigate(`category.html?category=${encodeURIComponent(category.name)}`); } finally {
-      setTimeout(() => { card.__fastTapLock = false; }, 300);
-    }
+  // Fast-tap с защитой от скролла/удержания
+  let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0, ftScrollY2 = 0, ftScrollX2 = 0;
+  const onPD2 = (e) => { ftStartX2 = e.clientX; ftStartY2 = e.clientY; ftStartTime2 = performance.now(); ftScrollY2 = window.scrollY; ftScrollX2 = window.scrollX; card.__ftMoved2 = false; };
+  const onPM2 = (e) => { if (!ftStartTime2) return; if (Math.abs(e.clientX - ftStartX2) > FT_MOVE || Math.abs(e.clientY - ftStartY2) > FT_MOVE || Math.abs(window.scrollY - ftScrollY2) > 0 || Math.abs(window.scrollX - ftScrollX2) > 0) card.__ftMoved2 = true; };
+  const onPU2 = () => {
+    const dur = performance.now() - (ftStartTime2 || performance.now());
+    const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
+    ftStartTime2 = 0;
+    if (!shouldFire) return;
+    if (card.__fastTapLock2) return;
+    card.__fastTapLock2 = true;
+    try { navigate(`category.html?category=${encodeURIComponent(category.name)}`); } finally { setTimeout(() => { card.__fastTapLock2 = false; }, 300); }
   };
-  card.addEventListener('pointerup', fastTap, { passive: true });
-  card.addEventListener('touchend', fastTap, { passive: true });
+  card.addEventListener('pointerdown', onPD2, { passive: true });
+  card.addEventListener('pointermove', onPM2, { passive: true });
+  card.addEventListener('pointerup', onPU2, { passive: true });
+  card.addEventListener('touchend', onPU2, { passive: true });
   
   return card;
 }
@@ -235,16 +250,15 @@ class BannerSlider {
       dot.addEventListener('click', () => {
         this.setActive(i, true);
       });
-      // Fast-tap для точек пагинации
-      const fastTap = () => {
-        if (dot.__fastTapLock) return;
-        dot.__fastTapLock = true;
-        try { this.setActive(i, true); } finally {
-          setTimeout(() => { dot.__fastTapLock = false; }, 250);
-        }
-      };
-      dot.addEventListener('pointerup', fastTap, { passive: true });
-      dot.addEventListener('touchend', fastTap, { passive: true });
+      // Fast-tap для точек пагинации с защитой от скролла/удержания
+      let dSX = 0, dSY = 0, dST = 0, dScrollY = 0, dScrollX = 0; const MOVE=8, HOLD=300;
+      const pd = (e) => { dSX=e.clientX; dSY=e.clientY; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; dot.__moved=false; };
+      const pm = (e) => { if (!dST) return; if (Math.abs(e.clientX-dSX)>MOVE || Math.abs(e.clientY-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0) dot.__moved=true; };
+      const pu = () => { const dur=performance.now()-(dST||performance.now()); const ok=!dot.__moved && dur<=HOLD; dST=0; if(!ok) return; if (dot.__fastTapLock) return; dot.__fastTapLock=true; try{ this.setActive(i, true);}finally{ setTimeout(()=>{dot.__fastTapLock=false;},250);} };
+      dot.addEventListener('pointerdown', pd, { passive: true });
+      dot.addEventListener('pointermove', pm, { passive: true });
+      dot.addEventListener('pointerup', pu, { passive: true });
+      dot.addEventListener('touchend', pu, { passive: true });
       pagination.appendChild(dot);
     }
     container.appendChild(pagination);
@@ -890,18 +904,15 @@ class SearchManager {
       }, 120);
     });
 
-  // Fast-tap: мгновенный выбор даже во время bounce
-  const fastTap = () => {
-    if (suggestion.__fastTapLock) return;
-    suggestion.__fastTapLock = true;
-    try {
-      this.selectProduct(product);
-    } finally {
-      setTimeout(() => { suggestion.__fastTapLock = false; }, 250);
-    }
-  };
-  suggestion.addEventListener('pointerup', fastTap, { passive: true });
-  suggestion.addEventListener('touchend', fastTap, { passive: true });
+  // Fast-tap с защитой от скролла/удержания
+  let sSX=0,sSY=0,sST=0,sScrollY=0,sScrollX=0; const S_MOVE=8,S_HOLD=300;
+  const sPD=(e)=>{ sSX=e.clientX; sSY=e.clientY; sST=performance.now(); sScrollY=window.scrollY; sScrollX=window.scrollX; suggestion.__moved=false; };
+  const sPM=(e)=>{ if(!sST) return; if (Math.abs(e.clientX-sSX)>S_MOVE || Math.abs(e.clientY-sSY)>S_MOVE || Math.abs(window.scrollY-sScrollY)>0 || Math.abs(window.scrollX-sScrollX)>0) suggestion.__moved=true; };
+  const sPU=()=>{ const dur=performance.now()-(sST||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sST=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+  suggestion.addEventListener('pointerdown', sPD, { passive: true });
+  suggestion.addEventListener('pointermove', sPM, { passive: true });
+  suggestion.addEventListener('pointerup', sPU, { passive: true });
+  suggestion.addEventListener('touchend', sPU, { passive: true });
 
     return suggestion;
   }
