@@ -1203,6 +1203,22 @@ body.info-page.has-bottom-nav {
   -webkit-backface-visibility: hidden;
 }
 
+/* Когда панель вставлена внутрь скролл-контейнера — делаем её sticky внизу контейнера */
+.bottom-nav.in-scroll {
+  position: sticky;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: calc(100% - var(--bottom-nav-height) - env(safe-area-inset-bottom));
+  margin-top: calc(100dvh - var(--bottom-nav-height) - env(safe-area-inset-bottom));
+  transform: none;
+}
+
+/* Когда навбар внутри скролла — не добавляем дополнительный паддинг снизу на body */
+body.nav-inside-scroll.has-bottom-nav {
+  padding-bottom: 0;
+}
+
 /* Не скрываем нижнюю навигацию при открытой клавиатуре */
 body.keyboard-open .bottom-nav {
   transform: none;

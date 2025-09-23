@@ -52,8 +52,15 @@ function buildBottomNav() {
       <span>Профиль</span>
     </button>
   `;
-
-  document.body.appendChild(nav);
+  // Если есть скролл-контейнер (.catalog), вставляем панель внутрь него и переводим в sticky
+  const scrollContainer = document.querySelector('.catalog');
+  if (scrollContainer) {
+    nav.classList.add('in-scroll');
+    try { document.body.classList.add('nav-inside-scroll'); } catch {}
+    scrollContainer.appendChild(nav);
+  } else {
+    document.body.appendChild(nav);
+  }
 }
 
 // --- Стековая навигация как в маркетплейсах ---
