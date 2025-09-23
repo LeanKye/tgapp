@@ -37,14 +37,15 @@ function attachMenuHandlers() {
       }
     };
     btn.addEventListener('click', handler);
-    // Fast-tap: мгновенный переход по pointerup/touchend
-    const fastTap = () => {
-      if (btn.__fastTapLock) return;
-      btn.__fastTapLock = true;
-      try { handler(); } finally { setTimeout(() => { btn.__fastTapLock = false; }, 250); }
-    };
-    btn.addEventListener('pointerup', fastTap, { passive: true });
-    btn.addEventListener('touchend', fastTap, { passive: true });
+    // Fast-tap с защитой от скролла/удержания
+    let sx=0, sy=0, st=0; const MOVE=8, HOLD=300;
+    const onPD = (e) => { sx = e.clientX; sy = e.clientY; st = performance.now(); btn.__moved = false; };
+    const onPM = (e) => { if (!st) return; if (Math.abs(e.clientX - sx) > MOVE || Math.abs(e.clientY - sy) > MOVE) btn.__moved = true; };
+    const onPU = () => { const dur = performance.now() - (st || performance.now()); const ok = !btn.__moved && dur <= HOLD; st = 0; if (!ok) return; if (btn.__fastTapLock) return; btn.__fastTapLock = true; try { handler(); } finally { setTimeout(() => { btn.__fastTapLock = false; }, 250); } };
+    btn.addEventListener('pointerdown', onPD, { passive: true });
+    btn.addEventListener('pointermove', onPM, { passive: true });
+    btn.addEventListener('pointerup', onPU, { passive: true });
+    btn.addEventListener('touchend', onPU, { passive: true });
   });
 
   const favBtn = document.getElementById('qa-fav');
