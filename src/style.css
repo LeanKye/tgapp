@@ -4164,6 +4164,11 @@ body.modal-open {
     display: block;
     height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
   }
+  /* Если на странице товара есть фиксированные нижние контролы (кнопка Купить или блок контролов),
+     увеличиваем буфер, учитывая их высоту (≈46px) и навбар */
+  body.has-bottom-nav:has(.product):has(.add-to-cart, .product-cart-controls) .product::after {
+    height: calc(46px + var(--bottom-nav-height) + env(safe-area-inset-bottom) + 24px);
+  }
 
   /* Возвращаем вертикальные промежутки между блоками товара, раз gap у flex не работает в block-режиме */
   body.has-bottom-nav:has(.product) .product > * + * {
