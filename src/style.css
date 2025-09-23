@@ -4109,6 +4109,7 @@ body.modal-open {
   }
 
   body.has-bottom-nav:has(.catalog) .catalog {
+    height: 100svh;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch; /* инерция и резинка внутри контейнера */
@@ -4116,6 +4117,7 @@ body.modal-open {
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
     display: block; /* вместо flex — фикс рендера на iOS */
+    touch-action: pan-y;
   }
 
   /* Возвращаем вертикальные отступы между блоками каталога (замена gap у flex) */
@@ -4129,6 +4131,7 @@ body.modal-open {
   }
 
   body.has-bottom-nav:has(.product) .product {
+    height: 100svh;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -4136,6 +4139,7 @@ body.modal-open {
     overscroll-behavior-x: none;
     /* отступы уже учитывают кнопку и панель */
     display: block; /* вместо flex — фикс рендера и скролла на iOS */
+    touch-action: pan-y;
   }
 
   /* Возвращаем вертикальные промежутки между блоками товара, раз gap у flex не работает в block-режиме */
@@ -4149,11 +4153,13 @@ body.modal-open {
   }
 
   body.has-bottom-nav.info-page main {
+    height: 100svh;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+    touch-action: pan-y;
   }
 }
