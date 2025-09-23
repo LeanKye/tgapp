@@ -125,9 +125,9 @@ function createCategoryCard(category, index) {
     navigate(`category.html?category=${encodeURIComponent(category.name)}`);
   });
   // Fast-tap с защитой от скролла/удержания
-  let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0, ftScrollY2 = 0, ftScrollX2 = 0;
-  const onPD2 = (e) => { ftStartX2 = e.clientX; ftStartY2 = e.clientY; ftStartTime2 = performance.now(); ftScrollY2 = window.scrollY; ftScrollX2 = window.scrollX; card.__ftMoved2 = false; };
-  const onPM2 = (e) => { if (!ftStartTime2) return; if (Math.abs(e.clientX - ftStartX2) > FT_MOVE || Math.abs(e.clientY - ftStartY2) > FT_MOVE || Math.abs(window.scrollY - ftScrollY2) > 0 || Math.abs(window.scrollX - ftScrollX2) > 0) card.__ftMoved2 = true; };
+  let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0;
+  const onPD2 = (e) => { ftStartX2 = e.clientX; ftStartY2 = e.clientY; ftStartTime2 = performance.now(); card.__ftMoved2 = false; };
+  const onPM2 = (e) => { if (!ftStartTime2) return; if (Math.abs(e.clientX - ftStartX2) > FT_MOVE || Math.abs(e.clientY - ftStartY2) > FT_MOVE) card.__ftMoved2 = true; };
   const onPU2 = () => {
     const dur = performance.now() - (ftStartTime2 || performance.now());
     const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
