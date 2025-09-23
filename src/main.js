@@ -33,6 +33,16 @@ function createProductCard(product) {
   card.addEventListener('click', () => {
     navigate(`product.html?product=${product.id}`);
   });
+  // Fast-tap: мгновенный переход по pointerup/touchend даже во время bounce
+  const fastTap = () => {
+    if (card.__fastTapLock) return;
+    card.__fastTapLock = true;
+    try { navigate(`product.html?product=${product.id}`); } finally {
+      setTimeout(() => { card.__fastTapLock = false; }, 300);
+    }
+  };
+  card.addEventListener('pointerup', fastTap, { passive: true });
+  card.addEventListener('touchend', fastTap, { passive: true });
   
   return card;
 }
@@ -106,6 +116,16 @@ function createCategoryCard(category, index) {
   card.addEventListener('click', () => {
     navigate(`category.html?category=${encodeURIComponent(category.name)}`);
   });
+  // Fast-tap для мгновенной навигации
+  const fastTap = () => {
+    if (card.__fastTapLock) return;
+    card.__fastTapLock = true;
+    try { navigate(`category.html?category=${encodeURIComponent(category.name)}`); } finally {
+      setTimeout(() => { card.__fastTapLock = false; }, 300);
+    }
+  };
+  card.addEventListener('pointerup', fastTap, { passive: true });
+  card.addEventListener('touchend', fastTap, { passive: true });
   
   return card;
 }
@@ -215,6 +235,16 @@ class BannerSlider {
       dot.addEventListener('click', () => {
         this.setActive(i, true);
       });
+      // Fast-tap для точек пагинации
+      const fastTap = () => {
+        if (dot.__fastTapLock) return;
+        dot.__fastTapLock = true;
+        try { this.setActive(i, true); } finally {
+          setTimeout(() => { dot.__fastTapLock = false; }, 250);
+        }
+      };
+      dot.addEventListener('pointerup', fastTap, { passive: true });
+      dot.addEventListener('touchend', fastTap, { passive: true });
       pagination.appendChild(dot);
     }
     container.appendChild(pagination);
@@ -859,6 +889,19 @@ class SearchManager {
         this.selectProduct(product);
       }, 120);
     });
+
+  // Fast-tap: мгновенный выбор даже во время bounce
+  const fastTap = () => {
+    if (suggestion.__fastTapLock) return;
+    suggestion.__fastTapLock = true;
+    try {
+      this.selectProduct(product);
+    } finally {
+      setTimeout(() => { suggestion.__fastTapLock = false; }, 250);
+    }
+  };
+  suggestion.addEventListener('pointerup', fastTap, { passive: true });
+  suggestion.addEventListener('touchend', fastTap, { passive: true });
 
     return suggestion;
   }

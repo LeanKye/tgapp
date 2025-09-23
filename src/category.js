@@ -225,6 +225,17 @@ class CategoryPage {
       }, 120);
     });
 
+    // Fast-tap: мгновенный переход по pointerup/touchend
+    const fastTap = () => {
+      if (suggestion.__fastTapLock) return;
+      suggestion.__fastTapLock = true;
+      try { navigate(`product.html?product=${product.id}`); } finally {
+        setTimeout(() => { suggestion.__fastTapLock = false; }, 250);
+      }
+    };
+    suggestion.addEventListener('pointerup', fastTap, { passive: true });
+    suggestion.addEventListener('touchend', fastTap, { passive: true });
+
     return suggestion;
   }
 
@@ -485,6 +496,16 @@ class CategoryPage {
     card.addEventListener('click', () => {
       navigate(`product.html?product=${product.id}`);
     });
+    // Fast-tap: мгновенный переход по pointerup/touchend даже во время bounce
+    const fastTap = () => {
+      if (card.__fastTapLock) return;
+      card.__fastTapLock = true;
+      try { navigate(`product.html?product=${product.id}`); } finally {
+        setTimeout(() => { card.__fastTapLock = false; }, 300);
+      }
+    };
+    card.addEventListener('pointerup', fastTap, { passive: true });
+    card.addEventListener('touchend', fastTap, { passive: true });
     
     return card;
   }

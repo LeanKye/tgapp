@@ -26,7 +26,7 @@ function renderOrders() {
 
 function attachMenuHandlers() {
   document.querySelectorAll('.profile-menu-item').forEach(btn => {
-    btn.addEventListener('click', () => {
+    const handler = () => {
       const link = btn.dataset.link;
       if (!link) return;
       if (link.startsWith('mailto:') || link.startsWith('https://')) {
@@ -35,7 +35,16 @@ function attachMenuHandlers() {
         const basePath = window.location.pathname.replace(/[^/]*$/, '');
         window.location.href = basePath + link;
       }
-    });
+    };
+    btn.addEventListener('click', handler);
+    // Fast-tap: мгновенный переход по pointerup/touchend
+    const fastTap = () => {
+      if (btn.__fastTapLock) return;
+      btn.__fastTapLock = true;
+      try { handler(); } finally { setTimeout(() => { btn.__fastTapLock = false; }, 250); }
+    };
+    btn.addEventListener('pointerup', fastTap, { passive: true });
+    btn.addEventListener('touchend', fastTap, { passive: true });
   });
 
   const favBtn = document.getElementById('qa-fav');

@@ -242,6 +242,25 @@ function initNav() {
   document.querySelectorAll('.bottom-nav .nav-item').forEach((btn) => {
     addFastTap(btn);
   });
+
+  // Делегированный fast-tap для любых элементов с классом .fast-tap-nav (если появятся)
+  const root = document.body;
+  const delegatedFastTap = (e) => {
+    const target = e.target.closest('.fast-tap-nav');
+    if (!target) return;
+    if (target.__activated) return;
+    target.__activated = true;
+    try {
+      const to = target.getAttribute('data-target');
+      if (to) {
+        if (window.AppNav) window.AppNav.go(to); else go(to);
+      }
+    } finally {
+      setTimeout(() => { target.__activated = false; }, 350);
+    }
+  };
+  root.addEventListener('pointerup', delegatedFastTap, { passive: true });
+  root.addEventListener('touchend', delegatedFastTap, { passive: true });
   updateCartBadge();
   window.addEventListener('storage', (e) => {
     if (e.key === 'hooli_cart') updateCartBadge();

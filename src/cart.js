@@ -155,6 +155,22 @@ function attachEvents() {
     renderCart();
   });
 
+  // Fast-tap: делегированный для кнопок действий в корзине
+  const fastTap = (e) => {
+    const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn');
+    if (!actionBtn) return;
+    if (actionBtn.__fastTapLock) return;
+    actionBtn.__fastTapLock = true;
+    try {
+      const clickEvent = new Event('click', { bubbles: true });
+      actionBtn.dispatchEvent(clickEvent);
+    } finally {
+      setTimeout(() => { actionBtn.__fastTapLock = false; }, 250);
+    }
+  };
+  document.body.addEventListener('pointerup', fastTap, { passive: true });
+  document.body.addEventListener('touchend', fastTap, { passive: true });
+
   // Обновление суммы/счётчика и состояния "выбрать все" при смене любого чекбокса товара
   document.getElementById('cart-list')?.addEventListener('change', (e) => {
     const target = e.target;
