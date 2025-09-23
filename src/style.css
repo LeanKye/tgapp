@@ -4122,4 +4122,18 @@ body.modal-open {
   body.has-bottom-nav:has(.catalog) .catalog > * + * {
     margin-top: 8px;
   }
+
+  /* Страница товара: переносим скролл внутрь .product, чтобы фикс нижняя панель была кликабельной */
+  body.has-bottom-nav:has(.product) {
+    overflow: hidden;
+  }
+
+  body.has-bottom-nav:has(.product) .product {
+    height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: none;
+    /* отступы уже учитывают кнопку и панель */
+  }
 }
