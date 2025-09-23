@@ -3,6 +3,7 @@ class TelegramWebApp {
   constructor() {
     this.tg = null;
     this.currentPage = this.detectCurrentPage();
+    this._backHandler = null;
     this.init();
   }
 
@@ -94,14 +95,30 @@ class TelegramWebApp {
       // На остальных страницах показываем кнопку "Назад" и ведем на главную
       this.tg.MainButton.hide();
       this.tg.BackButton.show();
-      
-      // Удаляем предыдущие обработчики
-      this.tg.BackButton.offClick();
-      this.tg.BackButton.onClick(() => {
-        const basePath = window.location.pathname.replace(/[^/]*$/, '');
-        window.location.href = basePath + 'index.html';
-      });
+
+      // Удаляем предыдущий обработчик, если был
+      if (this._backHandler) {
+        try { this.tg.BackButton.offClick(this._backHandler); } catch (_) {}
+      }
+
+      this._backHandler = () => {
+        // Жесткий переход на домашнюю
+        const homeUrl = this.resolveHomeUrl();
+        window.location.replace(homeUrl);
+      };
+      this.tg.BackButton.onClick(this._backHandler);
     }
+  }
+
+  // Определяем URL домашней страницы
+  resolveHomeUrl() {
+    // Приоритет: абсолютный путь /home (как просили)
+    if (window.location.origin && window.location.origin !== 'null') {
+      return `${window.location.origin}/home`;
+    }
+    // Резерв: index.html в текущей директории
+    const basePath = window.location.pathname.replace(/[^/]*$/, '');
+    return basePath + 'index.html';
   }
 
   // Неблокирующая предзагрузка других HTML-страниц и небольших ассетов
