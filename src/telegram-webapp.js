@@ -83,7 +83,17 @@ class TelegramWebApp {
   }
 
   // Управление кнопками Telegram
+  updateTelegramHeader() {
+    if (!this.tg) return;
 
+    if (this.currentPage === "home") {
+      // На главной странице скрываем все кнопки
+      this.tg.BackButton.hide();
+    } else {
+      // На остальных страницах показываем кнопку "Назад" (стандартное поведение)
+      this.tg.BackButton.show();
+    }
+  }
 
   // Неблокирующая предзагрузка других HTML-страниц и небольших ассетов
   schedulePrefetch() {
