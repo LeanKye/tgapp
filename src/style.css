@@ -4103,5 +4103,11 @@ body.modal-open {
     overscroll-behavior-y: contain;    /* не отдаём резинку в корень */
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+    display: block; /* вместо flex — фикс рендера на iOS */
+  }
+
+  /* Возвращаем вертикальные отступы между блоками каталога (замена gap у flex) */
+  body.has-bottom-nav:has(.catalog) .catalog > * + * {
+    margin-top: 8px;
   }
 }
