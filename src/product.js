@@ -1237,7 +1237,6 @@ function initPayment() {
   buyButton.addEventListener('pointermove', bpm, { passive: true });
   buyButton.addEventListener('pointerup', bpu, { passive: true });
   buyButton.addEventListener('touchend', bpu, { passive: true });
-  buyButton.addEventListener('click', handleAddToCartFromProduct);
 }
 
 // Обработчик клика по кнопке "Купить"
@@ -1359,7 +1358,7 @@ function renderBuyOrControls(product) {
     const basePath = window.location.pathname.replace(/[^/]*$/, '');
     window.location.href = basePath + 'cart.html';
   };
-  goToCartBtn.addEventListener('click', goToCart);
+  // click не используем, чтобы избежать дубля с fast-tap
   // Fast-tap для перехода в корзину
   // Fast-tap с защитой от скролла/удержания
   let cx=0,cy=0,ct=0,csy=0,csx=0; const MOVEC=8,HOLDC=300;
@@ -1391,7 +1390,7 @@ function renderBuyOrControls(product) {
       controls.querySelector('.qty-value').textContent = String(nextQty);
     }
   };
-  controls.addEventListener('click', clickHandler);
+  // click не используем, чтобы избежать дубля с fast-tap
   // Fast-tap для −/+ с защитой от скролла/удержания
   let qx=0,qy=0,qt=0,qsy=0,qsx=0; const MOVEQ=8,HOLDQ=300;
   const qpd=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; qx=e.clientX; qy=e.clientY; qt=performance.now(); qsy=window.scrollY; qsx=window.scrollX; btn.__moved=false; btn.__ftTarget=true; };
