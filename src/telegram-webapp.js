@@ -83,30 +83,7 @@ class TelegramWebApp {
   }
 
   // Управление кнопками Telegram
-  updateTelegramHeader() {
-    if (!this.tg) return;
 
-    if (this.currentPage === "home") {
-      // На главной странице скрываем все кнопки
-      this.tg.BackButton.hide();
-      this.tg.MainButton.hide();
-    } else {
-      // На остальных страницах показываем кнопку "Назад" (стандартное поведение)
-      this.tg.MainButton.hide();
-      this.tg.BackButton.show();
-      
-      // Удаляем предыдущие обработчики
-      this.tg.BackButton.offClick();
-      this.tg.BackButton.onClick(() => {
-        // Стандартный back
-        if (window.history.length > 1) {
-          return window.history.back();
-        }
-        const basePath = window.location.pathname.replace(/[^/]*$/, '');
-        window.location.href = basePath + 'index.html';
-      });
-    }
-  }
 
   // Неблокирующая предзагрузка других HTML-страниц и небольших ассетов
   schedulePrefetch() {
