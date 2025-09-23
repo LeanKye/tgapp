@@ -4200,6 +4200,7 @@ body.modal-open {
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
     touch-action: pan-y;
+    display: block; /* вместо flex — надёжный скролл на iOS */
   }
 
   body.has-bottom-nav.info-page main::after {
