@@ -49,6 +49,22 @@ html, body {
   user-select: none;
 }
 
+/* Изоляция скролла в контентном контейнере, чтобы фиксированный навбар оставался кликабельным при bounce */
+html { height: 100%; }
+body.use-catalog-scroller { height: 100%; overflow: hidden; }
+body.use-catalog-scroller .catalog,
+body.use-catalog-scroller .product {
+  height: 100dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: auto;
+  overscroll-behavior-x: none;
+}
+/* Отступы под фиксированную нижнюю навигацию внутри скролл-контейнера */
+body.use-catalog-scroller.has-bottom-nav .catalog {
+  padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
 /* Убираем подпрыгивание анимаций при загрузке */
 body {
   visibility: hidden;

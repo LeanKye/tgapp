@@ -191,6 +191,13 @@ function setActiveItem() {
 
 function initNav() {
   if (document.querySelector('.bottom-nav')) return;
+  // Включаем режим внутреннего скролла там, где есть контентные контейнеры
+  try {
+    const hasScrollContainer = !!document.querySelector('.catalog, .product');
+    if (hasScrollContainer) {
+      document.body.classList.add('use-catalog-scroller');
+    }
+  } catch {}
   document.body.classList.add('has-bottom-nav');
   // Фиксируем загрузку страницы в стек навигации
   try { window.AppNav && window.AppNav.recordPageLoad(); } catch {}
