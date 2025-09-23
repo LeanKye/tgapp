@@ -4070,3 +4070,20 @@ body.modal-open {
 
 
 
+
+/* --- iOS rubber-band fix: кликабельность фиксированных элементов --- */
+@supports (-webkit-overflow-scrolling: touch) {
+  html, body {
+    -webkit-overflow-scrolling: auto !important; /* не включаем на корневом скроллере */
+  }
+}
+
+/* Усиливаем изоляцию и кликабельность нижней панели */
+.bottom-nav {
+  contain: layout paint;
+  pointer-events: auto;
+}
+
+.bottom-nav * {
+  pointer-events: auto;
+}

@@ -33,17 +33,9 @@ class BounceScroll {
         /* Включаем нативный bounce только для вертикального скролла */
         overscroll-behavior-x: none;
         overscroll-behavior-y: auto;
-        /* Включаем плавный скролл на мобильных */
-        -webkit-overflow-scrolling: touch;
       }
       
-      /* Для iOS - включаем momentum scrolling */
-      @supports (-webkit-overflow-scrolling: touch) {
-        html, body {
-          -webkit-overflow-scrolling: touch;
-          overscroll-behavior-y: auto;
-        }
-      }
+      /* Для iOS - не принудительно включаем momentum scrolling на корневом скроллере */
       
       /* Улучшенная производительность для bounce анимаций */
       @media (max-width: 1024px) and (hover: none) {
@@ -61,7 +53,6 @@ class BounceScroll {
       /* Убираем системные эффекты только там где нужно */
       .no-bounce {
         overscroll-behavior: none;
-        -webkit-overflow-scrolling: auto;
       }
       
 
