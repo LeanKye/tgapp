@@ -4135,6 +4135,12 @@ body.modal-open {
     overscroll-behavior-y: contain;
     overscroll-behavior-x: none;
     /* отступы уже учитывают кнопку и панель */
+    display: block; /* вместо flex — фикс рендера и скролла на iOS */
+  }
+
+  /* Возвращаем вертикальные промежутки между блоками товара, раз gap у flex не работает в block-режиме */
+  body.has-bottom-nav:has(.product) .product > * + * {
+    margin-top: 8px;
   }
 
   /* Информационная страница: переносим скролл внутрь main, панель остаётся фиксированной */
