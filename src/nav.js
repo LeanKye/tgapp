@@ -193,7 +193,7 @@ function initNav() {
   if (document.querySelector('.bottom-nav')) return;
   // Включаем режим внутреннего скролла там, где есть контентные контейнеры
   try {
-    const hasScrollContainer = !!document.querySelector('.catalog, .product');
+    const hasScrollContainer = !!document.querySelector('.catalog');
     if (hasScrollContainer) {
       document.body.classList.add('use-catalog-scroller');
     }
