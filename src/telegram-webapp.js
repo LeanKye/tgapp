@@ -112,11 +112,7 @@ class TelegramWebApp {
 
   // Определяем URL домашней страницы
   resolveHomeUrl() {
-    // Приоритет: абсолютный путь /home (как просили)
-    if (window.location.origin && window.location.origin !== 'null') {
-      return `${window.location.origin}/home`;
-    }
-    // Резерв: index.html в текущей директории
+    // Надежно ведем на index.html в текущей директории
     const basePath = window.location.pathname.replace(/[^/]*$/, '');
     return basePath + 'index.html';
   }
