@@ -78,26 +78,6 @@ class BounceScroll {
     
     // Оптимизируем touch поведение
     this.optimizeTouchBehavior();
-
-    // Гарантируем минимальное пространство для запуска нативного bounce на коротких страницах
-    this._onResize = () => this.ensureBounceRoom();
-    window.addEventListener('resize', this._onResize, { passive: true });
-
-    // Переоценка после первоначального рендера
-    this.ensureBounceRoom();
-    setTimeout(() => this.ensureBounceRoom(), 0);
-    setTimeout(() => this.ensureBounceRoom(), 800);
-
-    // Отслеживаем изменения размеров контента (если поддерживается)
-    try {
-      if ('ResizeObserver' in window) {
-        this._resizeObserver = new ResizeObserver(() => this.ensureBounceRoom());
-        const container = this.resolveScrollContainer();
-        if (container) this._resizeObserver.observe(container);
-      }
-    } catch (_) {
-      // Молча игнорируем, если ResizeObserver недоступен
-    }
   }
 
   setupModalBehavior() {
@@ -144,72 +124,6 @@ class BounceScroll {
     }, { passive: true });
   }
 
-  // Добавляет/удаляет невидимый 1px-спейсер, чтобы запускать bounce на коротких страницах
-  ensureBounceRoom() {
-    const container = this.resolveScrollContainer();
-    const viewportHeight = window.visualViewport ? Math.round(window.visualViewport.height) : window.innerHeight;
-
-    if (!container) return;
-
-    // Измеряем размеры целевого скролл-контейнера
-    const contentHeight = container.scrollHeight || container.offsetHeight || 0;
-    const containerHeight = container.clientHeight || viewportHeight;
-    const needsSpacer = contentHeight <= containerHeight;
-
-    // Если наблюдатель смотрит не на тот контейнер — перевешиваем
-    if (this._resizeObserver && this._observedContainer !== container) {
-      try { if (this._observedContainer) this._resizeObserver.unobserve(this._observedContainer); } catch (_) {}
-      try { this._resizeObserver.observe(container); } catch (_) {}
-      this._observedContainer = container;
-    }
-
-    // Ленивая инициализация ссылки на спейсер
-    if (!this._bounceSpacer || this._bounceSpacer.parentElement !== container) {
-      // Если спейсер был добавлен в другой контейнер — удалим его
-      if (this._bounceSpacer && this._bounceSpacer.parentElement) {
-        try { this._bounceSpacer.parentElement.removeChild(this._bounceSpacer); } catch (_) {}
-      }
-      this._bounceSpacer = null;
-    }
-
-    if (needsSpacer) {
-      if (!this._bounceSpacer) {
-        const spacer = document.createElement('div');
-        spacer.id = 'bounce-spacer';
-        spacer.style.cssText = 'height:1px; pointer-events:none;';
-        container.appendChild(spacer);
-        this._bounceSpacer = spacer;
-      }
-    } else if (this._bounceSpacer) {
-      try { this._bounceSpacer.remove(); } catch (_) {}
-      this._bounceSpacer = null;
-    }
-  }
-
-  // Определяет актуальный вертикальный скролл-контейнер страницы
-  resolveScrollContainer() {
-    const body = document.body;
-    const html = document.documentElement;
-
-    // Если на странице перенесён скролл в конкретный контейнер (iOS фиксы)
-    // Приоритет: info → product → catalog
-    const infoMain = body.classList.contains('info-page') ? document.querySelector('body.info-page main') : null;
-    const product = document.querySelector('.product');
-    const catalog = document.querySelector('.catalog');
-
-    // Если body не скроллится — пробуем внутренние контейнеры
-    const bodyOverflowY = getComputedStyle(body).overflowY;
-    if (bodyOverflowY === 'hidden') {
-      if (infoMain) return infoMain;
-      if (product) return product;
-      if (catalog) return catalog;
-    }
-
-    // В противном случае используем стандартный скроллер документа
-    // (в разных браузерах это либо html, либо body)
-    return document.scrollingElement || html || body;
-  }
-
   // Метод для отключения bounce на конкретном элементе
   disableBounce(element) {
     if (element) {
@@ -242,21 +156,6 @@ class BounceScroll {
     
     document.documentElement.classList.remove('bounce-enabled');
     document.body.classList.remove('bounce-enabled', 'is-scrolling');
-
-    // Снимаем слушатели и наблюдатели
-    if (this._onResize) {
-      window.removeEventListener('resize', this._onResize);
-      this._onResize = null;
-    }
-    if (this._resizeObserver) {
-      try { this._resizeObserver.disconnect(); } catch (_) {}
-      this._resizeObserver = null;
-    }
-    // Удаляем спейсер, если остался
-    if (this._bounceSpacer) {
-      try { this._bounceSpacer.remove(); } catch (_) {}
-      this._bounceSpacer = null;
-    }
   }
 }
 
