@@ -92,7 +92,8 @@ class BounceScroll {
     try {
       if ('ResizeObserver' in window) {
         this._resizeObserver = new ResizeObserver(() => this.ensureBounceRoom());
-        this._resizeObserver.observe(document.body);
+        const container = this.resolveScrollContainer();
+        if (container) this._resizeObserver.observe(container);
       }
     } catch (_) {
       // Молча игнорируем, если ResizeObserver недоступен
@@ -145,21 +146,30 @@ class BounceScroll {
 
   // Добавляет/удаляет невидимый 1px-спейсер, чтобы запускать bounce на коротких страницах
   ensureBounceRoom() {
-    const doc = document.documentElement;
-    const body = document.body;
-    // Стабильное измерение высоты контента и вьюпорта
-    const contentHeight = Math.max(
-      doc.scrollHeight,
-      body.scrollHeight,
-      doc.offsetHeight,
-      body.offsetHeight
-    );
+    const container = this.resolveScrollContainer();
     const viewportHeight = window.visualViewport ? Math.round(window.visualViewport.height) : window.innerHeight;
-    const needsSpacer = contentHeight <= viewportHeight;
 
-    // Ленивая инициализация ссылки на элемент
-    if (!this._bounceSpacer) {
-      this._bounceSpacer = document.getElementById('bounce-spacer') || null;
+    if (!container) return;
+
+    // Измеряем размеры целевого скролл-контейнера
+    const contentHeight = container.scrollHeight || container.offsetHeight || 0;
+    const containerHeight = container.clientHeight || viewportHeight;
+    const needsSpacer = contentHeight <= containerHeight;
+
+    // Если наблюдатель смотрит не на тот контейнер — перевешиваем
+    if (this._resizeObserver && this._observedContainer !== container) {
+      try { if (this._observedContainer) this._resizeObserver.unobserve(this._observedContainer); } catch (_) {}
+      try { this._resizeObserver.observe(container); } catch (_) {}
+      this._observedContainer = container;
+    }
+
+    // Ленивая инициализация ссылки на спейсер
+    if (!this._bounceSpacer || this._bounceSpacer.parentElement !== container) {
+      // Если спейсер был добавлен в другой контейнер — удалим его
+      if (this._bounceSpacer && this._bounceSpacer.parentElement) {
+        try { this._bounceSpacer.parentElement.removeChild(this._bounceSpacer); } catch (_) {}
+      }
+      this._bounceSpacer = null;
     }
 
     if (needsSpacer) {
@@ -167,13 +177,37 @@ class BounceScroll {
         const spacer = document.createElement('div');
         spacer.id = 'bounce-spacer';
         spacer.style.cssText = 'height:1px; pointer-events:none;';
-        document.body.appendChild(spacer);
+        container.appendChild(spacer);
         this._bounceSpacer = spacer;
       }
     } else if (this._bounceSpacer) {
-      this._bounceSpacer.remove();
+      try { this._bounceSpacer.remove(); } catch (_) {}
       this._bounceSpacer = null;
     }
+  }
+
+  // Определяет актуальный вертикальный скролл-контейнер страницы
+  resolveScrollContainer() {
+    const body = document.body;
+    const html = document.documentElement;
+
+    // Если на странице перенесён скролл в конкретный контейнер (iOS фиксы)
+    // Приоритет: info → product → catalog
+    const infoMain = body.classList.contains('info-page') ? document.querySelector('body.info-page main') : null;
+    const product = document.querySelector('.product');
+    const catalog = document.querySelector('.catalog');
+
+    // Если body не скроллится — пробуем внутренние контейнеры
+    const bodyOverflowY = getComputedStyle(body).overflowY;
+    if (bodyOverflowY === 'hidden') {
+      if (infoMain) return infoMain;
+      if (product) return product;
+      if (catalog) return catalog;
+    }
+
+    // В противном случае используем стандартный скроллер документа
+    // (в разных браузерах это либо html, либо body)
+    return document.scrollingElement || html || body;
   }
 
   // Метод для отключения bounce на конкретном элементе
