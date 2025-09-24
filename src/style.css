@@ -4147,6 +4147,13 @@ body.modal-open {
     height: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom) + 16px);
   }
 
+  /* Минимальный «невидимый» скролл для коротких страниц корзины и профиля */
+  body:has(#cart-list) .catalog,
+  body:has(.container.profile-card) .catalog {
+    min-height: calc(100svh + 1px);
+    margin-bottom: -1px; /* компенсация без визуального зазора */
+  }
+
   /* Возвращаем вертикальные отступы между блоками каталога (замена gap у flex) */
   body.has-bottom-nav:has(.catalog) .catalog > * + * {
     margin-top: 8px;
