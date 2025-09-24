@@ -929,6 +929,27 @@ function initCheckoutPanel() {
       }
     }
   });
+
+  // Fast-tap для заголовка ("Выберите способ оформления") и стрелочки — надёжно во время bounce
+  const toggleCheckout = () => {
+    if (isAnimatingCheckout) return;
+    if (isExpanded) { collapseCheckout(); } else { expandCheckout(); }
+  };
+
+  const attachFastTap = (el) => {
+    if (!el) return;
+    let sx=0, sy=0, st=0, ssy=0, ssx=0; const MOVE=8, HOLD=300;
+    const pd=(e)=>{ sx=e.clientX; sy=e.clientY; st=performance.now(); ssy=window.scrollY; ssx=window.scrollX; el.__moved=false; };
+    const pm=(e)=>{ if(!st) return; if(Math.abs(e.clientX-sx)>MOVE||Math.abs(e.clientY-sy)>MOVE||Math.abs(window.scrollY-ssy)>0||Math.abs(window.scrollX-ssx)>0) el.__moved=true; };
+    const pu=()=>{ const dur=performance.now()-(st||performance.now()); const ok=!el.__moved && dur<=HOLD; st=0; if(!ok) return; if(el.__fastTapLock) return; el.__fastTapLock=true; try { toggleCheckout(); } finally { setTimeout(()=>{ el.__fastTapLock=false; }, 250);} };
+    el.addEventListener('pointerdown', pd, { passive: true });
+    el.addEventListener('pointermove', pm, { passive: true });
+    el.addEventListener('pointerup', pu, { passive: true });
+    el.addEventListener('touchend', pu, { passive: true });
+  };
+
+  attachFastTap(checkoutHeaderText);
+  attachFastTap(checkoutArrow);
   
   // Добавляем обработчики к вариантам оформления
   function handleVariantSelection() {
