@@ -4113,36 +4113,37 @@ body.modal-open {
 
 /* Переносим прокрутку на .catalog, чтобы фиксированные элементы не теряли хит-тест на iOS */
 @supports (-webkit-overflow-scrolling: touch) {
-  /* Тело не скроллится при наличии нижней панели, чтобы сохранить кликабельность fixed-элементов */
-  body.has-bottom-nav {
-    overflow: hidden;
+  /* Только на страницах с `.catalog`, чтобы не ломать product.html */
+  body.has-bottom-nav:has(.catalog) {
+    overflow: hidden; /* тело не скроллится */
+    padding-bottom: 0; /* отступ переносим внутрь каталога */
   }
 
-  .catalog {
-    display: block; /* вместо flex — фикс рендера на iOS */
-    min-height: 100svh;
+  body.has-bottom-nav:has(.catalog) .catalog {
+    height: 100svh;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch; /* инерция и резинка внутри контейнера */
     overscroll-behavior-y: contain;    /* не отдаём резинку в корень */
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
+    display: block; /* вместо flex — фикс рендера на iOS */
     touch-action: pan-y;
   }
 
   /* Гарантированный «буфер» после контента, чтобы ничего не попадало под навбар */
-  .catalog::after {
+  body.has-bottom-nav:has(.catalog) .catalog::after {
     content: '';
     display: block;
     height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
   }
 
   /* Корзина: добавляем место ещё и под панель оформления (56px) */
-  body.has-bottom-nav.has-checkout-bar .catalog {
+  body.has-bottom-nav.has-checkout-bar:has(.catalog) .catalog {
     padding-bottom: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom) + 16px);
   }
 
-  body.has-bottom-nav.has-checkout-bar .catalog::after {
+  body.has-bottom-nav.has-checkout-bar:has(.catalog) .catalog::after {
     height: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom) + 16px);
   }
 
@@ -4152,20 +4153,24 @@ body.modal-open {
   }
 
   /* Страница товара: переносим скролл внутрь .product, чтобы фикс нижняя панель была кликабельной */
-  .product {
-    display: block; /* вместо flex — фикс рендера и скролла на iOS */
-    min-height: 100svh;
+  body.has-bottom-nav:has(.product) {
+    overflow: hidden;
+  }
+
+  body.has-bottom-nav:has(.product) .product {
+    height: 100svh;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
     overscroll-behavior-x: none;
-    touch-action: pan-y;
     /* отступы уже учитывают кнопку и панель */
+    display: block; /* вместо flex — фикс рендера и скролла на iOS */
+    touch-action: pan-y;
     padding-bottom: calc(46px + 32px + var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
   }
 
-  .product::after {
+  body.has-bottom-nav:has(.product) .product::after {
     content: '';
     display: block;
     height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
@@ -4182,9 +4187,12 @@ body.modal-open {
   }
 
   /* Информационная страница: переносим скролл внутрь main, панель остаётся фиксированной */
-  body.info-page main {
-    display: block; /* вместо flex — надёжный скролл на iOS */
-    min-height: 100svh;
+  body.has-bottom-nav.info-page {
+    overflow: hidden;
+  }
+
+  body.has-bottom-nav.info-page main {
+    height: 100svh;
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -4192,9 +4200,10 @@ body.modal-open {
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
     touch-action: pan-y;
+    display: block; /* вместо flex — надёжный скролл на iOS */
   }
 
-  body.info-page main::after {
+  body.has-bottom-nav.info-page main::after {
     content: '';
     display: block;
     height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
