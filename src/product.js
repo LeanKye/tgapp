@@ -1613,7 +1613,9 @@ document.addEventListener('DOMContentLoaded', () => {
       // Кнопка "Подробнее" — открывает модалку с описанием услуги
       const moreBtn = document.getElementById('more-info-btn');
       if (moreBtn) {
-        moreBtn.addEventListener('click', () => {
+        // Fast-tap для кнопки "i" (Подробнее) с защитой от скролла/удержания во время bounce
+        let ix=0,iy=0,it=0,isy=0,isx=0; const MOVEI=8,HOLDI=300;
+        const openInfo=()=>{
           if (!modalManager) return;
           const info = {
             title: 'Подробнее об услуге',
@@ -1622,7 +1624,14 @@ document.addEventListener('DOMContentLoaded', () => {
             iconClass: 'service'
           };
           modalManager.openModal('label-modal', { labelInfo: info });
-        });
+        };
+        const ipd=(e)=>{ ix=e.clientX; iy=e.clientY; it=performance.now(); isy=window.scrollY; isx=window.scrollX; moreBtn.__moved=false; };
+        const ipm=(e)=>{ if(!it) return; if(Math.abs(e.clientX-ix)>MOVEI||Math.abs(e.clientY-iy)>MOVEI||Math.abs(window.scrollY-isy)>0||Math.abs(window.scrollX-isx)>0) moreBtn.__moved=true; };
+        const ipu=()=>{ const dur=performance.now()-(it||performance.now()); const ok=!moreBtn.__moved && dur<=HOLDI; it=0; if(!ok) return; if (moreBtn.__fastTapLock) return; moreBtn.__fastTapLock=true; try { openInfo(); } finally { setTimeout(()=>{ moreBtn.__fastTapLock=false; }, 300);} };
+        moreBtn.addEventListener('pointerdown', ipd, { passive: true });
+        moreBtn.addEventListener('pointermove', ipm, { passive: true });
+        moreBtn.addEventListener('pointerup', ipu, { passive: true });
+        moreBtn.addEventListener('touchend', ipu, { passive: true });
       }
     }, 100);
   }
