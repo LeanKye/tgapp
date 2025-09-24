@@ -75,11 +75,18 @@ function renderProduct(product) {
         <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `;
-    
-    labelDiv.addEventListener('click', () => {
-      openLabelModal(label);
-    });
-    
+
+    // Fast-tap для лейблов (например, «Нужен VPN») с защитой от bounce-скролла
+    let lx=0, ly=0, lt=0, lsy=0, lsx=0; const MOVEL=8, HOLDL=300;
+    const openLabel=()=>{ openLabelModal(label); };
+    const lpd=(e)=>{ lx=e.clientX; ly=e.clientY; lt=performance.now(); lsy=window.scrollY; lsx=window.scrollX; labelDiv.__moved=false; };
+    const lpm=(e)=>{ if(!lt) return; if(Math.abs(e.clientX-lx)>MOVEL||Math.abs(e.clientY-ly)>MOVEL||Math.abs(window.scrollY-lsy)>0||Math.abs(window.scrollX-lsx)>0) labelDiv.__moved=true; };
+    const lpu=()=>{ const dur=performance.now()-(lt||performance.now()); const ok=!labelDiv.__moved && dur<=HOLDL; lt=0; if(!ok) return; if(labelDiv.__fastTapLock) return; labelDiv.__fastTapLock=true; try { openLabel(); } finally { setTimeout(()=>{ labelDiv.__fastTapLock=false; }, 250);} };
+    labelDiv.addEventListener('pointerdown', lpd, { passive: true });
+    labelDiv.addEventListener('pointermove', lpm, { passive: true });
+    labelDiv.addEventListener('pointerup', lpu, { passive: true });
+    labelDiv.addEventListener('touchend', lpu, { passive: true });
+
     labelsContainer.appendChild(labelDiv);
   });
 
