@@ -4209,3 +4209,15 @@ body.modal-open {
     height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 16px);
   }
 }
+
+/* Автопереключение: если контента мало — используем скролл body для bounce */
+@supports (-webkit-overflow-scrolling: touch) {
+  body.use-body-scroll {
+    overflow: auto !important;
+  }
+  body.use-body-scroll .catalog,
+  body.use-body-scroll .product,
+  body.use-body-scroll.info-page main {
+    overflow: hidden !important;
+  }
+}
