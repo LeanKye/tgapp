@@ -168,14 +168,15 @@ class CategoryPage {
     const dropdown = document.getElementById('search-dropdown');
     if (!dropdown) return;
 
-    dropdown.innerHTML = '';
-    
-    products.forEach(product => {
-      const suggestion = this.createSearchSuggestion(product);
-      dropdown.appendChild(suggestion);
+    // Анимируем изменение высоты при появлении результатов
+    this.animateDropdownHeight(() => {
+      dropdown.innerHTML = '';
+      products.forEach(product => {
+        const suggestion = this.createSearchSuggestion(product);
+        dropdown.appendChild(suggestion);
+      });
+      dropdown.classList.add('show');
     });
-
-    dropdown.classList.add('show');
 
     // Поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
@@ -242,8 +243,20 @@ class CategoryPage {
     const dropdown = document.getElementById('search-dropdown');
     if (!dropdown) return;
 
-    dropdown.innerHTML = '<div class="no-results">Ничего не найдено</div>';
-    dropdown.classList.add('show');
+    const wasShown = dropdown.classList.contains('show');
+    const hadSuggestions = !!dropdown.querySelector('.search-suggestion');
+
+    const updateContent = () => {
+      dropdown.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+      dropdown.classList.add('show');
+    };
+
+    if (wasShown && hadSuggestions) {
+      // Анимируем сжатие до состояния "Ничего не найдено"
+      this.animateDropdownHeight(updateContent);
+    } else {
+      updateContent();
+    }
     
     // Блокируем скролл для dropdown когда показывается "Ничего не найдено"
     dropdown.style.overflow = 'hidden';
@@ -254,12 +267,6 @@ class CategoryPage {
     // Добавляем обработчик клика для сброса поиска
     const noResultsElement = dropdown.querySelector('.no-results');
     if (noResultsElement) {
-      // Анимация только при первом открытии поисковика
-      if (this.isFirstTimeOpen) {
-        this.animateNoResults(dropdown); // Анимируем весь dropdown
-        this.isFirstTimeOpen = false;
-      }
-      
       noResultsElement.addEventListener('click', () => {
         this.deactivateSearch(); // Полностью закрываем поиск с затемнением
       });
@@ -282,49 +289,51 @@ class CategoryPage {
     }
   }
 
-  // Анимация появления плашки "Товары не найдены" - расширение из центра
-  animateNoResults(element) {
-    // Устанавливаем начальное состояние
-    element.style.transform = 'scale(0.3)';
-    element.style.opacity = '0';
-    element.style.transition = 'none';
-    
-    // Запускаем анимацию
-    const duration = 250;
-    const startTime = Date.now();
-    
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease out back)
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      // Анимируем scale от 0.3 до 1 с небольшим overshoot
-      let scale;
-      if (progress < 0.8) {
-        scale = 0.3 + (1.05 - 0.3) * (progress / 0.8);
-      } else {
-        scale = 1.05 - (1.05 - 1) * ((progress - 0.8) / 0.2);
-      }
-      
-      // Анимируем opacity
-      const opacity = easeProgress;
-      
-      element.style.transform = `scale(${scale})`;
-      element.style.opacity = `${opacity}`;
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Анимация завершена
-        element.style.transform = 'scale(1)';
-        element.style.opacity = '1';
-        element.style.transition = '';
-      }
+  // Универсальная анимация изменения высоты dropdown при смене контента
+  animateDropdownHeight(updateContentFn) {
+    const dropdown = document.getElementById('search-dropdown');
+    if (!dropdown) return;
+
+    const wasHidden = !dropdown.classList.contains('show');
+    const startHeight = wasHidden ? 0 : dropdown.offsetHeight;
+
+    // Обновляем контент и гарантируем видимость
+    updateContentFn();
+    dropdown.classList.add('show');
+
+    // Вычисляем целевую высоту с учётом max-height
+    const computed = window.getComputedStyle(dropdown);
+    const maxH = parseFloat(computed.maxHeight);
+    let targetHeight = dropdown.scrollHeight;
+    if (!isNaN(maxH)) {
+      targetHeight = Math.min(targetHeight, maxH);
+    }
+
+    if (wasHidden || Math.abs(targetHeight - startHeight) < 1) {
+      // Первый показ или без изменения — не анимируем
+      return;
+    }
+
+    dropdown.style.overflow = 'hidden';
+    dropdown.style.height = `${startHeight}px`;
+    dropdown.style.transition = 'height 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+    requestAnimationFrame(() => {
+      dropdown.style.height = `${targetHeight}px`;
+    });
+
+    const onEnd = (e) => {
+      if (e && e.propertyName !== 'height') return;
+      dropdown.removeEventListener('transitionend', onEnd);
+      dropdown.style.transition = '';
+      dropdown.style.height = '';
     };
-    
-    requestAnimationFrame(animate);
+    dropdown.addEventListener('transitionend', onEnd);
+    setTimeout(() => {
+      dropdown.removeEventListener('transitionend', onEnd);
+      dropdown.style.transition = '';
+      dropdown.style.height = '';
+    }, 260);
   }
 
   hideSearchDropdown() {

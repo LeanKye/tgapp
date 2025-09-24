@@ -881,14 +881,14 @@ class SearchManager {
       return;
     }
 
-    this.searchDropdown.innerHTML = '';
-    
-    this.currentResults.forEach((product, index) => {
-      const suggestion = this.createSuggestion(product, index);
-      this.searchDropdown.appendChild(suggestion);
+    // Анимируем изменение высоты при появлении результатов
+    this.animateDropdownHeight(() => {
+      this.searchDropdown.innerHTML = '';
+      this.currentResults.forEach((product, index) => {
+        const suggestion = this.createSuggestion(product, index);
+        this.searchDropdown.appendChild(suggestion);
+      });
     });
-
-    this.showDropdown();
   }
 
   createSuggestion(product, index) {
@@ -930,20 +930,26 @@ class SearchManager {
   }
 
   showNoResults() {
-    this.searchDropdown.innerHTML = '<div class="no-results">Ничего не найдено</div>';
-    this.showDropdown();
-    
+    const wasShown = this.searchDropdown.classList.contains('show');
+    const hadSuggestions = !!this.searchDropdown.querySelector('.search-suggestion');
+
+    const updateContent = () => {
+      this.searchDropdown.innerHTML = '<div class="no-results">Ничего не найдено</div>';
+    };
+
+    if (wasShown && hadSuggestions) {
+      // Анимируем сжатие до состояния "Ничего не найдено"
+      this.animateDropdownHeight(updateContent);
+    } else {
+      updateContent();
+      this.showDropdown();
+    }
+
     // Добавляем обработчик клика для сброса поиска
     const noResultsElement = this.searchDropdown.querySelector('.no-results');
     if (noResultsElement) {
-      // Анимация только при первом открытии поисковика
-      if (this.isFirstTimeOpen) {
-        this.animateNoResults(this.searchDropdown); // Анимируем весь dropdown
-        this.isFirstTimeOpen = false;
-      }
-      
       noResultsElement.addEventListener('click', () => {
-        this.deactivateSearch(); // Полностью закрываем поиск с затемнением
+        this.deactivateSearch();
       });
       
       // Блокируем скролл для элемента "Ничего не найдено" на мобильных устройствах
@@ -964,49 +970,61 @@ class SearchManager {
     }
   }
 
-  // Анимация появления плашки "Товары не найдены" - расширение из центра
-  animateNoResults(element) {
-    // Устанавливаем начальное состояние
-    element.style.transform = 'scale(0.3)';
-    element.style.opacity = '0';
-    element.style.transition = 'none';
-    
-    // Запускаем анимацию
-    const duration = 250;
-    const startTime = Date.now();
-    
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease out back)
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      // Анимируем scale от 0.3 до 1 с небольшим overshoot
-      let scale;
-      if (progress < 0.8) {
-        scale = 0.3 + (1.05 - 0.3) * (progress / 0.8);
-      } else {
-        scale = 1.05 - (1.05 - 1) * ((progress - 0.8) / 0.2);
-      }
-      
-      // Анимируем opacity
-      const opacity = easeProgress;
-      
-      element.style.transform = `scale(${scale})`;
-      element.style.opacity = `${opacity}`;
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Анимация завершена
-        element.style.transform = 'scale(1)';
-        element.style.opacity = '1';
-        element.style.transition = '';
+  // Универсальная анимация изменения высоты dropdown при смене контента
+  animateDropdownHeight(updateContentFn) {
+    const dropdown = this.searchDropdown;
+    if (!dropdown) return;
+
+    const wasHidden = !dropdown.classList.contains('show');
+    const startHeight = wasHidden ? 0 : dropdown.offsetHeight;
+
+    // Обновляем контент
+    updateContentFn();
+    dropdown.classList.add('show');
+
+    // Вычисляем целевую высоту с учётом max-height
+    const computed = window.getComputedStyle(dropdown);
+    const maxH = parseFloat(computed.maxHeight);
+    let targetHeight = dropdown.scrollHeight;
+    if (!isNaN(maxH)) {
+      targetHeight = Math.min(targetHeight, maxH);
+    }
+
+    if (wasHidden || Math.abs(targetHeight - startHeight) < 1) {
+      // Без анимации для первого показа или если высота не меняется
+      this.showDropdown();
+      return;
+    }
+
+    // Анимируем высоту
+    const originalOverflow = dropdown.style.overflow;
+    dropdown.style.overflow = 'hidden';
+    dropdown.style.height = `${startHeight}px`;
+    dropdown.style.transition = 'height 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+
+    // Старт анимации в следующем кадре
+    requestAnimationFrame(() => {
+      dropdown.style.height = `${targetHeight}px`;
+    });
+
+    const cleanup = () => {
+      dropdown.style.transition = '';
+      dropdown.style.height = '';
+      dropdown.style.overflow = originalOverflow;
+      this.showDropdown();
+    };
+
+    let done = false;
+    const onEnd = (e) => {
+      if (done) return;
+      if (!e || e.propertyName === 'height') {
+        done = true;
+        dropdown.removeEventListener('transitionend', onEnd);
+        cleanup();
       }
     };
-    
-    requestAnimationFrame(animate);
+    dropdown.addEventListener('transitionend', onEnd);
+    setTimeout(() => onEnd(), 260);
   }
 
   selectProduct(product) {
