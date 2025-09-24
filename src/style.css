@@ -4120,8 +4120,10 @@ body.modal-open {
   }
 
   body.has-bottom-nav:has(.catalog) .catalog {
-    height: 100svh;
-    height: 100dvh;
+    /* не фиксируем высоту, чтобы можно было создать микро-скролл */
+    min-height: calc(100svh + 1px);
+    min-height: calc(100dvh + 1px);
+    margin-bottom: -1px; /* компенсируем 1px без видимого зазора */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch; /* инерция и резинка внутри контейнера */
     overscroll-behavior-y: contain;    /* не отдаём резинку в корень */
@@ -4151,6 +4153,7 @@ body.modal-open {
   body:has(#cart-list) .catalog,
   body:has(.container.profile-card) .catalog {
     min-height: calc(100svh + 1px);
+    min-height: calc(100dvh + 1px);
     margin-bottom: -1px; /* компенсация без визуального зазора */
   }
 
