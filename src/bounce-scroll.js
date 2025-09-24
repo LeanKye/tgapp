@@ -108,7 +108,7 @@ class BounceScroll {
       // По умолчанию — используем скролл контейнера (класс не нужен)
       let useBody = false;
       if (container) {
-        const scrollable = (container.scrollHeight - container.clientHeight) > 1;
+        const scrollable = (container.scrollHeight - container.clientHeight) > 0;
         useBody = !scrollable; // если не скроллится — переключаемся на body
       } else {
         // Нет явного контейнера — отдаём скролл body
@@ -138,9 +138,11 @@ class BounceScroll {
 
     // Наблюдаем за изменениями DOM, которые могут влиять на высоту
     try {
-      const obs = new MutationObserver(() => debounced());
-      obs.observe(document.body, { childList: true, subtree: true, attributes: false });
-      // Сохраняем для возможного отключения в destroy (опционально)
+      const obs = new MutationObserver((mut) => {
+        // Игнорируем массовые атрибутные изменения, но реагируем на изменения размеров
+        debounced();
+      });
+      obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
       this._domObserver = obs;
     } catch {}
 

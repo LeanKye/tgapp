@@ -4220,4 +4220,10 @@ body.modal-open {
   body.use-body-scroll.info-page main {
     overflow: hidden !important;
   }
+  /* Небольшой буфер для включения bounce даже при очень коротком контенте */
+  body.use-body-scroll::after {
+    content: '';
+    display: block;
+    height: 1px;
+  }
 }
