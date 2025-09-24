@@ -4124,7 +4124,7 @@ body.modal-open {
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch; /* инерция и резинка внутри контейнера */
-    overscroll-behavior-y: contain;    /* не отдаём резинку в корень */
+    overscroll-behavior-y: auto;       /* разрешаем нативный bounce внутри контейнера */
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
     display: block; /* вместо flex — фикс рендера на iOS */
@@ -4162,7 +4162,7 @@ body.modal-open {
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;       /* разрешаем нативный bounce внутри контейнера */
     overscroll-behavior-x: none;
     /* отступы уже учитывают кнопку и панель */
     display: block; /* вместо flex — фикс рендера и скролла на iOS */
@@ -4196,7 +4196,7 @@ body.modal-open {
     height: 100dvh;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-y: contain;
+    overscroll-behavior-y: auto;       /* разрешаем нативный bounce внутри контейнера */
     overscroll-behavior-x: none;
     padding-bottom: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 8px);
     touch-action: pan-y;
