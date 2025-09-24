@@ -20,9 +20,6 @@ class BounceScroll {
     
     // Настраиваем поведение скролла для страниц
     this.setupScrollBehavior();
-    
-    // Авто-переключение режима скролла (контейнер/тело) для сохранения bounce при коротком контенте
-    this.installAutoScrollModeSwitcher();
   }
 
   addStyles() {
@@ -85,69 +82,6 @@ class BounceScroll {
 
   setupModalBehavior() {
     // Модальные окна удалены
-  }
-
-  // Определение активного скролл-контейнера на странице
-  getPrimaryScrollContainer() {
-    // Приоритет: catalog, product, info main
-    const catalog = document.querySelector('.catalog');
-    if (catalog) return catalog;
-    const product = document.querySelector('.product');
-    if (product) return product;
-    if (document.body.classList.contains('info-page')) {
-      const infoMain = document.querySelector('main');
-      if (infoMain) return infoMain;
-    }
-    return null;
-  }
-
-  // Переключатель: если контента мало — включаем скролл body для нативного bounce
-  updateScrollMode() {
-    try {
-      const container = this.getPrimaryScrollContainer();
-      // По умолчанию — используем скролл контейнера (класс не нужен)
-      let useBody = false;
-      if (container) {
-        const scrollable = (container.scrollHeight - container.clientHeight) > 0;
-        useBody = !scrollable; // если не скроллится — переключаемся на body
-      } else {
-        // Нет явного контейнера — отдаём скролл body
-        useBody = true;
-      }
-      document.body.classList.toggle('use-body-scroll', Boolean(useBody));
-    } catch {}
-  }
-
-  installAutoScrollModeSwitcher() {
-    const debounced = (() => {
-      let raf = 0;
-      return () => {
-        if (raf) cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => this.updateScrollMode());
-      };
-    })();
-
-    // Первичная настройка после рендера
-    debounced();
-    setTimeout(debounced, 100);
-    setTimeout(debounced, 300);
-
-    // Реагируем на resize/orientation
-    window.addEventListener('resize', debounced);
-    window.addEventListener('orientationchange', () => setTimeout(debounced, 100));
-
-    // Наблюдаем за изменениями DOM, которые могут влиять на высоту
-    try {
-      const obs = new MutationObserver((mut) => {
-        // Игнорируем массовые атрибутные изменения, но реагируем на изменения размеров
-        debounced();
-      });
-      obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style','class'] });
-      this._domObserver = obs;
-    } catch {}
-
-    // Экспорт в глобальную область для ручного вызова из других модулей при необходимости
-    window.requestBounceRecalc = debounced;
   }
 
   optimizeTouchBehavior() {
