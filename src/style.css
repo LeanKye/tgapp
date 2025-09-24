@@ -4147,8 +4147,6 @@ body.modal-open {
     height: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom) + 16px);
   }
 
-  
-
   /* Возвращаем вертикальные отступы между блоками каталога (замена gap у flex) */
   body.has-bottom-nav:has(.catalog) .catalog > * + * {
     margin-top: 8px;
