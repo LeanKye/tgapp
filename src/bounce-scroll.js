@@ -78,6 +78,25 @@ class BounceScroll {
     
     // Оптимизируем touch поведение
     this.optimizeTouchBehavior();
+
+    // Гарантируем минимальное пространство для запуска нативного bounce на коротких страницах
+    this._onResize = () => this.ensureBounceRoom();
+    window.addEventListener('resize', this._onResize, { passive: true });
+
+    // Переоценка после первоначального рендера
+    this.ensureBounceRoom();
+    setTimeout(() => this.ensureBounceRoom(), 0);
+    setTimeout(() => this.ensureBounceRoom(), 800);
+
+    // Отслеживаем изменения размеров контента (если поддерживается)
+    try {
+      if ('ResizeObserver' in window) {
+        this._resizeObserver = new ResizeObserver(() => this.ensureBounceRoom());
+        this._resizeObserver.observe(document.body);
+      }
+    } catch (_) {
+      // Молча игнорируем, если ResizeObserver недоступен
+    }
   }
 
   setupModalBehavior() {
@@ -124,6 +143,39 @@ class BounceScroll {
     }, { passive: true });
   }
 
+  // Добавляет/удаляет невидимый 1px-спейсер, чтобы запускать bounce на коротких страницах
+  ensureBounceRoom() {
+    const doc = document.documentElement;
+    const body = document.body;
+    // Стабильное измерение высоты контента и вьюпорта
+    const contentHeight = Math.max(
+      doc.scrollHeight,
+      body.scrollHeight,
+      doc.offsetHeight,
+      body.offsetHeight
+    );
+    const viewportHeight = window.visualViewport ? Math.round(window.visualViewport.height) : window.innerHeight;
+    const needsSpacer = contentHeight <= viewportHeight;
+
+    // Ленивая инициализация ссылки на элемент
+    if (!this._bounceSpacer) {
+      this._bounceSpacer = document.getElementById('bounce-spacer') || null;
+    }
+
+    if (needsSpacer) {
+      if (!this._bounceSpacer) {
+        const spacer = document.createElement('div');
+        spacer.id = 'bounce-spacer';
+        spacer.style.cssText = 'height:1px; pointer-events:none;';
+        document.body.appendChild(spacer);
+        this._bounceSpacer = spacer;
+      }
+    } else if (this._bounceSpacer) {
+      this._bounceSpacer.remove();
+      this._bounceSpacer = null;
+    }
+  }
+
   // Метод для отключения bounce на конкретном элементе
   disableBounce(element) {
     if (element) {
@@ -156,6 +208,21 @@ class BounceScroll {
     
     document.documentElement.classList.remove('bounce-enabled');
     document.body.classList.remove('bounce-enabled', 'is-scrolling');
+
+    // Снимаем слушатели и наблюдатели
+    if (this._onResize) {
+      window.removeEventListener('resize', this._onResize);
+      this._onResize = null;
+    }
+    if (this._resizeObserver) {
+      try { this._resizeObserver.disconnect(); } catch (_) {}
+      this._resizeObserver = null;
+    }
+    // Удаляем спейсер, если остался
+    if (this._bounceSpacer) {
+      try { this._bounceSpacer.remove(); } catch (_) {}
+      this._bounceSpacer = null;
+    }
   }
 }
 
