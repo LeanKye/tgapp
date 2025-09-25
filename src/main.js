@@ -1031,6 +1031,21 @@ class SearchManager {
     // Очищаем поисковую строку
     this.searchInput.value = '';
     this.hideDropdown();
+    // Перед навигацией поднимаем страницу вверх, чтобы не было видно «просвета»
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    } catch {}
+    try { document.documentElement.scrollTop = 0; } catch {}
+    try { document.body.scrollTop = 0; } catch {}
+    try {
+      const catalog = document.querySelector('.catalog');
+      if (catalog) {
+        catalog.scrollTop = 0;
+        if (typeof catalog.scrollTo === 'function') {
+          catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+      }
+    } catch {}
     
     // Переходим на страницу товара
     navigate(`product.html?product=${product.id}`);
@@ -1170,6 +1185,21 @@ class SearchManager {
 
   activateSearch() {
     this.isSearchActive = true;
+    // Мгновенно прокручиваем страницу к верху, чтобы оверлей покрывал весь экран без «просвета»
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    } catch {}
+    try { document.documentElement.scrollTop = 0; } catch {}
+    try { document.body.scrollTop = 0; } catch {}
+    try {
+      const catalog = document.querySelector('.catalog');
+      if (catalog) {
+        catalog.scrollTop = 0;
+        if (typeof catalog.scrollTo === 'function') {
+          catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+      }
+    } catch {}
     document.body.classList.add('search-active');
     const searchOverlay = document.getElementById('search-overlay');
     if (searchOverlay) {

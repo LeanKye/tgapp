@@ -222,6 +222,19 @@ class CategoryPage {
       
       // Небольшая задержка перед переходом для показа анимации
       setTimeout(() => {
+        // Перед навигацией поднимаем страницу вверх, чтобы не было видно «просвета»
+        try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
+        try { document.documentElement.scrollTop = 0; } catch {}
+        try { document.body.scrollTop = 0; } catch {}
+        try {
+          const catalog = document.querySelector('.catalog');
+          if (catalog) {
+            catalog.scrollTop = 0;
+            if (typeof catalog.scrollTo === 'function') {
+              catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            }
+          }
+        } catch {}
         navigate(`product.html?product=${product.id}`);
       }, 120);
     });
@@ -230,7 +243,22 @@ class CategoryPage {
     let sX=0,sY=0,sT=0,sScY=0,sScX=0; const S_MOVE=8,S_HOLD=300;
     const sPD=(e)=>{ sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; suggestion.__moved=false; };
     const sPM=(e)=>{ if(!sT) return; if (Math.abs(e.clientX-sX)>S_MOVE || Math.abs(e.clientY-sY)>S_MOVE || Math.abs(window.scrollY-sScY)>0 || Math.abs(window.scrollX-sScX)>0) suggestion.__moved=true; };
-    const sPU=()=>{ const dur=performance.now()-(sT||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+    const sPU=()=>{ const dur=performance.now()-(sT||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try {
+      // Перед навигацией поднимаем страницу вверх
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
+      try { document.documentElement.scrollTop = 0; } catch {}
+      try { document.body.scrollTop = 0; } catch {}
+      try {
+        const catalog = document.querySelector('.catalog');
+        if (catalog) {
+          catalog.scrollTop = 0;
+          if (typeof catalog.scrollTo === 'function') {
+            catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          }
+        }
+      } catch {}
+      navigate(`product.html?product=${product.id}`);
+    } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
     suggestion.addEventListener('pointerdown', sPD, { passive: true });
     suggestion.addEventListener('pointermove', sPM, { passive: true });
     suggestion.addEventListener('pointerup', sPU, { passive: true });
@@ -392,6 +420,19 @@ class CategoryPage {
     }
     
     this.isSearchActive = true;
+    // Мгновенно прокручиваем страницу к верху, чтобы оверлей покрывал весь экран без «просвета»
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
+    try { document.documentElement.scrollTop = 0; } catch {}
+    try { document.body.scrollTop = 0; } catch {}
+    try {
+      const catalog = document.querySelector('.catalog');
+      if (catalog) {
+        catalog.scrollTop = 0;
+        if (typeof catalog.scrollTo === 'function') {
+          catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+        }
+      }
+    } catch {}
     document.body.classList.add('search-active');
     const searchOverlay = document.getElementById('search-overlay');
     if (searchOverlay) {
