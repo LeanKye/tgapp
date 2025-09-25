@@ -67,7 +67,7 @@ class CategoryPage {
         } else {
           this.performSearch(query);
         }
-      }, 300);
+      }, 0);
     });
 
     // Активируем поиск при фокусе

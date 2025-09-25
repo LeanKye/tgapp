@@ -853,7 +853,7 @@ class SearchManager {
     // Устанавливаем новый таймер для задержки поиска
     this.searchTimeout = setTimeout(() => {
       this.performSearch(query);
-    }, 200);
+    }, 0);
   }
 
   performSearch(query) {
