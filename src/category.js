@@ -83,7 +83,8 @@ class CategoryPage {
     });
 
     // Синхронно поднимаем страницу и фокусируем инпут в рамках жеста пользователя
-    const ensureTopAndFocus = () => {
+    const ensureTopAndFocus = (e) => {
+      try { if (e && e.cancelable) e.preventDefault(); } catch {}
       try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
       try { document.documentElement.scrollTop = 0; } catch {}
       try { document.body.scrollTop = 0; } catch {}
@@ -106,8 +107,8 @@ class CategoryPage {
         }
       } catch {}
     };
-    searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: true });
-    searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: true });
+    searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
+    searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
 
     // Скрываем dropdown при клике вне поиска
     document.addEventListener('click', (e) => {

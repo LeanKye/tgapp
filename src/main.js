@@ -790,7 +790,8 @@ class SearchManager {
     });
 
     // Синхронно поднимаем страницу и фокусируем инпут в рамках жеста пользователя
-    const ensureTopAndFocus = () => {
+    const ensureTopAndFocus = (e) => {
+      try { if (e && e.cancelable) e.preventDefault(); } catch {}
       try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
       try { document.documentElement.scrollTop = 0; } catch {}
       try { document.body.scrollTop = 0; } catch {}
@@ -814,8 +815,8 @@ class SearchManager {
         }
       } catch {}
     };
-    this.searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: true });
-    this.searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: true });
+    this.searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
+    this.searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
     
     // Обработчик для закрытия поиска при клике на оверлей
     const searchOverlay = document.getElementById('search-overlay');
