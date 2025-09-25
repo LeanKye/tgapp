@@ -442,6 +442,22 @@ class CategoryPage {
     if (searchContainer) {
       searchContainer.classList.add('search-active');
     }
+    // Гарантируем фокус на поле после прокрутки (особенно на iOS)
+    try {
+      const input = document.getElementById('search-input');
+      if (input) {
+        const refocus = () => {
+          try {
+            input.focus({ preventScroll: true });
+            const len = input.value.length;
+            if (typeof input.setSelectionRange === 'function') {
+              input.setSelectionRange(len, len);
+            }
+          } catch {}
+        };
+        requestAnimationFrame(() => setTimeout(refocus, 0));
+      }
+    } catch {}
   }
 
   deactivateSearch() {

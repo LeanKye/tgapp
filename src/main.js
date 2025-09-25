@@ -1209,6 +1209,23 @@ class SearchManager {
     if (searchContainer) {
       searchContainer.classList.add('search-active');
     }
+    // Гарантируем фокус на поле после прокрутки (особенно на iOS)
+    try {
+      const input = this.searchInput;
+      if (input) {
+        const refocus = () => {
+          try {
+            input.focus({ preventScroll: true });
+            const len = input.value.length;
+            if (typeof input.setSelectionRange === 'function') {
+              input.setSelectionRange(len, len);
+            }
+          } catch {}
+        };
+        // Двойной rAF/timeout повышает шанс сохранить фокус после программного скролла
+        requestAnimationFrame(() => setTimeout(refocus, 0));
+      }
+    } catch {}
   }
 
   deactivateSearch() {
