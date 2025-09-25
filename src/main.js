@@ -1031,10 +1031,9 @@ class SearchManager {
     // Очищаем поисковую строку
     this.searchInput.value = '';
     this.hideDropdown();
+    
     // Перед навигацией поднимаем страницу вверх, чтобы не было видно «просвета»
-    try {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    } catch {}
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
     try { document.documentElement.scrollTop = 0; } catch {}
     try { document.body.scrollTop = 0; } catch {}
     try {
@@ -1186,9 +1185,7 @@ class SearchManager {
   activateSearch() {
     this.isSearchActive = true;
     // Мгновенно прокручиваем страницу к верху, чтобы оверлей покрывал весь экран без «просвета»
-    try {
-      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    } catch {}
+    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
     try { document.documentElement.scrollTop = 0; } catch {}
     try { document.body.scrollTop = 0; } catch {}
     try {
@@ -1222,7 +1219,6 @@ class SearchManager {
             }
           } catch {}
         };
-        // Двойной rAF/timeout повышает шанс сохранить фокус после программного скролла
         requestAnimationFrame(() => setTimeout(refocus, 0));
       }
     } catch {}
