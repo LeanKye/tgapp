@@ -82,6 +82,33 @@ class CategoryPage {
       }
     });
 
+    // Синхронно поднимаем страницу и фокусируем инпут в рамках жеста пользователя
+    const ensureTopAndFocus = () => {
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
+      try { document.documentElement.scrollTop = 0; } catch {}
+      try { document.body.scrollTop = 0; } catch {}
+      try {
+        const catalog = document.querySelector('.catalog');
+        if (catalog) {
+          catalog.scrollTop = 0;
+          if (typeof catalog.scrollTo === 'function') {
+            catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          }
+        }
+      } catch {}
+      try {
+        if (searchInput) {
+          searchInput.focus({ preventScroll: true });
+          const len = searchInput.value.length;
+          if (typeof searchInput.setSelectionRange === 'function') {
+            searchInput.setSelectionRange(len, len);
+          }
+        }
+      } catch {}
+    };
+    searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: true });
+    searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: true });
+
     // Скрываем dropdown при клике вне поиска
     document.addEventListener('click', (e) => {
       if (!e.target.closest('.search-container') && !e.target.closest('.header-container')) {
@@ -405,19 +432,6 @@ class CategoryPage {
     }
     
     this.isSearchActive = true;
-    // Мгновенно прокручиваем страницу к верху, чтобы оверлей покрывал весь экран без «просвета»
-    try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
-    try { document.documentElement.scrollTop = 0; } catch {}
-    try { document.body.scrollTop = 0; } catch {}
-    try {
-      const catalog = document.querySelector('.catalog');
-      if (catalog) {
-        catalog.scrollTop = 0;
-        if (typeof catalog.scrollTo === 'function') {
-          catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-        }
-      }
-    } catch {}
     document.body.classList.add('search-active');
     const searchOverlay = document.getElementById('search-overlay');
     if (searchOverlay) {
@@ -427,22 +441,6 @@ class CategoryPage {
     if (searchContainer) {
       searchContainer.classList.add('search-active');
     }
-    // Гарантируем фокус на поле после прокрутки (особенно на iOS)
-    try {
-      const input = document.getElementById('search-input');
-      if (input) {
-        const refocus = () => {
-          try {
-            input.focus({ preventScroll: true });
-            const len = input.value.length;
-            if (typeof input.setSelectionRange === 'function') {
-              input.setSelectionRange(len, len);
-            }
-          } catch {}
-        };
-        requestAnimationFrame(() => setTimeout(refocus, 0));
-      }
-    } catch {}
   }
 
   deactivateSearch() {
