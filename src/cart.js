@@ -155,52 +155,14 @@ function attachEvents() {
     renderCart();
   });
 
-  // Fast-tap: делегированный с защитой от скролла/удержания и поддержкой touch событий
-  const TARGET_SELECTOR = '#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn';
-  let startX = 0, startY = 0, startTime = 0, startScrollY = 0, startScrollX = 0;
-  const MOVE = 10, HOLD = 300;
-  const getPoint = (e) => {
-    // Поддержка PointerEvent и TouchEvent
-    if (e && typeof e.clientX === 'number' && typeof e.clientY === 'number') {
-      return { x: e.clientX, y: e.clientY };
-    }
-    const t = (e.changedTouches && e.changedTouches[0]) || (e.touches && e.touches[0]);
-    if (t) return { x: t.clientX, y: t.clientY };
-    return { x: startX, y: startY };
-  };
-  const onStart = (e) => {
-    const t = e.target.closest(TARGET_SELECTOR);
-    if (!t) return;
-    const p = getPoint(e);
-    startX = p.x; startY = p.y; startTime = performance.now();
-    startScrollY = window.scrollY; startScrollX = window.scrollX;
-    t.__fastTapCandidate = true;
-  };
-  const onEnd = (e) => {
-    const actionBtn = e.target.closest(TARGET_SELECTOR);
-    if (!actionBtn) return;
-    if (!actionBtn.__fastTapCandidate) return;
-    actionBtn.__fastTapCandidate = false;
-    const p = getPoint(e);
-    const moved = Math.abs(p.x - startX) > MOVE || Math.abs(p.y - startY) > MOVE || Math.abs(window.scrollY - startScrollY) > 0 || Math.abs(window.scrollX - startScrollX) > 0;
-    const dur = performance.now() - (startTime || performance.now());
-    startTime = 0;
-    if (moved || dur > HOLD) return;
-    if (actionBtn.__fastTapLock) return;
-    actionBtn.__fastTapLock = true;
-    try {
-      actionBtn.dispatchEvent(new Event('click', { bubbles: true }));
-    } finally {
-      setTimeout(() => { actionBtn.__fastTapLock = false; }, 250);
-    }
-  };
-  const onCancel = () => { startTime = 0; };
-  document.body.addEventListener('pointerdown', onStart, { passive: true });
-  document.body.addEventListener('pointerup', onEnd, { passive: true });
-  document.body.addEventListener('pointercancel', onCancel, { passive: true });
-  document.body.addEventListener('touchstart', onStart, { passive: true });
-  document.body.addEventListener('touchend', onEnd, { passive: true });
-  document.body.addEventListener('touchcancel', onCancel, { passive: true });
+  // Fast-tap: делегированный с защитой от скролла/удержания
+  let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=8,HOLD=300;
+  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!t) return; dSX=e.clientX; dSY=e.clientY; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; t.__moved=false; t.__ftTarget=true; };
+  const onPM=(e)=>{ const t=document.querySelector('[__ftTarget]'); /* not used */ };
+  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!actionBtn) return; const moved = Math.abs(e.clientX-dSX)>MOVE || Math.abs(e.clientY-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); dST=0; if(moved || dur>HOLD) return; if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { actionBtn.dispatchEvent(new Event('click', { bubbles:true })); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
+  document.body.addEventListener('pointerdown', onPD, { passive: true });
+  document.body.addEventListener('pointerup', onPU, { passive: true });
+  document.body.addEventListener('touchend', onPU, { passive: true });
 
   // Обновление суммы/счётчика и состояния "выбрать все" при смене любого чекбокса товара
   document.getElementById('cart-list')?.addEventListener('change', (e) => {
