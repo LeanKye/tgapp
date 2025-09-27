@@ -156,13 +156,28 @@ function attachEvents() {
   });
 
   // Fast-tap: делегированный с защитой от скролла/удержания
-  let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=8,HOLD=300;
-  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!t) return; dSX=e.clientX; dSY=e.clientY; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; t.__moved=false; t.__ftTarget=true; };
-  const onPM=(e)=>{ const t=document.querySelector('[__ftTarget]'); /* not used */ };
-  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!actionBtn) return; const moved = Math.abs(e.clientX-dSX)>MOVE || Math.abs(e.clientY-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); dST=0; if(moved || dur>HOLD) return; if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { actionBtn.dispatchEvent(new Event('click', { bubbles:true })); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
+  let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=3,HOLD=300;
+  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!t) return; const pt=(e.touches&&e.touches[0])||e; dSX=pt.clientX||0; dSY=pt.clientY||0; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; };
+  const onPM=(e)=>{ if(!dST) return; const pt=(e.touches&&e.touches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE; if(moved){ window.__cartFastTapBlockClickUntil = performance.now() + 400; } };
+  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
   document.body.addEventListener('pointerdown', onPD, { passive: true });
+  document.body.addEventListener('pointermove', onPM, { passive: true });
   document.body.addEventListener('pointerup', onPU, { passive: true });
+  document.body.addEventListener('touchstart', onPD, { passive: true });
+  document.body.addEventListener('touchmove', onPM, { passive: true });
   document.body.addEventListener('touchend', onPU, { passive: true });
+  document.body.addEventListener('pointercancel', ()=>{ dST=0; }, { passive: true });
+  document.body.addEventListener('touchcancel', ()=>{ dST=0; }, { passive: true });
+
+  // Глобальный клик-блокер после свайпа/перемещения
+  const clickBlocker = (e) => {
+    if (e.__fastTapSynthetic) return;
+    if (window.__cartFastTapBlockClickUntil && performance.now() < window.__cartFastTapBlockClickUntil) {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+    }
+  };
+  document.addEventListener('click', clickBlocker, true);
 
   // Обновление суммы/счётчика и состояния "выбрать все" при смене любого чекбокса товара
   document.getElementById('cart-list')?.addEventListener('change', (e) => {
