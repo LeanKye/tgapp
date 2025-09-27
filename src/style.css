@@ -387,6 +387,13 @@ body.has-bottom-nav .product {
   overflow: hidden;
 }
 
+/* Корзина: разрешаем вертикальный скролл по кнопкам, чтобы свайп не считался тапом */
+.cart-page #cart-list button,
+.cart-page #cart-checkout .checkout-button,
+.cart-page .bulk-actions .bulk-btn {
+  touch-action: pan-y;
+}
+
 /* Отступы для контейнеров на странице товара убраны, но закругления оставлены */
 .product .container {
   margin-inline: 0;
