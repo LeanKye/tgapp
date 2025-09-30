@@ -60,7 +60,7 @@ function createProductCard(product) {
     ) {
       card.__ftMoved = true;
       if (scrolled) {
-        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+        window.__homeFastTapBlockClickUntil = performance.now();
       }
     }
   };
