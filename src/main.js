@@ -29,20 +29,50 @@ function createProductCard(product) {
     <div class="category-product-price">${priceHTML}</div>
   `;
   
-  // Добавляем обработчик клика для перехода на страницу товара
-  card.addEventListener('click', () => {
+  // Добавляем обработчик клика для перехода на страницу товара с защитой от скролла
+  card.addEventListener('click', (e) => {
+    const container = card.closest('.category-products-slider');
+    if (container && container.__hScrollActive) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (card.__blockClickOnce) {
+      e.preventDefault();
+      e.stopPropagation();
+      card.__blockClickOnce = false;
+      return;
+    }
     navigate(`product.html?product=${product.id}`);
-  });
+  }, { capture: true });
   // Fast-tap с защитой от скролла/удержания
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
+  let ftContainerScrollLeftStart = 0; let ftContainerEl = null;
   const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
-  const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
+  const onPD = (e) => {
+    ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now();
+    ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false;
+    ftContainerEl = card.closest('.category-products-slider');
+    ftContainerScrollLeftStart = ftContainerEl ? ftContainerEl.scrollLeft : 0;
+  };
+  // Во время горизонтального скролла контейнера не считаем X-смещения как "движение",
+  // чтобы на краях (bounce) тапы срабатывали. Отслеживаем вертикальные/страничные смещения.
+  const onPM = (e) => {
+    if (!ftStartTime) return;
+    if (
+      Math.abs(e.clientY - ftStartY) > FT_MOVE ||
+      Math.abs(window.scrollY - ftScrollY) > 0 ||
+      Math.abs(window.scrollX - ftScrollX) > 0
+    ) card.__ftMoved = true;
+  };
   const onPU = () => {
     const dur = performance.now() - (ftStartTime || performance.now());
-    const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
+    const container = ftContainerEl;
+    const containerScrolled = container ? Math.abs(container.scrollLeft - ftContainerScrollLeftStart) > 2 : false;
+    const containerScrollingNow = container ? !!container.__hScrollActive : false;
+    const shouldFire = !card.__ftMoved && !containerScrolled && !containerScrollingNow && dur <= FT_HOLD;
     ftStartTime = 0;
-    if (!shouldFire) return;
+    if (!shouldFire) { card.__blockClickOnce = true; return; }
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
     try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
@@ -68,6 +98,18 @@ function renderNewProducts() {
     const card = createProductCard(product);
     container.appendChild(card);
   });
+  
+  // Трекинг горизонтального скролла для блокировки кликов во время прокрутки
+  let hScrollTimer = null;
+  container.__hScrollActive = false;
+  const markHScroll = () => {
+    container.__hScrollActive = true;
+    if (hScrollTimer) clearTimeout(hScrollTimer);
+    hScrollTimer = setTimeout(() => {
+      container.__hScrollActive = false;
+    }, 80);
+  };
+  container.addEventListener('scroll', markHScroll, { passive: true });
   
   // Принудительно сбрасываем позицию прокрутки в начало
   setTimeout(() => {
