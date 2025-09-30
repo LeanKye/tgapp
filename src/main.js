@@ -57,7 +57,7 @@ function createProductCard(product) {
     ) {
       card.__ftMoved = true;
       if (scrolled) {
-        window.__homeFastTapBlockClickUntil = performance.now();
+        window.__homeFastTapBlockClickUntil = performance.now() + 400;
       }
     }
   };
@@ -69,7 +69,7 @@ function createProductCard(product) {
     ftStartTime = 0;
     if (!shouldFire) {
       if (scrolled || dur > FT_HOLD) {
-        window.__homeFastTapBlockClickUntil = performance.now();
+        window.__homeFastTapBlockClickUntil = performance.now() + 400;
       }
       return;
     }
