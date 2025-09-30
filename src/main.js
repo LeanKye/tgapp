@@ -30,19 +30,44 @@ function createProductCard(product) {
   `;
   
   // Добавляем обработчик клика для перехода на страницу товара
-  card.addEventListener('click', () => {
+  card.addEventListener('click', (e) => {
+    if (window.__homeFastTapBlockClickUntil && performance.now() < window.__homeFastTapBlockClickUntil) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     navigate(`product.html?product=${product.id}`);
   });
   // Fast-tap с защитой от скролла/удержания
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
   const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
-  const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
+  const onPM = (e) => {
+    if (!ftStartTime) return;
+    const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
+    if (
+      Math.abs(e.clientX - ftStartX) > FT_MOVE ||
+      Math.abs(e.clientY - ftStartY) > FT_MOVE ||
+      scrolled
+    ) {
+      card.__ftMoved = true;
+      if (scrolled) {
+        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+      }
+    }
+  };
   const onPU = () => {
+    const hadDown = !!ftStartTime;
     const dur = performance.now() - (ftStartTime || performance.now());
-    const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
+    const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
+    const shouldFire = hadDown && !card.__ftMoved && !scrolled && dur <= FT_HOLD;
     ftStartTime = 0;
-    if (!shouldFire) return;
+    if (!shouldFire) {
+      if (scrolled || dur > FT_HOLD) {
+        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+      }
+      return;
+    }
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
     try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
@@ -121,7 +146,12 @@ function createCategoryCard(category, index) {
   `;
   
   // Добавляем обработчик клика для перехода на страницу категории
-  card.addEventListener('click', () => {
+  card.addEventListener('click', (e) => {
+    if (window.__homeFastTapBlockClickUntil && performance.now() < window.__homeFastTapBlockClickUntil) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     navigate(`category.html?category=${encodeURIComponent(category.name)}`);
   });
   // Fast-tap с защитой от скролла/удержания (такая же логика, как у карточек товаров)
@@ -133,18 +163,30 @@ function createCategoryCard(category, index) {
   };
   const onPM2 = (e) => {
     if (!ftStartTime2) return;
+    const scrolled = Math.abs(window.scrollY - ftScrollY2) > 0 || Math.abs(window.scrollX - ftScrollX2) > 0;
     if (
       Math.abs(e.clientX - ftStartX2) > FT_MOVE ||
       Math.abs(e.clientY - ftStartY2) > FT_MOVE ||
-      Math.abs(window.scrollY - ftScrollY2) > 0 ||
-      Math.abs(window.scrollX - ftScrollX2) > 0
-    ) card.__ftMoved2 = true;
+      scrolled
+    ) {
+      card.__ftMoved2 = true;
+      if (scrolled) {
+        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+      }
+    }
   };
   const onPU2 = () => {
+    const hadDown = !!ftStartTime2;
     const dur = performance.now() - (ftStartTime2 || performance.now());
-    const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
+    const scrolled = Math.abs(window.scrollY - ftScrollY2) > 0 || Math.abs(window.scrollX - ftScrollX2) > 0;
+    const shouldFire = hadDown && !card.__ftMoved2 && !scrolled && dur <= FT_HOLD;
     ftStartTime2 = 0;
-    if (!shouldFire) return;
+    if (!shouldFire) {
+      if (scrolled || dur > FT_HOLD) {
+        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+      }
+      return;
+    }
     if (card.__fastTapLock2) return;
     card.__fastTapLock2 = true;
     try { navigate(`category.html?category=${encodeURIComponent(category.name)}`); } finally { setTimeout(() => { card.__fastTapLock2 = false; }, 300); }
