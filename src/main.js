@@ -63,13 +63,15 @@ function createProductCard(product) {
   };
   const onPU = () => {
     const hadDown = !!ftStartTime;
-    const dur = performance.now() - (ftStartTime || performance.now());
+    const now = performance.now();
+    const dur = now - (ftStartTime || now);
     const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
-    const shouldFire = hadDown && !card.__ftMoved && !scrolled && dur <= FT_HOLD;
+    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < 400;
+    const shouldFire = hadDown && !card.__ftMoved && !scrolled && !recentPageScroll && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) {
-      if (scrolled || dur > FT_HOLD) {
-        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+      if (scrolled || dur > FT_HOLD || recentPageScroll) {
+        window.__homeFastTapBlockClickUntil = now + 400;
       }
       return;
     }
