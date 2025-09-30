@@ -43,16 +43,13 @@ function createProductCard(product) {
     }
     navigate(`product.html?product=${product.id}`);
   });
-  // Fast-tap с защитой от скролла/удержания
-  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0, ftScrollLeft = 0;
+  // Fast-tap с защитой от скролла/удержания — идентично карточкам категорий
+  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null; ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; ftScrollLeft = container && typeof container.scrollLeft === 'number' ? container.scrollLeft : 0; card.__ftMoved = false; };
+  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
   const onPM = (e) => {
     if (!ftStartTime) return;
-    const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null;
-    const scrolledH = container && Math.abs(container.scrollLeft - ftScrollLeft) > 0;
-    const scrolledV = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
-    const scrolled = scrolledH || scrolledV;
+    const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
     if (
       Math.abs(e.clientX - ftStartX) > FT_MOVE ||
       Math.abs(e.clientY - ftStartY) > FT_MOVE ||
@@ -67,10 +64,7 @@ function createProductCard(product) {
   const onPU = () => {
     const hadDown = !!ftStartTime;
     const dur = performance.now() - (ftStartTime || performance.now());
-    const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null;
-    const scrolledH = container && Math.abs(container.scrollLeft - ftScrollLeft) > 0;
-    const scrolledV = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
-    const scrolled = scrolledH || scrolledV;
+    const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
     const shouldFire = hadDown && !card.__ftMoved && !scrolled && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) {
@@ -111,9 +105,6 @@ function renderNewProducts() {
   }, 0);
 
   // Ленивая загрузка отключена — изображения грузятся сразу
-  // Отслеживаем горизонтальный скролл контейнера, чтобы блокировать клики во время инерции
-  const markScroll = () => { container.__lastScrollTime = performance.now(); };
-  container.addEventListener('scroll', markScroll, { passive: true });
 }
 
 // Функция для рендеринга категорий
