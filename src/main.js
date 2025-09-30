@@ -75,7 +75,7 @@ function createProductCard(product) {
     ftStartTime = 0;
     if (!shouldFire) {
       if (scrolled || dur > FT_HOLD) {
-        window.__homeFastTapBlockClickUntil = performance.now() + 400;
+        window.__homeFastTapBlockClickUntil = performance.now();
       }
       return;
     }
