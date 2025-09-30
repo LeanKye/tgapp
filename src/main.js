@@ -31,7 +31,12 @@ function createProductCard(product) {
   
   // Добавляем обработчик клика для перехода на страницу товара
   card.addEventListener('click', (e) => {
-    if (window.__homeFastTapBlockClickUntil && performance.now() < window.__homeFastTapBlockClickUntil) {
+    const now = performance.now();
+    const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null;
+    const recentGlobalBlock = window.__homeFastTapBlockClickUntil && now < window.__homeFastTapBlockClickUntil;
+    const recentContainerScroll = container && container.__lastScrollTime && (now - container.__lastScrollTime) < 400;
+    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < 400;
+    if (recentGlobalBlock || recentContainerScroll || recentPageScroll) {
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -39,12 +44,15 @@ function createProductCard(product) {
     navigate(`product.html?product=${product.id}`);
   });
   // Fast-tap с защитой от скролла/удержания
-  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
+  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0, ftScrollLeft = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
+  const onPD = (e) => { const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null; ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; ftScrollLeft = container && typeof container.scrollLeft === 'number' ? container.scrollLeft : 0; card.__ftMoved = false; };
   const onPM = (e) => {
     if (!ftStartTime) return;
-    const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
+    const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null;
+    const scrolledH = container && Math.abs(container.scrollLeft - ftScrollLeft) > 0;
+    const scrolledV = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
+    const scrolled = scrolledH || scrolledV;
     if (
       Math.abs(e.clientX - ftStartX) > FT_MOVE ||
       Math.abs(e.clientY - ftStartY) > FT_MOVE ||
@@ -59,7 +67,10 @@ function createProductCard(product) {
   const onPU = () => {
     const hadDown = !!ftStartTime;
     const dur = performance.now() - (ftStartTime || performance.now());
-    const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
+    const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null;
+    const scrolledH = container && Math.abs(container.scrollLeft - ftScrollLeft) > 0;
+    const scrolledV = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
+    const scrolled = scrolledH || scrolledV;
     const shouldFire = hadDown && !card.__ftMoved && !scrolled && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) {
@@ -100,6 +111,9 @@ function renderNewProducts() {
   }, 0);
 
   // Ленивая загрузка отключена — изображения грузятся сразу
+  // Отслеживаем горизонтальный скролл контейнера, чтобы блокировать клики во время инерции
+  const markScroll = () => { container.__lastScrollTime = performance.now(); };
+  container.addEventListener('scroll', markScroll, { passive: true });
 }
 
 // Функция для рендеринга категорий
@@ -147,7 +161,10 @@ function createCategoryCard(category, index) {
   
   // Добавляем обработчик клика для перехода на страницу категории
   card.addEventListener('click', (e) => {
-    if (window.__homeFastTapBlockClickUntil && performance.now() < window.__homeFastTapBlockClickUntil) {
+    const now = performance.now();
+    const recentGlobalBlock = window.__homeFastTapBlockClickUntil && now < window.__homeFastTapBlockClickUntil;
+    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < 400;
+    if (recentGlobalBlock || recentPageScroll) {
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -1536,5 +1553,9 @@ document.addEventListener('DOMContentLoaded', () => {
       slider.updateOnResize();
     }, 100);
   });
+
+  // Глобально помечаем время последнего вертикального скролла страницы
+  const markPageScroll = () => { window.__lastPageScrollTime = performance.now(); };
+  window.addEventListener('scroll', markPageScroll, { passive: true });
 
 });
