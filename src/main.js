@@ -32,11 +32,9 @@ function createProductCard(product) {
   // Добавляем обработчик клика для перехода на страницу товара
   card.addEventListener('click', (e) => {
     const now = performance.now();
-    const container = card.parentElement && card.parentElement.classList && card.parentElement.classList.contains('category-products-slider') ? card.parentElement : null;
+    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < 1200;
     const recentGlobalBlock = window.__homeFastTapBlockClickUntil && now < window.__homeFastTapBlockClickUntil;
-    const recentContainerScroll = container && container.__lastScrollTime && (now - container.__lastScrollTime) < 400;
-    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < 400;
-    if (recentGlobalBlock || recentContainerScroll || recentPageScroll) {
+    if (recentGlobalBlock || recentPageScroll) {
       e.preventDefault();
       e.stopPropagation();
       return;
@@ -45,7 +43,7 @@ function createProductCard(product) {
   });
   // Fast-tap с защитой от скролла/удержания — идентично карточкам категорий + защита от "тап-стопа" вертикальной инерции
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
-  const FT_MOVE = 8; const FT_HOLD = 300; const FT_RECENT_SCROLL = 800;
+  const FT_MOVE = 8; const FT_HOLD = 300; const FT_RECENT_SCROLL = 1200;
   const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; const now = ftStartTime; const recentPageScrollPD = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < FT_RECENT_SCROLL; if (recentPageScrollPD) { card.__ftMoved = true; window.__homeFastTapBlockClickUntil = now + 400; } };
   const onPM = (e) => {
     if (!ftStartTime) return;
