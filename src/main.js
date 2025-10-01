@@ -40,7 +40,8 @@ function createProductCard(product) {
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
     // Если страница ещё в состоянии скролла/инерции — игнорируем тап (гашение инерции)
-    if (inertiaAtDown || (document.body && document.body.classList && document.body.classList.contains('is-scrolling'))) {
+    const sinceScroll = performance.now() - (window.__lastScrollActivityTs || 0);
+    if (inertiaAtDown || (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) || sinceScroll < 300) {
       try { e && e.preventDefault && e.preventDefault(); } catch {}
       try { e && e.stopPropagation && e.stopPropagation(); } catch {}
       return;
@@ -154,8 +155,8 @@ function createCategoryCard(category, index) {
     const dur = performance.now() - (ftStartTime2 || performance.now());
     const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
     ftStartTime2 = 0;
-    const now = performance.now(); const last = window.__lastScrollActivityTs || 0; const inertiaAtDown2 = (now - last) < 700;
-    if (inertiaAtDown2 || (document.body && document.body.classList && document.body.classList.contains('is-scrolling'))) {
+    const now = performance.now(); const last = window.__lastScrollActivityTs || 0; const inertiaAtDown2 = (now - last) < 700; const sinceScroll2 = performance.now() - (window.__lastScrollActivityTs || 0);
+    if (inertiaAtDown2 || (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) || sinceScroll2 < 300) {
       try { e && e.preventDefault && e.preventDefault(); } catch {}
       try { e && e.stopPropagation && e.stopPropagation(); } catch {}
       return;
