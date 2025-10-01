@@ -1,6 +1,6 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
-
+ 
 // Универсальная навигация: используем стек AppNav при наличии
 function navigate(path) {
   if (window.AppNav && typeof window.AppNav.go === 'function') {
@@ -9,202 +9,6 @@ function navigate(path) {
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
   const normalized = path.startsWith('/') ? path.slice(1) : path;
   window.location.href = basePath + normalized;
-}
-
-// Отслеживание состояния скролла страницы
-let isPageScrolling = false;
-let isHorizontalScrolling = false;
-let pageScrollTimer = null;
-let lastScrollY = 0;
-let touchStartY = 0;
-let touchStartTime = 0;
-let isVerticalSwipe = false;
-let scrollVelocity = 0;
-let lastScrollTime = 0;
-let rafId = null;
-let consecutiveStops = 0;
-
-// Функция для отслеживания инерционного скролла
-function trackInertialScroll() {
-  const currentScrollY = window.scrollY;
-  const currentTime = Date.now();
-  
-  // Вычисляем скорость скролла
-  if (lastScrollTime > 0) {
-    const timeDelta = currentTime - lastScrollTime;
-    const scrollDelta = Math.abs(currentScrollY - lastScrollY);
-    scrollVelocity = scrollDelta / timeDelta;
-    
-    // Если есть движение, устанавливаем флаг
-    if (scrollDelta > 0) {
-      isPageScrolling = true;
-      consecutiveStops = 0; // Сбрасываем счетчик остановок
-    } else {
-      // Если нет движения, увеличиваем счетчик остановок
-      consecutiveStops++;
-      
-      // Если страница не двигалась 3 кадра подряд - скролл остановился
-      if (consecutiveStops > 3) {
-        isPageScrolling = false;
-        isVerticalSwipe = false;
-        scrollVelocity = 0;
-        
-        // Останавливаем отслеживание
-        if (rafId) {
-          cancelAnimationFrame(rafId);
-          rafId = null;
-        }
-        return;
-      }
-    }
-  }
-  
-  lastScrollY = currentScrollY;
-  lastScrollTime = currentTime;
-  
-  // Продолжаем отслеживать
-  rafId = requestAnimationFrame(trackInertialScroll);
-}
-
-// Инициализация отслеживания вертикального скролла страницы
-function initPageScrollTracking() {
-  // Отслеживаем touch события для более точного определения вертикального скролла
-  window.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-    touchStartTime = Date.now();
-    isVerticalSwipe = false;
-    consecutiveStops = 0;
-  }, { passive: true });
-  
-  window.addEventListener('touchmove', (e) => {
-    const touchY = e.touches[0].clientY;
-    const deltaY = Math.abs(touchY - touchStartY);
-    
-    // Если движение вертикальное больше чем на 3 пикселя - это вертикальный свайп
-    if (deltaY > 3) {
-      isVerticalSwipe = true;
-      isPageScrolling = true;
-      consecutiveStops = 0;
-      
-      // Начинаем отслеживать инерционный скролл если еще не начали
-      if (!rafId) {
-        lastScrollTime = Date.now();
-        lastScrollY = window.scrollY;
-        rafId = requestAnimationFrame(trackInertialScroll);
-      }
-    }
-  }, { passive: true });
-  
-  window.addEventListener('touchend', () => {
-    // НЕ сбрасываем флаги сразу - пусть отслеживание инерции решит
-    // Продолжаем отслеживать инерционный скролл
-    if (!rafId && isPageScrolling) {
-      lastScrollTime = Date.now();
-      lastScrollY = window.scrollY;
-      rafId = requestAnimationFrame(trackInertialScroll);
-    }
-  }, { passive: true });
-  
-  // Дополнительно отслеживаем обычный скролл (для десктопа или программного скролла)
-  window.addEventListener('scroll', () => {
-    const currentScrollY = window.scrollY;
-    
-    // Определяем, что это именно вертикальный скролл
-    if (Math.abs(currentScrollY - lastScrollY) > 0) {
-      isPageScrolling = true;
-      consecutiveStops = 0;
-      
-      // Запускаем отслеживание если еще не запущено
-      if (!rafId) {
-        lastScrollTime = Date.now();
-        lastScrollY = currentScrollY;
-        rafId = requestAnimationFrame(trackInertialScroll);
-      }
-    }
-    
-    lastScrollY = currentScrollY;
-  }, { passive: true });
-}
-
-// Инициализация отслеживания горизонтального скролла в блоке "Новинки"
-function initHorizontalScrollTracking() {
-  const slider = document.querySelector('.category-products-slider');
-  if (slider) {
-    let scrollTimer = null;
-    let touchStartX = 0;
-    let lastSliderScrollX = 0;
-    let sliderRafId = null;
-    let sliderConsecutiveStops = 0;
-    
-    // Функция для отслеживания инерционного горизонтального скролла
-    function trackSliderInertialScroll() {
-      const currentScrollX = slider.scrollLeft;
-      
-      // Если есть движение
-      if (Math.abs(currentScrollX - lastSliderScrollX) > 0) {
-        isHorizontalScrolling = true;
-        sliderConsecutiveStops = 0;
-      } else {
-        sliderConsecutiveStops++;
-        
-        // Если слайдер не двигался 3 кадра подряд - скролл остановился
-        if (sliderConsecutiveStops > 3) {
-          isHorizontalScrolling = false;
-          
-          if (sliderRafId) {
-            cancelAnimationFrame(sliderRafId);
-            sliderRafId = null;
-          }
-          return;
-        }
-      }
-      
-      lastSliderScrollX = currentScrollX;
-      sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
-    }
-    
-    // Отслеживаем горизонтальный скролл внутри слайдера
-    slider.addEventListener('touchstart', (e) => {
-      touchStartX = e.touches[0].clientX;
-      sliderConsecutiveStops = 0;
-    }, { passive: true });
-    
-    slider.addEventListener('touchmove', (e) => {
-      const touchX = e.touches[0].clientX;
-      const deltaX = Math.abs(touchX - touchStartX);
-      
-      // Если движение горизонтальное больше чем на 5 пикселей
-      if (deltaX > 5) {
-        isHorizontalScrolling = true;
-        sliderConsecutiveStops = 0;
-        
-        // Запускаем отслеживание инерции
-        if (!sliderRafId) {
-          lastSliderScrollX = slider.scrollLeft;
-          sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
-        }
-      }
-    }, { passive: true });
-    
-    slider.addEventListener('touchend', () => {
-      // Продолжаем отслеживать инерционный скролл
-      if (!sliderRafId && isHorizontalScrolling) {
-        lastSliderScrollX = slider.scrollLeft;
-        sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
-      }
-    }, { passive: true });
-    
-    slider.addEventListener('scroll', () => {
-      isHorizontalScrolling = true;
-      sliderConsecutiveStops = 0;
-      
-      // Запускаем отслеживание если еще не запущено
-      if (!sliderRafId) {
-        lastSliderScrollX = slider.scrollLeft;
-        sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
-      }
-    }, { passive: true });
-  }
 }
  
 
@@ -226,92 +30,36 @@ function createProductCard(product) {
   `;
   
   // Добавляем обработчик клика для перехода на страницу товара
-  card.addEventListener('click', (e) => {
-    // Блокируем клик если идет вертикальный скролл страницы или был вертикальный свайп
-    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
-      e.preventDefault();
-      e.stopPropagation();
-      e.stopImmediatePropagation();
-      return false;
+  card.addEventListener('click', () => {
+    // Блокируем клики во время bounce эффекта
+    if (document.body.classList.contains('is-scrolling')) {
+      return;
     }
     navigate(`product.html?product=${product.id}`);
   });
-  
   // Fast-tap с защитой от скролла/удержания
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
-  let cardTouchStartY = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
-  
-  const onPD = (e) => { 
-    // Сразу блокируем если идет вертикальный скролл
-    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    }
-    
-    ftStartX = e.clientX; 
-    ftStartY = e.clientY; 
-    cardTouchStartY = e.clientY;
-    ftStartTime = performance.now(); 
-    ftScrollY = window.scrollY; 
-    ftScrollX = window.scrollX; 
-    card.__ftMoved = false;
-  };
-  
-  const onPM = (e) => { 
-    if (!ftStartTime) return;
-    
-    // Проверяем вертикальное движение
-    const deltaY = Math.abs(e.clientY - cardTouchStartY);
-    if (deltaY > 5) {
-      card.__ftMoved = true;
-      ftStartTime = 0; // Сбрасываем, чтобы не сработал клик
+  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
+  const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
+  const onPU = () => {
+    // Блокируем клики во время bounce эффекта
+    if (document.body.classList.contains('is-scrolling')) {
+      ftStartTime = 0;
       return;
     }
-    
-    if (Math.abs(e.clientX - ftStartX) > FT_MOVE || 
-        Math.abs(e.clientY - ftStartY) > FT_MOVE || 
-        Math.abs(window.scrollY - ftScrollY) > 0 || 
-        Math.abs(window.scrollX - ftScrollX) > 0) {
-      card.__ftMoved = true;
-    }
-  };
-  
-  const onPU = (e) => {
-    // Блокируем если идет вертикальный скролл
-    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
-      ftStartTime = 0;
-      return false;
-    }
-    
     const dur = performance.now() - (ftStartTime || performance.now());
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) return;
-    
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
-    try { 
-      navigate(`product.html?product=${product.id}`); 
-    } finally { 
-      setTimeout(() => { card.__fastTapLock = false; }, 300); 
-    }
+    try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
   };
-  
-  // Обработчики с возможностью preventDefault
-  card.addEventListener('pointerdown', onPD, { passive: false });
+  card.addEventListener('pointerdown', onPD, { passive: true });
   card.addEventListener('pointermove', onPM, { passive: true });
-  card.addEventListener('pointerup', onPU, { passive: false });
-  card.addEventListener('touchend', onPU, { passive: false });
-  
-  // Блокируем touchstart во время вертикального скролла
-  card.addEventListener('touchstart', (e) => {
-    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
-      e.preventDefault();
-      return false;
-    }
-  }, { passive: false });
+  card.addEventListener('pointerup', onPU, { passive: true });
+  card.addEventListener('touchend', onPU, { passive: true });
   
   return card;
 }
@@ -1727,16 +1475,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Сохраняем экземпляр SearchManager в глобальной переменной для доступа из других функций
   window.searchManager = searchManager;
   const psPlusManager = new PSPlusManager();
-  
-  // Инициализируем отслеживание скролла страницы
-  initPageScrollTracking();
   const clickBlocker = new ClickBlocker();
   
   // Рендерим товары
   renderNewProducts();
-  
-  // Инициализируем отслеживание горизонтального скролла после рендеринга товаров
-  initHorizontalScrollTracking();
   
   // Рендерим категории на главной странице
   renderCategories();
