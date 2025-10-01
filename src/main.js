@@ -43,10 +43,10 @@ function createProductCard(product) {
     }
     navigate(`product.html?product=${product.id}`);
   });
-  // Fast-tap с защитой от скролла/удержания — идентично карточкам категорий
+  // Fast-tap с защитой от скролла/удержания — идентично карточкам категорий + защита от "тап-стопа" вертикальной инерции
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
-  const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
+  const FT_MOVE = 8; const FT_HOLD = 300; const FT_RECENT_SCROLL = 800;
+  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; const now = ftStartTime; const recentPageScrollPD = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < FT_RECENT_SCROLL; if (recentPageScrollPD) { card.__ftMoved = true; window.__homeFastTapBlockClickUntil = now + 400; } };
   const onPM = (e) => {
     if (!ftStartTime) return;
     const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
@@ -66,7 +66,7 @@ function createProductCard(product) {
     const now = performance.now();
     const dur = now - (ftStartTime || now);
     const scrolled = Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0;
-    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < 400;
+    const recentPageScroll = window.__lastPageScrollTime && (now - window.__lastPageScrollTime) < FT_RECENT_SCROLL;
     const shouldFire = hadDown && !card.__ftMoved && !scrolled && !recentPageScroll && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) {
