@@ -37,6 +37,14 @@ function createProductCard(product) {
   const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
   const onPU = (e) => {
     const dur = performance.now() - (ftStartTime || performance.now());
+    // Если во время жеста прокрутка изменилась, считаем это гашением инерции/скроллом
+    const scrolledDuringTap = (Math.abs(window.scrollY - ftScrollY) > 0) || (Math.abs(window.scrollX - ftScrollX) > 0);
+    if (scrolledDuringTap) {
+      card.__tapCanceled = true;
+      try { e && e.preventDefault && e.preventDefault(); } catch {}
+      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
+      return;
+    }
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
     // Если страница ещё в состоянии скролла/инерции — игнорируем тап (гашение инерции)
@@ -59,10 +67,11 @@ function createProductCard(product) {
   card.addEventListener('touchend', onPU, { passive: false });
   // Подавляем «призрачный» click после гашения инерции (особенно iOS)
   card.addEventListener('click', (e) => {
-    if (inertiaAtDown || (document.body && document.body.classList && document.body.classList.contains('is-scrolling'))) {
+    if (card.__tapCanceled || inertiaAtDown || (document.body && document.body.classList && document.body.classList.contains('is-scrolling'))) {
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
       try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
+      card.__tapCanceled = false;
     }
   }, { capture: true });
   
@@ -154,6 +163,13 @@ function createCategoryCard(category, index) {
   const onPU2 = (e) => {
     const dur = performance.now() - (ftStartTime2 || performance.now());
     const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
+    const scrolledDuringTap2 = (Math.abs(window.scrollY - ftScrollY2) > 0) || (Math.abs(window.scrollX - ftScrollX2) > 0);
+    if (scrolledDuringTap2) {
+      card.__tapCanceled2 = true;
+      try { e && e.preventDefault && e.preventDefault(); } catch {}
+      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
+      return;
+    }
     ftStartTime2 = 0;
     const now = performance.now(); const last = window.__lastScrollActivityTs || 0; const inertiaAtDown2 = (now - last) < 700; const sinceScroll2 = performance.now() - (window.__lastScrollActivityTs || 0);
     if (inertiaAtDown2 || (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) || sinceScroll2 < 300) {
@@ -170,6 +186,14 @@ function createCategoryCard(category, index) {
   card.addEventListener('pointermove', onPM2, { passive: true });
   card.addEventListener('pointerup', onPU2, { passive: false });
   card.addEventListener('touchend', onPU2, { passive: false });
+  card.addEventListener('click', (e) => {
+    if (card.__tapCanceled2) {
+      try { e.preventDefault(); } catch {}
+      try { e.stopPropagation(); } catch {}
+      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
+      card.__tapCanceled2 = false;
+    }
+  }, { capture: true });
   
   return card;
 }
