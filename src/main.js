@@ -16,10 +16,47 @@ let isPageScrolling = false;
 let isHorizontalScrolling = false;
 let pageScrollTimer = null;
 let lastScrollY = 0;
+let touchStartY = 0;
+let touchStartTime = 0;
+let isVerticalSwipe = false;
 
 // Инициализация отслеживания вертикального скролла страницы
 function initPageScrollTracking() {
-  // Отслеживаем вертикальный скролл страницы
+  // Отслеживаем touch события для более точного определения вертикального скролла
+  window.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+    isVerticalSwipe = false;
+  }, { passive: true });
+  
+  window.addEventListener('touchmove', (e) => {
+    const touchY = e.touches[0].clientY;
+    const deltaY = Math.abs(touchY - touchStartY);
+    
+    // Если движение вертикальное больше чем на 5 пикселей - это вертикальный свайп
+    if (deltaY > 5) {
+      isVerticalSwipe = true;
+      isPageScrolling = true;
+      
+      // Сбрасываем таймер
+      clearTimeout(pageScrollTimer);
+      
+      // Устанавливаем таймер для сброса флага после окончания движения
+      pageScrollTimer = setTimeout(() => {
+        isPageScrolling = false;
+        isVerticalSwipe = false;
+      }, 300);
+    }
+  }, { passive: true });
+  
+  window.addEventListener('touchend', () => {
+    // Даем небольшую задержку перед сбросом флага
+    setTimeout(() => {
+      isVerticalSwipe = false;
+    }, 100);
+  }, { passive: true });
+  
+  // Дополнительно отслеживаем обычный скролл
   window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
     
@@ -33,7 +70,7 @@ function initPageScrollTracking() {
       // Устанавливаем таймер для сброса флага после окончания скролла
       pageScrollTimer = setTimeout(() => {
         isPageScrolling = false;
-      }, 150);
+      }, 300);
     }
     
     lastScrollY = currentScrollY;
@@ -45,13 +82,35 @@ function initHorizontalScrollTracking() {
   const slider = document.querySelector('.category-products-slider');
   if (slider) {
     let scrollTimer = null;
+    let touchStartX = 0;
+    
+    // Отслеживаем горизонтальный скролл внутри слайдера
+    slider.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    
+    slider.addEventListener('touchmove', (e) => {
+      const touchX = e.touches[0].clientX;
+      const deltaX = Math.abs(touchX - touchStartX);
+      
+      // Если движение горизонтальное больше чем на 5 пикселей
+      if (deltaX > 5) {
+        isHorizontalScrolling = true;
+        
+        clearTimeout(scrollTimer);
+        scrollTimer = setTimeout(() => {
+          isHorizontalScrolling = false;
+        }, 300);
+      }
+    }, { passive: true });
+    
     slider.addEventListener('scroll', () => {
       isHorizontalScrolling = true;
       
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(() => {
         isHorizontalScrolling = false;
-      }, 150);
+      }, 300);
     }, { passive: true });
   }
 }
@@ -76,28 +135,49 @@ function createProductCard(product) {
   
   // Добавляем обработчик клика для перехода на страницу товара
   card.addEventListener('click', (e) => {
-    // Блокируем клик если идет вертикальный скролл страницы
-    if (isPageScrolling && !isHorizontalScrolling) {
+    // Блокируем клик если идет вертикальный скролл страницы или был вертикальный свайп
+    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
       e.preventDefault();
       e.stopPropagation();
-      return;
+      e.stopImmediatePropagation();
+      return false;
     }
     navigate(`product.html?product=${product.id}`);
   });
   
   // Fast-tap с защитой от скролла/удержания
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
+  let cardTouchStartY = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
+  
   const onPD = (e) => { 
+    // Сразу блокируем если идет вертикальный скролл
+    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+    
     ftStartX = e.clientX; 
     ftStartY = e.clientY; 
+    cardTouchStartY = e.clientY;
     ftStartTime = performance.now(); 
     ftScrollY = window.scrollY; 
     ftScrollX = window.scrollX; 
     card.__ftMoved = false;
   };
+  
   const onPM = (e) => { 
-    if (!ftStartTime) return; 
+    if (!ftStartTime) return;
+    
+    // Проверяем вертикальное движение
+    const deltaY = Math.abs(e.clientY - cardTouchStartY);
+    if (deltaY > 5) {
+      card.__ftMoved = true;
+      ftStartTime = 0; // Сбрасываем, чтобы не сработал клик
+      return;
+    }
+    
     if (Math.abs(e.clientX - ftStartX) > FT_MOVE || 
         Math.abs(e.clientY - ftStartY) > FT_MOVE || 
         Math.abs(window.scrollY - ftScrollY) > 0 || 
@@ -105,16 +185,18 @@ function createProductCard(product) {
       card.__ftMoved = true;
     }
   };
-  const onPU = () => {
+  
+  const onPU = (e) => {
+    // Блокируем если идет вертикальный скролл
+    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
+      ftStartTime = 0;
+      return false;
+    }
+    
     const dur = performance.now() - (ftStartTime || performance.now());
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) return;
-    
-    // Блокируем fast-tap если идет вертикальный скролл страницы
-    if (isPageScrolling && !isHorizontalScrolling) {
-      return;
-    }
     
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
@@ -124,10 +206,20 @@ function createProductCard(product) {
       setTimeout(() => { card.__fastTapLock = false; }, 300); 
     }
   };
-  card.addEventListener('pointerdown', onPD, { passive: true });
+  
+  // Обработчики с возможностью preventDefault
+  card.addEventListener('pointerdown', onPD, { passive: false });
   card.addEventListener('pointermove', onPM, { passive: true });
-  card.addEventListener('pointerup', onPU, { passive: true });
-  card.addEventListener('touchend', onPU, { passive: true });
+  card.addEventListener('pointerup', onPU, { passive: false });
+  card.addEventListener('touchend', onPU, { passive: false });
+  
+  // Блокируем touchstart во время вертикального скролла
+  card.addEventListener('touchstart', (e) => {
+    if ((isPageScrolling || isVerticalSwipe) && !isHorizontalScrolling) {
+      e.preventDefault();
+      return false;
+    }
+  }, { passive: false });
   
   return card;
 }
