@@ -244,7 +244,10 @@ class CategoryPage {
     `;
 
     // Обработчик клика по предложению с анимацией
-    suggestion.addEventListener('click', () => {
+    suggestion.addEventListener('click', (e) => {
+      try { e.preventDefault(); } catch {}
+      try { e.stopPropagation(); } catch {}
+      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
       // Добавляем класс анимации
       suggestion.classList.add('clicked');
       // Мгновенно скрываем overlay/поиск до навигации
@@ -273,11 +276,11 @@ class CategoryPage {
     let sX=0,sY=0,sT=0,sScY=0,sScX=0; const S_MOVE=8,S_HOLD=300;
     const sPD=(e)=>{ sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; suggestion.__moved=false; };
     const sPM=(e)=>{ if(!sT) return; if (Math.abs(e.clientX-sX)>S_MOVE || Math.abs(e.clientY-sY)>S_MOVE || Math.abs(window.scrollY-sScY)>0 || Math.abs(window.scrollX-sScX)>0) suggestion.__moved=true; };
-    const sPU=()=>{ const dur=performance.now()-(sT||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { this.deactivateSearch(); navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+    const sPU=(e)=>{ const dur=performance.now()-(sT||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.deactivateSearch(); navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
     suggestion.addEventListener('pointerdown', sPD, { passive: true });
     suggestion.addEventListener('pointermove', sPM, { passive: true });
-    suggestion.addEventListener('pointerup', sPU, { passive: true });
-    suggestion.addEventListener('touchend', sPU, { passive: true });
+    suggestion.addEventListener('pointerup', sPU, { passive: false });
+    suggestion.addEventListener('touchend', sPU, { passive: false });
 
     return suggestion;
   }

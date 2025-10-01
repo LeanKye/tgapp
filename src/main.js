@@ -986,11 +986,13 @@ class SearchManager {
     `;
 
     // Обработчик клика по предложению с анимацией
-    suggestion.addEventListener('click', () => {
+    suggestion.addEventListener('click', (e) => {
+      // Блокируем дальнейшее всплытие/дефолт, чтобы клик не попал на баннеры под dropdown
+      try { e.preventDefault(); } catch {}
+      try { e.stopPropagation(); } catch {}
+      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
       // Добавляем класс анимации
       suggestion.classList.add('clicked');
-      // Мгновенно скрываем overlay/поиск, чтобы не было просвета при переходе
-      this.deactivateSearch();
       
       // Небольшая задержка перед переходом для показа анимации
       setTimeout(() => {
@@ -1002,11 +1004,11 @@ class SearchManager {
   let sSX=0,sSY=0,sST=0,sScrollY=0,sScrollX=0; const S_MOVE=8,S_HOLD=300;
   const sPD=(e)=>{ sSX=e.clientX; sSY=e.clientY; sST=performance.now(); sScrollY=window.scrollY; sScrollX=window.scrollX; suggestion.__moved=false; };
   const sPM=(e)=>{ if(!sST) return; if (Math.abs(e.clientX-sSX)>S_MOVE || Math.abs(e.clientY-sSY)>S_MOVE || Math.abs(window.scrollY-sScrollY)>0 || Math.abs(window.scrollX-sScrollX)>0) suggestion.__moved=true; };
-  const sPU=()=>{ const dur=performance.now()-(sST||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sST=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+  const sPU=(e)=>{ const dur=performance.now()-(sST||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sST=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
   suggestion.addEventListener('pointerdown', sPD, { passive: true });
   suggestion.addEventListener('pointermove', sPM, { passive: true });
-  suggestion.addEventListener('pointerup', sPU, { passive: true });
-  suggestion.addEventListener('touchend', sPU, { passive: true });
+  suggestion.addEventListener('pointerup', sPU, { passive: false });
+  suggestion.addEventListener('touchend', sPU, { passive: false });
 
     return suggestion;
   }
