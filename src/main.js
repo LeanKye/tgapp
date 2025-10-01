@@ -30,13 +30,7 @@ function createProductCard(product) {
   `;
   
   // Добавляем обработчик клика для перехода на страницу товара
-  card.addEventListener('click', (e) => {
-    // Во время вертикального скролла игнорируем клик, чтобы тап лишь останавливал прокрутку
-    if (document.body.classList.contains('is-scrolling')) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      return;
-    }
+  card.addEventListener('click', () => {
     navigate(`product.html?product=${product.id}`);
   });
   // Fast-tap с защитой от скролла/удержания
@@ -49,8 +43,6 @@ function createProductCard(product) {
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) return;
-    // Блокируем fast-tap навигацию во время вертикального скролла страницы
-    if (document.body.classList.contains('is-scrolling')) return;
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
     try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
