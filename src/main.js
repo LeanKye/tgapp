@@ -29,28 +29,33 @@ function createProductCard(product) {
     <div class="category-product-price">${priceHTML}</div>
   `;
   
-  // Добавляем обработчик клика для перехода на страницу товара
-  card.addEventListener('click', () => {
-    navigate(`product.html?product=${product.id}`);
-  });
+  // Навигацию выполняем только через fast-tap, чтобы не ловить клик при гашении инерции скролла
   // Fast-tap с защитой от скролла/удержания
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
   const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
   const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
-  const onPU = () => {
+  const onPU = (e) => {
     const dur = performance.now() - (ftStartTime || performance.now());
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
+    // Если страница ещё в состоянии скролла/инерции — игнорируем тап (гашение инерции)
+    if (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) {
+      try { e && e.preventDefault && e.preventDefault(); } catch {}
+      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
+      return;
+    }
     if (!shouldFire) return;
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
-    try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
+    try {
+      navigate(`product.html?product=${product.id}`);
+    } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
   };
   card.addEventListener('pointerdown', onPD, { passive: true });
   card.addEventListener('pointermove', onPM, { passive: true });
-  card.addEventListener('pointerup', onPU, { passive: true });
-  card.addEventListener('touchend', onPU, { passive: true });
+  card.addEventListener('pointerup', onPU, { passive: false });
+  card.addEventListener('touchend', onPU, { passive: false });
   
   return card;
 }
@@ -120,10 +125,7 @@ function createCategoryCard(category, index) {
     </div>
   `;
   
-  // Добавляем обработчик клика для перехода на страницу категории
-  card.addEventListener('click', () => {
-    navigate(`category.html?category=${encodeURIComponent(category.name)}`);
-  });
+  // Навигацию выполняем только через fast-tap, чтобы не ловить клик при гашении инерции
   // Fast-tap с защитой от скролла/удержания (такая же логика, как у карточек товаров)
   let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0, ftScrollY2 = 0, ftScrollX2 = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
@@ -140,10 +142,15 @@ function createCategoryCard(category, index) {
       Math.abs(window.scrollX - ftScrollX2) > 0
     ) card.__ftMoved2 = true;
   };
-  const onPU2 = () => {
+  const onPU2 = (e) => {
     const dur = performance.now() - (ftStartTime2 || performance.now());
     const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
     ftStartTime2 = 0;
+    if (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) {
+      try { e && e.preventDefault && e.preventDefault(); } catch {}
+      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
+      return;
+    }
     if (!shouldFire) return;
     if (card.__fastTapLock2) return;
     card.__fastTapLock2 = true;
@@ -151,8 +158,8 @@ function createCategoryCard(category, index) {
   };
   card.addEventListener('pointerdown', onPD2, { passive: true });
   card.addEventListener('pointermove', onPM2, { passive: true });
-  card.addEventListener('pointerup', onPU2, { passive: true });
-  card.addEventListener('touchend', onPU2, { passive: true });
+  card.addEventListener('pointerup', onPU2, { passive: false });
+  card.addEventListener('touchend', onPU2, { passive: false });
   
   return card;
 }
