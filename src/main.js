@@ -19,6 +19,52 @@ let lastScrollY = 0;
 let touchStartY = 0;
 let touchStartTime = 0;
 let isVerticalSwipe = false;
+let scrollVelocity = 0;
+let lastScrollTime = 0;
+let rafId = null;
+let consecutiveStops = 0;
+
+// Функция для отслеживания инерционного скролла
+function trackInertialScroll() {
+  const currentScrollY = window.scrollY;
+  const currentTime = Date.now();
+  
+  // Вычисляем скорость скролла
+  if (lastScrollTime > 0) {
+    const timeDelta = currentTime - lastScrollTime;
+    const scrollDelta = Math.abs(currentScrollY - lastScrollY);
+    scrollVelocity = scrollDelta / timeDelta;
+    
+    // Если есть движение, устанавливаем флаг
+    if (scrollDelta > 0) {
+      isPageScrolling = true;
+      consecutiveStops = 0; // Сбрасываем счетчик остановок
+    } else {
+      // Если нет движения, увеличиваем счетчик остановок
+      consecutiveStops++;
+      
+      // Если страница не двигалась 3 кадра подряд - скролл остановился
+      if (consecutiveStops > 3) {
+        isPageScrolling = false;
+        isVerticalSwipe = false;
+        scrollVelocity = 0;
+        
+        // Останавливаем отслеживание
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+        return;
+      }
+    }
+  }
+  
+  lastScrollY = currentScrollY;
+  lastScrollTime = currentTime;
+  
+  // Продолжаем отслеживать
+  rafId = requestAnimationFrame(trackInertialScroll);
+}
 
 // Инициализация отслеживания вертикального скролла страницы
 function initPageScrollTracking() {
@@ -27,50 +73,53 @@ function initPageScrollTracking() {
     touchStartY = e.touches[0].clientY;
     touchStartTime = Date.now();
     isVerticalSwipe = false;
+    consecutiveStops = 0;
   }, { passive: true });
   
   window.addEventListener('touchmove', (e) => {
     const touchY = e.touches[0].clientY;
     const deltaY = Math.abs(touchY - touchStartY);
     
-    // Если движение вертикальное больше чем на 5 пикселей - это вертикальный свайп
-    if (deltaY > 5) {
+    // Если движение вертикальное больше чем на 3 пикселя - это вертикальный свайп
+    if (deltaY > 3) {
       isVerticalSwipe = true;
       isPageScrolling = true;
+      consecutiveStops = 0;
       
-      // Сбрасываем таймер
-      clearTimeout(pageScrollTimer);
-      
-      // Устанавливаем таймер для сброса флага после окончания движения
-      pageScrollTimer = setTimeout(() => {
-        isPageScrolling = false;
-        isVerticalSwipe = false;
-      }, 300);
+      // Начинаем отслеживать инерционный скролл если еще не начали
+      if (!rafId) {
+        lastScrollTime = Date.now();
+        lastScrollY = window.scrollY;
+        rafId = requestAnimationFrame(trackInertialScroll);
+      }
     }
   }, { passive: true });
   
   window.addEventListener('touchend', () => {
-    // Даем небольшую задержку перед сбросом флага
-    setTimeout(() => {
-      isVerticalSwipe = false;
-    }, 100);
+    // НЕ сбрасываем флаги сразу - пусть отслеживание инерции решит
+    // Продолжаем отслеживать инерционный скролл
+    if (!rafId && isPageScrolling) {
+      lastScrollTime = Date.now();
+      lastScrollY = window.scrollY;
+      rafId = requestAnimationFrame(trackInertialScroll);
+    }
   }, { passive: true });
   
-  // Дополнительно отслеживаем обычный скролл
+  // Дополнительно отслеживаем обычный скролл (для десктопа или программного скролла)
   window.addEventListener('scroll', () => {
     const currentScrollY = window.scrollY;
     
     // Определяем, что это именно вертикальный скролл
     if (Math.abs(currentScrollY - lastScrollY) > 0) {
       isPageScrolling = true;
+      consecutiveStops = 0;
       
-      // Сбрасываем таймер
-      clearTimeout(pageScrollTimer);
-      
-      // Устанавливаем таймер для сброса флага после окончания скролла
-      pageScrollTimer = setTimeout(() => {
-        isPageScrolling = false;
-      }, 300);
+      // Запускаем отслеживание если еще не запущено
+      if (!rafId) {
+        lastScrollTime = Date.now();
+        lastScrollY = currentScrollY;
+        rafId = requestAnimationFrame(trackInertialScroll);
+      }
     }
     
     lastScrollY = currentScrollY;
@@ -83,10 +132,41 @@ function initHorizontalScrollTracking() {
   if (slider) {
     let scrollTimer = null;
     let touchStartX = 0;
+    let lastSliderScrollX = 0;
+    let sliderRafId = null;
+    let sliderConsecutiveStops = 0;
+    
+    // Функция для отслеживания инерционного горизонтального скролла
+    function trackSliderInertialScroll() {
+      const currentScrollX = slider.scrollLeft;
+      
+      // Если есть движение
+      if (Math.abs(currentScrollX - lastSliderScrollX) > 0) {
+        isHorizontalScrolling = true;
+        sliderConsecutiveStops = 0;
+      } else {
+        sliderConsecutiveStops++;
+        
+        // Если слайдер не двигался 3 кадра подряд - скролл остановился
+        if (sliderConsecutiveStops > 3) {
+          isHorizontalScrolling = false;
+          
+          if (sliderRafId) {
+            cancelAnimationFrame(sliderRafId);
+            sliderRafId = null;
+          }
+          return;
+        }
+      }
+      
+      lastSliderScrollX = currentScrollX;
+      sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
+    }
     
     // Отслеживаем горизонтальный скролл внутри слайдера
     slider.addEventListener('touchstart', (e) => {
       touchStartX = e.touches[0].clientX;
+      sliderConsecutiveStops = 0;
     }, { passive: true });
     
     slider.addEventListener('touchmove', (e) => {
@@ -96,21 +176,33 @@ function initHorizontalScrollTracking() {
       // Если движение горизонтальное больше чем на 5 пикселей
       if (deltaX > 5) {
         isHorizontalScrolling = true;
+        sliderConsecutiveStops = 0;
         
-        clearTimeout(scrollTimer);
-        scrollTimer = setTimeout(() => {
-          isHorizontalScrolling = false;
-        }, 300);
+        // Запускаем отслеживание инерции
+        if (!sliderRafId) {
+          lastSliderScrollX = slider.scrollLeft;
+          sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
+        }
+      }
+    }, { passive: true });
+    
+    slider.addEventListener('touchend', () => {
+      // Продолжаем отслеживать инерционный скролл
+      if (!sliderRafId && isHorizontalScrolling) {
+        lastSliderScrollX = slider.scrollLeft;
+        sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
       }
     }, { passive: true });
     
     slider.addEventListener('scroll', () => {
       isHorizontalScrolling = true;
+      sliderConsecutiveStops = 0;
       
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(() => {
-        isHorizontalScrolling = false;
-      }, 300);
+      // Запускаем отслеживание если еще не запущено
+      if (!sliderRafId) {
+        lastSliderScrollX = slider.scrollLeft;
+        sliderRafId = requestAnimationFrame(trackSliderInertialScroll);
+      }
     }, { passive: true });
   }
 }
