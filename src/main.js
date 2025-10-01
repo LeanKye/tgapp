@@ -29,51 +29,28 @@ function createProductCard(product) {
     <div class="category-product-price">${priceHTML}</div>
   `;
   
-  // Навигацию выполняем только через fast-tap, чтобы не ловить клик при гашении инерции скролла
+  // Добавляем обработчик клика для перехода на страницу товара
+  card.addEventListener('click', () => {
+    navigate(`product.html?product=${product.id}`);
+  });
   // Fast-tap с защитой от скролла/удержания
-  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0, inertiaAtDown = false;
+  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; const now = performance.now(); const last = window.__lastScrollActivityTs || 0; inertiaAtDown = (now - last) < 700; };
+  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
   const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
-  const onPU = (e) => {
+  const onPU = () => {
     const dur = performance.now() - (ftStartTime || performance.now());
-    // Если во время жеста прокрутка изменилась, считаем это гашением инерции/скроллом
-    const scrolledDuringTap = (Math.abs(window.scrollY - ftScrollY) > 0) || (Math.abs(window.scrollX - ftScrollX) > 0);
-    if (scrolledDuringTap) {
-      card.__tapCanceled = true;
-      try { e && e.preventDefault && e.preventDefault(); } catch {}
-      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
-      return;
-    }
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
-    // Если страница ещё в состоянии скролла/инерции — игнорируем тап (гашение инерции)
-    const sinceScroll = performance.now() - (window.__lastScrollActivityTs || 0);
-    if (inertiaAtDown || (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) || sinceScroll < 300) {
-      try { e && e.preventDefault && e.preventDefault(); } catch {}
-      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
-      return;
-    }
     if (!shouldFire) return;
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
-    try {
-      navigate(`product.html?product=${product.id}`);
-    } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
+    try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
   };
   card.addEventListener('pointerdown', onPD, { passive: true });
   card.addEventListener('pointermove', onPM, { passive: true });
-  card.addEventListener('pointerup', onPU, { passive: false });
-  card.addEventListener('touchend', onPU, { passive: false });
-  // Подавляем «призрачный» click после гашения инерции (особенно iOS)
-  card.addEventListener('click', (e) => {
-    if (card.__tapCanceled || inertiaAtDown || (document.body && document.body.classList && document.body.classList.contains('is-scrolling'))) {
-      try { e.preventDefault(); } catch {}
-      try { e.stopPropagation(); } catch {}
-      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
-      card.__tapCanceled = false;
-    }
-  }, { capture: true });
+  card.addEventListener('pointerup', onPU, { passive: true });
+  card.addEventListener('touchend', onPU, { passive: true });
   
   return card;
 }
@@ -143,7 +120,10 @@ function createCategoryCard(category, index) {
     </div>
   `;
   
-  // Навигацию выполняем только через fast-tap, чтобы не ловить клик при гашении инерции
+  // Добавляем обработчик клика для перехода на страницу категории
+  card.addEventListener('click', () => {
+    navigate(`category.html?category=${encodeURIComponent(category.name)}`);
+  });
   // Fast-tap с защитой от скролла/удержания (такая же логика, как у карточек товаров)
   let ftStartX2 = 0, ftStartY2 = 0, ftStartTime2 = 0, ftScrollY2 = 0, ftScrollX2 = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
@@ -160,23 +140,10 @@ function createCategoryCard(category, index) {
       Math.abs(window.scrollX - ftScrollX2) > 0
     ) card.__ftMoved2 = true;
   };
-  const onPU2 = (e) => {
+  const onPU2 = () => {
     const dur = performance.now() - (ftStartTime2 || performance.now());
     const shouldFire = !card.__ftMoved2 && dur <= FT_HOLD;
-    const scrolledDuringTap2 = (Math.abs(window.scrollY - ftScrollY2) > 0) || (Math.abs(window.scrollX - ftScrollX2) > 0);
-    if (scrolledDuringTap2) {
-      card.__tapCanceled2 = true;
-      try { e && e.preventDefault && e.preventDefault(); } catch {}
-      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
-      return;
-    }
     ftStartTime2 = 0;
-    const now = performance.now(); const last = window.__lastScrollActivityTs || 0; const inertiaAtDown2 = (now - last) < 700; const sinceScroll2 = performance.now() - (window.__lastScrollActivityTs || 0);
-    if (inertiaAtDown2 || (document.body && document.body.classList && document.body.classList.contains('is-scrolling')) || sinceScroll2 < 300) {
-      try { e && e.preventDefault && e.preventDefault(); } catch {}
-      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
-      return;
-    }
     if (!shouldFire) return;
     if (card.__fastTapLock2) return;
     card.__fastTapLock2 = true;
@@ -184,16 +151,8 @@ function createCategoryCard(category, index) {
   };
   card.addEventListener('pointerdown', onPD2, { passive: true });
   card.addEventListener('pointermove', onPM2, { passive: true });
-  card.addEventListener('pointerup', onPU2, { passive: false });
-  card.addEventListener('touchend', onPU2, { passive: false });
-  card.addEventListener('click', (e) => {
-    if (card.__tapCanceled2) {
-      try { e.preventDefault(); } catch {}
-      try { e.stopPropagation(); } catch {}
-      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
-      card.__tapCanceled2 = false;
-    }
-  }, { capture: true });
+  card.addEventListener('pointerup', onPU2, { passive: true });
+  card.addEventListener('touchend', onPU2, { passive: true });
   
   return card;
 }
@@ -1042,10 +1001,10 @@ class SearchManager {
     });
 
   // Fast-tap с защитой от скролла/удержания
-  let sSX=0,sSY=0,sST=0,sScrollY=0,sScrollX=0, sInertia=false; const S_MOVE=8,S_HOLD=300;
-  const sPD=(e)=>{ sSX=e.clientX; sSY=e.clientY; sST=performance.now(); sScrollY=window.scrollY; sScrollX=window.scrollX; suggestion.__moved=false; const now=performance.now(); const last=window.__lastScrollActivityTs||0; sInertia=(now-last)<700; };
+  let sSX=0,sSY=0,sST=0,sScrollY=0,sScrollX=0; const S_MOVE=8,S_HOLD=300;
+  const sPD=(e)=>{ sSX=e.clientX; sSY=e.clientY; sST=performance.now(); sScrollY=window.scrollY; sScrollX=window.scrollX; suggestion.__moved=false; };
   const sPM=(e)=>{ if(!sST) return; if (Math.abs(e.clientX-sSX)>S_MOVE || Math.abs(e.clientY-sSY)>S_MOVE || Math.abs(window.scrollY-sScrollY)>0 || Math.abs(window.scrollX-sScrollX)>0) suggestion.__moved=true; };
-  const sPU=(e)=>{ const dur=performance.now()-(sST||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sST=0; if(!ok) return; if (sInertia) { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} return; } if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+  const sPU=(e)=>{ const dur=performance.now()-(sST||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sST=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
   suggestion.addEventListener('pointerdown', sPD, { passive: true });
   suggestion.addEventListener('pointermove', sPM, { passive: true });
   suggestion.addEventListener('pointerup', sPU, { passive: false });

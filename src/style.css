@@ -2000,8 +2000,6 @@ body.has-bottom-nav .product-cart-controls {
   flex-direction: column;
   gap: clamp(3px, 0.5vw, 5px);
   padding-bottom: 4px;
-  /* Явно отключаем жесты прокрутки на самой карточке, чтобы тап гасил инерцию без клика */
-  touch-action: manipulation;
 }
 
 @media (hover: hover) {
