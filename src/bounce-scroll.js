@@ -122,7 +122,7 @@ class BounceScroll {
       scrollTimeout = setTimeout(() => {
         document.body.classList.remove('is-scrolling');
         isScrolling = false;
-      }, 150);
+      }, 350);
     }, { passive: true });
   }
 
