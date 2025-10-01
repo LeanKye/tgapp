@@ -1051,6 +1051,13 @@ body.search-active .banner-slider {
 }
 
 
+/* Блокируем тапы по карточкам товаров во время скролла/баунса */
+body.is-scrolling .category-product-card {
+  pointer-events: none;
+  cursor: default;
+}
+
+
 
 /* Стили для информационной страницы */
 body.info-page {

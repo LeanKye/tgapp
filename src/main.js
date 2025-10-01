@@ -31,10 +31,6 @@ function createProductCard(product) {
   
   // Добавляем обработчик клика для перехода на страницу товара
   card.addEventListener('click', () => {
-    // Блокируем клики во время bounce эффекта
-    if (document.body.classList.contains('is-scrolling')) {
-      return;
-    }
     navigate(`product.html?product=${product.id}`);
   });
   // Fast-tap с защитой от скролла/удержания
@@ -43,11 +39,6 @@ function createProductCard(product) {
   const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
   const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
   const onPU = () => {
-    // Блокируем клики во время bounce эффекта
-    if (document.body.classList.contains('is-scrolling')) {
-      ftStartTime = 0;
-      return;
-    }
     const dur = performance.now() - (ftStartTime || performance.now());
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
@@ -84,6 +75,44 @@ function renderNewProducts() {
   }, 0);
 
   // Ленивая загрузка отключена — изображения грузятся сразу
+
+  // Помечаем состояние скролла при горизонтальной прокрутке «Новинок»,
+  // чтобы блокировать тапы по карточкам во время движения/баунса
+  if (container && !container.__scrollStateBound) {
+    let scrollTimeout;
+    const SCROLL_END_DELAY = 150;
+
+    const markScrolling = () => {
+      document.body.classList.add('is-scrolling');
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        document.body.classList.remove('is-scrolling');
+      }, SCROLL_END_DELAY);
+    };
+
+    const onScroll = () => {
+      markScrolling();
+    };
+
+    const onTouchStart = () => {
+      // Начало жеста — сразу помечаем как скролл, чтобы ловить rubber-band
+      document.body.classList.add('is-scrolling');
+    };
+    const onTouchMove = () => {
+      markScrolling();
+    };
+    const onTouchEnd = () => {
+      markScrolling();
+    };
+
+    container.addEventListener('scroll', onScroll, { passive: true });
+    container.addEventListener('touchstart', onTouchStart, { passive: true });
+    container.addEventListener('touchmove', onTouchMove, { passive: true });
+    container.addEventListener('touchend', onTouchEnd, { passive: true });
+
+    // Флаг, чтобы не навешивать обработчики повторно при ре-рендере
+    container.__scrollStateBound = true;
+  }
 }
 
 // Функция для рендеринга категорий
