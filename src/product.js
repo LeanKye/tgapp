@@ -652,20 +652,39 @@ function updateTabs(product) {
   }, 0);
   
   // Добавляем обработчики для переключения табов
-  tabs.forEach((tab, index) => {
-    tab.addEventListener('click', () => {
-      // Убираем активный класс у всех табов
-      tabs.forEach(t => t.classList.remove('tab-selected'));
-      // Добавляем активный класс к текущему табу
+  function activateTab(index) {
+    // Убираем активный класс у всех табов
+    tabs.forEach(t => t.classList.remove('tab-selected'));
+    // Добавляем активный класс к текущему табу
+    const tab = tabs[index];
+    if (tab) {
       tab.classList.add('tab-selected');
-      
-      // Обновляем положение полосочки
-      tabsContainer.setAttribute('data-active', index.toString());
-      updateTabIndicator(index);
-      
-      // Плавно обновляем содержимое с анимацией
-      smoothUpdateTabContent(tabsContent, index === 0 ? product.description : product.systemRequirements);
+    }
+    
+    // Обновляем положение полосочки
+    tabsContainer.setAttribute('data-active', index.toString());
+    updateTabIndicator(index);
+    
+    // Плавно обновляем содержимое с анимацией
+    smoothUpdateTabContent(tabsContent, index === 0 ? product.description : product.systemRequirements);
+  }
+
+  tabs.forEach((tab, index) => {
+    // Клик как резерв для десктопа/клавиатуры
+    tab.addEventListener('click', () => {
+      if (tab.__fastTapLock) return;
+      activateTab(index);
     });
+
+    // Fast-tap: работает во время bounce-скролла
+    let tx = 0, ty = 0, tt = 0, ssy = 0, ssx = 0; const MOVE = 8, HOLD = 300;
+    const pd = (e) => { tx = e.clientX; ty = e.clientY; tt = performance.now(); ssy = window.scrollY; ssx = window.scrollX; tab.__moved = false; };
+    const pm = (e) => { if (!tt) return; if (Math.abs(e.clientX - tx) > MOVE || Math.abs(e.clientY - ty) > MOVE || Math.abs(window.scrollY - ssy) > 0 || Math.abs(window.scrollX - ssx) > 0) tab.__moved = true; };
+    const pu = () => { const dur = performance.now() - (tt || performance.now()); const ok = !tab.__moved && dur <= HOLD; tt = 0; if (!ok) return; if (tab.__fastTapLock) return; tab.__fastTapLock = true; try { activateTab(index); } finally { setTimeout(() => { tab.__fastTapLock = false; }, 250); } };
+    tab.addEventListener('pointerdown', pd, { passive: true });
+    tab.addEventListener('pointermove', pm, { passive: true });
+    tab.addEventListener('pointerup', pu, { passive: true });
+    tab.addEventListener('touchend', pu, { passive: true });
   });
   
   // Обновляем позицию полосочки при изменении размера окна

@@ -1009,7 +1009,7 @@ body:has(.product) .add-to-cart:active {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(to bottom, transparent 0%, transparent 108px, rgba(0, 0, 0, 0.5) 108px);
+  background-color: rgba(0, 0, 0, 0.5);
   z-index: 10001;
   opacity: 0;
   visibility: hidden;
@@ -1019,7 +1019,7 @@ body:has(.product) .add-to-cart:active {
 
 /* Специальные стили для страницы категорий (хедер ниже без логотипа) */
 body:not(:has(.logo)) .search-overlay {
-  background: linear-gradient(to bottom, transparent 0%, transparent 76px, rgba(0, 0, 0, 0.5) 76px);
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .search-overlay.show {
@@ -1744,6 +1744,8 @@ body.has-bottom-nav .product-cart-controls {
   display: flex;
   gap: 20px;
   position: relative;
+  /* Разрешаем быструю обработку тапов, без задержки и конфликтов со скроллом */
+  touch-action: manipulation;
 }
 
 .tab {
@@ -1754,6 +1756,8 @@ body.has-bottom-nav .product-cart-controls {
   position: relative;
   font-size: 18px;
   font-weight: 500;
+  /* Обеспечиваем приоритет интерактивности во время bounce-скролла */
+  touch-action: manipulation;
 }
 
 /* Hover эффект только для устройств с мышью (не мобильные) */
@@ -2662,12 +2666,12 @@ body.has-bottom-nav .product-cart-controls {
 /* Адаптивные стили для мобильных */
 @media (max-width: 375px) {
   .search-overlay {
-    background: linear-gradient(to bottom, transparent 0%, transparent 100px, rgba(0, 0, 0, 0.5) 100px);
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   /* Страница категорий на мобильных */
   body:not(:has(.logo)) .search-overlay {
-    background: linear-gradient(to bottom, transparent 0%, transparent 68px, rgba(0, 0, 0, 0.5) 68px);
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   .add-to-cart {
@@ -3022,12 +3026,12 @@ body.has-bottom-nav .product-cart-controls {
 
 @media (min-width: 1024px) {
   .search-overlay {
-    background: linear-gradient(to bottom, transparent 0%, transparent 108px, rgba(0, 0, 0, 0.5) 108px);
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   /* Страница категорий на десктопе */
   body:not(:has(.logo)) .search-overlay {
-    background: linear-gradient(to bottom, transparent 0%, transparent 76px, rgba(0, 0, 0, 0.5) 76px);
+    background-color: rgba(0, 0, 0, 0.5);
   }
   
   .add-to-cart {

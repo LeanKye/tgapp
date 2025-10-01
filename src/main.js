@@ -653,6 +653,57 @@ class BannerSlider {
     container.addEventListener('pointerup', onPointerUpOrCancel);
     container.addEventListener('pointercancel', onPointerUpOrCancel);
 
+    // iOS/Android: страхующая блокировка вертикального скролла во время горизонтального свайпа
+    // Не дублируем саму логику перетягивания (её делают Pointer Events),
+    // а лишь предотвращаем нативный вертикальный скролл при распознанном горизонтальном жесте
+    let tActive = false; let tStartX = 0; let tStartY = 0; let tDirection = null; // 'horizontal' | 'vertical' | null
+    const onTouchStart = (e) => {
+      if (!e.touches || e.touches.length !== 1) return;
+      tActive = true;
+      tDirection = null;
+      tStartX = e.touches[0].clientX;
+      tStartY = e.touches[0].clientY;
+      // До распознавания направления — разрешаем вертикальную прокрутку
+      if (!originalTouchAction) originalTouchAction = container.style.touchAction || '';
+      container.style.touchAction = 'pan-y';
+    };
+    const onTouchMove = (e) => {
+      if (!tActive || !e.touches || e.touches.length !== 1) return;
+      const cx = e.touches[0].clientX;
+      const cy = e.touches[0].clientY;
+      if (tDirection === null) {
+        const absDx = Math.abs(cx - tStartX);
+        const absDy = Math.abs(cy - tStartY);
+        if (absDx > this.dragThreshold || absDy > this.dragThreshold) {
+          if (absDx > absDy) {
+            tDirection = 'horizontal';
+            // Блокируем нативную вертикальную прокрутку страницы на время горизонтального жеста
+            container.style.touchAction = 'none';
+          } else {
+            tDirection = 'vertical';
+            // Отдаём управление странице
+            tActive = false;
+            container.style.touchAction = originalTouchAction || 'pan-y';
+            return;
+          }
+        } else {
+          return;
+        }
+      }
+      if (tDirection === 'horizontal' && e.cancelable) {
+        e.preventDefault();
+      }
+    };
+    const onTouchEndCancel = () => {
+      tActive = false;
+      tDirection = null;
+      container.style.touchAction = originalTouchAction || 'pan-y';
+    };
+    container.addEventListener('touchstart', onTouchStart, { passive: false });
+    container.addEventListener('touchmove', onTouchMove, { passive: false });
+    container.addEventListener('touchend', onTouchEndCancel, { passive: true });
+    container.addEventListener('touchcancel', onTouchEndCancel, { passive: true });
+
     // Блокируем клики по баннерам после перетягивания
     this.allBanners.forEach((banner) => {
       banner.addEventListener('click', (e) => {
