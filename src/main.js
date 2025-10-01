@@ -989,6 +989,8 @@ class SearchManager {
     suggestion.addEventListener('click', () => {
       // Добавляем класс анимации
       suggestion.classList.add('clicked');
+      // Мгновенно скрываем overlay/поиск, чтобы не было просвета при переходе
+      this.deactivateSearch();
       
       // Небольшая задержка перед переходом для показа анимации
       setTimeout(() => {
@@ -1108,6 +1110,8 @@ class SearchManager {
   }
 
   selectProduct(product) {
+    // На всякий случай скрываем поиск/оверлей до навигации
+    this.deactivateSearch();
     // Очищаем поисковую строку
     this.searchInput.value = '';
     this.hideDropdown();
