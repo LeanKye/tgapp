@@ -107,6 +107,8 @@ class BounceScroll {
     let scrollTimeout;
 
     document.addEventListener('scroll', () => {
+      // Обновляем глобальную метку активности скролла (для распознавания гашения инерции)
+      try { window.__lastScrollActivityTs = performance.now(); } catch {}
       if (!isScrolling) {
         // Начало скролла
         document.body.classList.add('is-scrolling');
