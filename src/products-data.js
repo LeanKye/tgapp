@@ -41,7 +41,7 @@ export const products = {
       { id: 'edition-2', name: 'Photoshop + Lightroom', price: 1290,
         displayTitle: 'Adobe Photoshop + Lightroom',
         images: [
-          'img/flo.webp'
+          'img/adobecreativecloud.webp'
         ],
         periodPricing: {
           'period-1': 1290,
