@@ -90,17 +90,39 @@ class BounceScroll {
     
     document.addEventListener('touchstart', (e) => {
       touchStartTime = Date.now();
+      try { window.__lastTouchStartTs = performance.now(); } catch {}
     }, { passive: true });
 
+    // Глобальный подавитель «призрачных» кликов после инерции на iOS
+    let suppressClickUntilTs = 0;
+    const CLICK_SUPPRESS_WINDOW_MS = 500; // окно гашения клика
+    const SCROLL_RECENT_MS = 800; // считаем скролл «недавним»
+    const SHORT_TAP_MS = 220; // короткий тап — вероятнее гашение инерции
+
     document.addEventListener('touchend', (e) => {
+      const now = performance.now();
       const touchDuration = Date.now() - touchStartTime;
-      
-      // Оптимизируем короткие касания
-      if (touchDuration < 150) {
-        // Короткое касание - оставляем как есть
-        return;
+      const lastScrollTs = window.__lastScrollActivityTs || 0;
+      const sinceScroll = now - lastScrollTs;
+      // Если короткий тап вскоре после скролла — подавим следующий click на карточках
+      if (sinceScroll < SCROLL_RECENT_MS && touchDuration < SHORT_TAP_MS) {
+        suppressClickUntilTs = now + CLICK_SUPPRESS_WINDOW_MS;
       }
     }, { passive: true });
+
+    document.addEventListener('click', (e) => {
+      const now = performance.now();
+      if (now <= suppressClickUntilTs) {
+        const target = e.target;
+        if (target && (target.closest && (target.closest('.category-product-card') || target.closest('.category-card')))) {
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+          try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
+          // Сбрасываем окно подавления после блокировки
+          suppressClickUntilTs = 0;
+        }
+      }
+    }, { capture: true, passive: false });
 
     // Улучшаем поведение на границах скролла
     let isScrolling = false;
