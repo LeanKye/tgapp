@@ -1,6 +1,6 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
- 
+
 // Универсальная навигация: используем стек AppNav при наличии
 function navigate(path) {
   if (window.AppNav && typeof window.AppNav.go === 'function') {
@@ -9,6 +9,51 @@ function navigate(path) {
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
   const normalized = path.startsWith('/') ? path.slice(1) : path;
   window.location.href = basePath + normalized;
+}
+
+// Отслеживание состояния скролла страницы
+let isPageScrolling = false;
+let isHorizontalScrolling = false;
+let pageScrollTimer = null;
+let lastScrollY = 0;
+
+// Инициализация отслеживания вертикального скролла страницы
+function initPageScrollTracking() {
+  // Отслеживаем вертикальный скролл страницы
+  window.addEventListener('scroll', () => {
+    const currentScrollY = window.scrollY;
+    
+    // Определяем, что это именно вертикальный скролл
+    if (Math.abs(currentScrollY - lastScrollY) > 0) {
+      isPageScrolling = true;
+      
+      // Сбрасываем таймер
+      clearTimeout(pageScrollTimer);
+      
+      // Устанавливаем таймер для сброса флага после окончания скролла
+      pageScrollTimer = setTimeout(() => {
+        isPageScrolling = false;
+      }, 150);
+    }
+    
+    lastScrollY = currentScrollY;
+  }, { passive: true });
+}
+
+// Инициализация отслеживания горизонтального скролла в блоке "Новинки"
+function initHorizontalScrollTracking() {
+  const slider = document.querySelector('.category-products-slider');
+  if (slider) {
+    let scrollTimer = null;
+    slider.addEventListener('scroll', () => {
+      isHorizontalScrolling = true;
+      
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(() => {
+        isHorizontalScrolling = false;
+      }, 150);
+    }, { passive: true });
+  }
 }
  
 
@@ -30,22 +75,54 @@ function createProductCard(product) {
   `;
   
   // Добавляем обработчик клика для перехода на страницу товара
-  card.addEventListener('click', () => {
+  card.addEventListener('click', (e) => {
+    // Блокируем клик если идет вертикальный скролл страницы
+    if (isPageScrolling && !isHorizontalScrolling) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     navigate(`product.html?product=${product.id}`);
   });
+  
   // Fast-tap с защитой от скролла/удержания
   let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
   const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
-  const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
+  const onPD = (e) => { 
+    ftStartX = e.clientX; 
+    ftStartY = e.clientY; 
+    ftStartTime = performance.now(); 
+    ftScrollY = window.scrollY; 
+    ftScrollX = window.scrollX; 
+    card.__ftMoved = false;
+  };
+  const onPM = (e) => { 
+    if (!ftStartTime) return; 
+    if (Math.abs(e.clientX - ftStartX) > FT_MOVE || 
+        Math.abs(e.clientY - ftStartY) > FT_MOVE || 
+        Math.abs(window.scrollY - ftScrollY) > 0 || 
+        Math.abs(window.scrollX - ftScrollX) > 0) {
+      card.__ftMoved = true;
+    }
+  };
   const onPU = () => {
     const dur = performance.now() - (ftStartTime || performance.now());
     const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
     ftStartTime = 0;
     if (!shouldFire) return;
+    
+    // Блокируем fast-tap если идет вертикальный скролл страницы
+    if (isPageScrolling && !isHorizontalScrolling) {
+      return;
+    }
+    
     if (card.__fastTapLock) return;
     card.__fastTapLock = true;
-    try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
+    try { 
+      navigate(`product.html?product=${product.id}`); 
+    } finally { 
+      setTimeout(() => { card.__fastTapLock = false; }, 300); 
+    }
   };
   card.addEventListener('pointerdown', onPD, { passive: true });
   card.addEventListener('pointermove', onPM, { passive: true });
@@ -1466,10 +1543,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Сохраняем экземпляр SearchManager в глобальной переменной для доступа из других функций
   window.searchManager = searchManager;
   const psPlusManager = new PSPlusManager();
+  
+  // Инициализируем отслеживание скролла страницы
+  initPageScrollTracking();
   const clickBlocker = new ClickBlocker();
   
   // Рендерим товары
   renderNewProducts();
+  
+  // Инициализируем отслеживание горизонтального скролла после рендеринга товаров
+  initHorizontalScrollTracking();
   
   // Рендерим категории на главной странице
   renderCategories();
