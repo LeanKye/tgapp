@@ -75,44 +75,6 @@ function renderNewProducts() {
   }, 0);
 
   // Ленивая загрузка отключена — изображения грузятся сразу
-
-  // Помечаем состояние скролла при горизонтальной прокрутке «Новинок»,
-  // чтобы блокировать тапы по карточкам во время движения/баунса
-  if (container && !container.__scrollStateBound) {
-    let scrollTimeout;
-    const SCROLL_END_DELAY = 150;
-
-    const markScrolling = () => {
-      document.body.classList.add('is-scrolling');
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        document.body.classList.remove('is-scrolling');
-      }, SCROLL_END_DELAY);
-    };
-
-    const onScroll = () => {
-      markScrolling();
-    };
-
-    const onTouchStart = () => {
-      // Начало жеста — сразу помечаем как скролл, чтобы ловить rubber-band
-      document.body.classList.add('is-scrolling');
-    };
-    const onTouchMove = () => {
-      markScrolling();
-    };
-    const onTouchEnd = () => {
-      markScrolling();
-    };
-
-    container.addEventListener('scroll', onScroll, { passive: true });
-    container.addEventListener('touchstart', onTouchStart, { passive: true });
-    container.addEventListener('touchmove', onTouchMove, { passive: true });
-    container.addEventListener('touchend', onTouchEnd, { passive: true });
-
-    // Флаг, чтобы не навешивать обработчики повторно при ре-рендере
-    container.__scrollStateBound = true;
-  }
 }
 
 // Функция для рендеринга категорий
