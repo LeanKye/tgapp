@@ -180,7 +180,7 @@ function setActiveItem() {
             : file.includes('cart') ? 'cart'
             : file.includes('category') ? 'categories'
             : file.includes('index') ? 'home'
-            : file.includes('product') ? ''
+            : file.includes('product') ? 'home' // На карточке товара визуально остаёмся на «Главной»
             : file.includes('info') ? ''
             : '';
   document.querySelectorAll('.bottom-nav .nav-item').forEach((btn) => {
