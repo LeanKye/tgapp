@@ -33,24 +33,6 @@ function createProductCard(product) {
   card.addEventListener('click', () => {
     navigate(`product.html?product=${product.id}`);
   });
-  // Fast-tap с защитой от скролла/удержания
-  let ftStartX = 0, ftStartY = 0, ftStartTime = 0, ftScrollY = 0, ftScrollX = 0;
-  const FT_MOVE = 8; const FT_HOLD = 300;
-  const onPD = (e) => { ftStartX = e.clientX; ftStartY = e.clientY; ftStartTime = performance.now(); ftScrollY = window.scrollY; ftScrollX = window.scrollX; card.__ftMoved = false; };
-  const onPM = (e) => { if (!ftStartTime) return; if (Math.abs(e.clientX - ftStartX) > FT_MOVE || Math.abs(e.clientY - ftStartY) > FT_MOVE || Math.abs(window.scrollY - ftScrollY) > 0 || Math.abs(window.scrollX - ftScrollX) > 0) card.__ftMoved = true; };
-  const onPU = () => {
-    const dur = performance.now() - (ftStartTime || performance.now());
-    const shouldFire = !card.__ftMoved && dur <= FT_HOLD;
-    ftStartTime = 0;
-    if (!shouldFire) return;
-    if (card.__fastTapLock) return;
-    card.__fastTapLock = true;
-    try { navigate(`product.html?product=${product.id}`); } finally { setTimeout(() => { card.__fastTapLock = false; }, 300); }
-  };
-  card.addEventListener('pointerdown', onPD, { passive: true });
-  card.addEventListener('pointermove', onPM, { passive: true });
-  card.addEventListener('pointerup', onPU, { passive: true });
-  card.addEventListener('touchend', onPU, { passive: true });
   
   return card;
 }
