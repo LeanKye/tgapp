@@ -791,6 +791,17 @@ class SearchManager {
     this.init();
   }
 
+  // Поглощает следующий click на документе (capture), чтобы iOS/Android не "прокликивали" нижний слой
+  swallowNextClickOnce() {
+    const blocker = (e) => {
+      try { e.preventDefault(); } catch {}
+      try { e.stopPropagation(); } catch {}
+      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
+      document.removeEventListener('click', blocker, true);
+    };
+    document.addEventListener('click', blocker, true);
+  }
+
   init() {
     // Обработчик ввода в поисковую строку
     this.searchInput.addEventListener('input', (e) => {
@@ -975,12 +986,23 @@ class SearchManager {
       <div class="search-suggestion-price">${formatPriceCard(product.price)}</div>
     `;
 
+    // Гасим pointerdown сразу, чтобы событие не ушло на элементы под dropdown при быстрых тапах
+    suggestion.addEventListener('pointerdown', (e) => {
+      try { e.preventDefault(); } catch {}
+      try { e.stopPropagation(); } catch {}
+      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
+      // Дополнительно страхуемся на уровне документа
+      this.swallowNextClickOnce();
+    }, { passive: false });
+
     // Обработчик клика по предложению с анимацией
     suggestion.addEventListener('click', (e) => {
       // Блокируем дальнейшее всплытие/дефолт, чтобы клик не попал на баннеры под dropdown
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
       try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
+      // Поглощаем потенциальный "вторичный" click на документе (iOS Safari)
+      this.swallowNextClickOnce();
       // Добавляем класс анимации
       suggestion.classList.add('clicked');
       
@@ -997,8 +1019,8 @@ class SearchManager {
   const sPU=(e)=>{ const dur=performance.now()-(sST||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sST=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
   suggestion.addEventListener('pointerdown', sPD, { passive: true });
   suggestion.addEventListener('pointermove', sPM, { passive: true });
-  suggestion.addEventListener('pointerup', sPU, { passive: false });
-  suggestion.addEventListener('touchend', sPU, { passive: false });
+  suggestion.addEventListener('pointerup', (e) => { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} this.swallowNextClickOnce(); sPU(e); }, { passive: false });
+  suggestion.addEventListener('touchend', (e) => { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} this.swallowNextClickOnce(); sPU(e); }, { passive: false });
 
     return suggestion;
   }
