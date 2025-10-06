@@ -1279,11 +1279,26 @@ function initPayment() {
   let bx=0,by=0,bt=0,bsy=0,bsx=0; const MOVEB=8,HOLDB=300;
   const bpd=(e)=>{ bx=e.clientX; by=e.clientY; bt=performance.now(); bsy=window.scrollY; bsx=window.scrollX; buyButton.__moved=false; };
   const bpm=(e)=>{ if(!bt) return; if(Math.abs(e.clientX-bx)>MOVEB||Math.abs(e.clientY-by)>MOVEB||Math.abs(window.scrollY-bsy)>0||Math.abs(window.scrollX-bsx)>0) buyButton.__moved=true; };
-  const bpu=()=>{ const dur=performance.now()-(bt||performance.now()); const ok=!buyButton.__moved && dur<=HOLDB; bt=0; if(!ok) return; if (buyButton.__fastTapLock) return; buyButton.__fastTapLock=true; try { handleAddToCartFromProduct(); } finally { setTimeout(()=>{ buyButton.__fastTapLock=false; }, 300);} };
+  const bpu=()=>{ const dur=performance.now()-(bt||performance.now()); const ok=!buyButton.__moved && dur<=HOLDB; bt=0; if(!ok) return; if (buyButton.__fastTapLock) return; 
+    // Блокируем на время анимации; если анимация идёт — игнорируем тап
+    if (document.body.classList.contains('cart-morph-active') || document.body.classList.contains('cart-morph-reverse')) return;
+    buyButton.__fastTapLock=true; try {
+    // Если кнопка в морфнутом состоянии — ведём в корзину
+    if (buyButton.classList.contains('morphed')) {
+      if (window.AppNav && typeof window.AppNav.go === 'function') {
+        window.AppNav.go('cart.html');
+      } else {
+        const basePath = window.location.pathname.replace(/[^/]*$/, '');
+        window.location.href = basePath + 'cart.html';
+      }
+    } else {
+      handleAddToCartFromProduct();
+    }
+  } finally { setTimeout(()=>{ buyButton.__fastTapLock=false; }, 650);} };
   buyButton.addEventListener('pointerdown', bpd, { passive: true });
   buyButton.addEventListener('pointermove', bpm, { passive: true });
   buyButton.addEventListener('pointerup', bpu, { passive: true });
-  buyButton.addEventListener('touchend', bpu, { passive: true });
+  // Для надёжности используем только pointer-события (без touchend во избежание дублей)
 }
 
 // Обработчик клика по кнопке "Купить"
@@ -1369,54 +1384,97 @@ function setCartItem(product, qty, selectedOptions) {
   window.dispatchEvent(new Event('cart:updated'));
 }
 
-function renderBuyOrControls(product) {
-  // Удаляем старые элементы
+function renderBuyOrControls(product, animate = false) {
+  const buyBtn = document.querySelector('.add-to-cart');
   const oldControls = document.querySelector('.product-cart-controls');
-  if (oldControls) oldControls.remove();
-
+  
   // Проверяем наличие именно текущей конфигурации
   const selectedOptions = getSelectedOptions();
   const cartItem = selectedOptions ? getCartItem(product, selectedOptions) : null;
-  if (!cartItem) return; // показываем стандартную кнопку "Добавить в корзину"
-
-  // Скрываем стандартную кнопку
-  const buyBtn = document.querySelector('.add-to-cart');
-  if (buyBtn) buyBtn.style.display = 'none';
-
-  // Рендер контролов
-  const controls = document.createElement('div');
-  controls.className = 'product-cart-controls';
-  controls.innerHTML = `
-    <button class="reset-Button go-to-cart">Перейти в корзину</button>
-    <div class="qty-box">
-      <button class="reset-Button qty-btn" data-action="dec">−</button>
-      <span class="qty-value">${cartItem.qty || 1}</span>
-      <button class="reset-Button qty-btn" data-action="inc">+</button>
-    </div>
-  `;
-  document.body.appendChild(controls);
-
-  // Обработчики
-  const goToCartBtn = controls.querySelector('.go-to-cart');
-  const goToCart = () => {
-    if (window.AppNav && typeof window.AppNav.go === 'function') {
-      return window.AppNav.go('cart.html');
+  
+  // Если нет товара в корзине - показываем кнопку "Добавить в корзину"
+  if (!cartItem) {
+    if (oldControls) {
+      // Анимированное скрытие контролов и показ кнопки
+      if (animate) {
+        // Мгновенно меняем текст, чтобы он был виден в процессе анимации
+        if (buyBtn) buyBtn.textContent = 'Добавить в корзину';
+        document.body.classList.add('cart-morph-reverse');
+        setTimeout(() => {
+          oldControls.remove();
+          if (buyBtn) {
+            buyBtn.classList.remove('morphed');
+          }
+          document.body.classList.remove('cart-morph-reverse');
+        }, 400);
+      } else {
+        oldControls.remove();
+        if (buyBtn) {
+          buyBtn.classList.remove('morphed');
+          buyBtn.textContent = 'Добавить в корзину';
+        }
+      }
     }
-    const basePath = window.location.pathname.replace(/[^/]*$/, '');
-    window.location.href = basePath + 'cart.html';
-  };
-  // click не используем, чтобы избежать дубля с fast-tap
-  // Fast-tap для перехода в корзину
-  // Fast-tap с защитой от скролла/удержания
-  let cx=0,cy=0,ct=0,csy=0,csx=0; const MOVEC=8,HOLDC=300;
-  const cpd=(e)=>{ cx=e.clientX; cy=e.clientY; ct=performance.now(); csy=window.scrollY; csx=window.scrollX; goToCartBtn.__moved=false; };
-  const cpm=(e)=>{ if(!ct) return; if(Math.abs(e.clientX-cx)>MOVEC||Math.abs(e.clientY-cy)>MOVEC||Math.abs(window.scrollY-csy)>0||Math.abs(window.scrollX-csx)>0) goToCartBtn.__moved=true; };
-  const cpu=()=>{ const dur=performance.now()-(ct||performance.now()); const ok=!goToCartBtn.__moved && dur<=HOLDC; ct=0; if(!ok) return; if(goToCartBtn.__fastTapLock) return; goToCartBtn.__fastTapLock=true; try { goToCart(); } finally { setTimeout(()=>{ goToCartBtn.__fastTapLock=false; }, 300);} };
-  goToCartBtn.addEventListener('pointerdown', cpd, { passive: true });
-  goToCartBtn.addEventListener('pointermove', cpm, { passive: true });
-  goToCartBtn.addEventListener('pointerup', cpu, { passive: true });
-  goToCartBtn.addEventListener('touchend', cpu, { passive: true });
+    return;
+  }
 
+  // Если товар есть в корзине - показываем контролы
+  if (!oldControls) {
+    // Создаем контролы
+    const controls = document.createElement('div');
+    controls.className = 'product-cart-controls';
+  controls.innerHTML = `
+      <div class="qty-box">
+        <button class="reset-Button qty-btn" data-action="dec">−</button>
+        <span class="qty-value">${cartItem.qty || 1}</span>
+        <button class="reset-Button qty-btn" data-action="inc">+</button>
+      </div>
+    `;
+    
+    if (animate && buyBtn) {
+      // Помечаем активный морфинг, текст меняем сразу
+      document.body.classList.add('cart-morph-active');
+      buyBtn.classList.add('morphed');
+      buyBtn.textContent = 'Перейти в корзину';
+
+      // Добавляем контролы справа
+      document.body.appendChild(controls);
+      controls.classList.add('appearing');
+
+      // Снимаем флаг cart-morph-active по окончании анимаций
+      const onEnd = (e) => {
+        if (!e || !e.target || !e.animationName) return;
+        if (e.animationName === 'morphToGreen' || e.animationName === 'slideInFromRight') {
+          controls.classList.remove('appearing');
+          document.body.classList.remove('cart-morph-active');
+          buyBtn.removeEventListener('animationend', onEnd, true);
+          controls.removeEventListener('animationend', onEnd, true);
+        }
+      };
+      buyBtn.addEventListener('animationend', onEnd, true);
+      controls.addEventListener('animationend', onEnd, true);
+    } else {
+      // Без анимации: кнопка остаётся слева, добавляем контролы справа
+      if (buyBtn) {
+        buyBtn.classList.add('morphed');
+        buyBtn.textContent = 'Перейти в корзину';
+      }
+      document.body.appendChild(controls);
+    }
+    
+    // Добавляем обработчики для новых контролов
+    attachCartControlHandlers(controls, product);
+  } else {
+    // Обновляем количество в существующих контролах
+    const qtyValue = oldControls.querySelector('.qty-value');
+    if (qtyValue) {
+      qtyValue.textContent = String(cartItem.qty || 1);
+    }
+  }
+}
+
+// Отдельная функция для навешивания обработчиков на контролы корзины
+function attachCartControlHandlers(controls, product) {
   const clickHandler = (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -1427,17 +1485,22 @@ function renderBuyOrControls(product) {
     if (action === 'dec') nextQty -= 1;
     setCartItem(product, nextQty, getSelectedOptions());
 
-    // Если удалили последний — вернуть кнопку «Купить»
+    // Если удалили последний — анимированно вернуть кнопку «Купить»
     if (nextQty <= 0) {
-      controls.remove();
-      if (buyBtn) {
-        buyBtn.style.display = 'block';
+      // Защита от повторного запуска во время обратной анимации
+      if (!document.body.classList.contains('cart-morph-reverse')) {
+        document.body.classList.add('cart-morph-reverse');
       }
+      renderBuyOrControls(product, true); // С анимацией
     } else {
-      controls.querySelector('.qty-value').textContent = String(nextQty);
+      // Анимация изменения количества
+      const qtyValue = controls.querySelector('.qty-value');
+      qtyValue.classList.add('qty-bounce');
+      qtyValue.textContent = String(nextQty);
+      setTimeout(() => qtyValue.classList.remove('qty-bounce'), 200);
     }
   };
-  // click не используем, чтобы избежать дубля с fast-tap
+  
   // Fast-tap для −/+ с защитой от скролла/удержания
   let qx=0,qy=0,qt=0,qsy=0,qsx=0; const MOVEQ=8,HOLDQ=300;
   const qpd=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; qx=e.clientX; qy=e.clientY; qt=performance.now(); qsy=window.scrollY; qsx=window.scrollX; btn.__moved=false; btn.__ftTarget=true; };
@@ -1455,7 +1518,7 @@ function handleAddToCartFromProduct() {
   const existing = getCartItem(product, selectedOptions || undefined);
   const qty = existing ? (existing.qty || 1) + 1 : 1;
   setCartItem(product, qty, selectedOptions || undefined);
-  renderBuyOrControls(product);
+  renderBuyOrControls(product, true); // С анимацией при первом добавлении
 }
 
 // Обновление состояния нижней кнопки/контролов в зависимости от выбранных опций
@@ -1465,13 +1528,21 @@ function refreshBuyControls(product) {
   const options = getSelectedOptions();
   const exists = options ? getCartItem(product, options) : null;
   if (exists) {
-    if (!controls) {
-      renderBuyOrControls(product);
+    // Обеспечиваем наличие контролов и morphed-состояние кнопки (не скрываем её)
+    if (!controls) renderBuyOrControls(product, false);
+    if (buyBtn) {
+      buyBtn.classList.add('morphed');
+      buyBtn.textContent = 'Перейти в корзину';
+      buyBtn.style.display = '';
     }
-    if (buyBtn) buyBtn.style.display = 'none';
   } else {
+    // Нет товара — убираем контролы и возвращаем кнопку в исходное состояние
     if (controls) controls.remove();
-    if (buyBtn) buyBtn.style.display = 'block';
+    if (buyBtn) {
+      buyBtn.classList.remove('morphed');
+      buyBtn.textContent = 'Добавить в корзину';
+      buyBtn.style.display = '';
+    }
   }
 }
 

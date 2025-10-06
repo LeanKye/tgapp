@@ -481,6 +481,150 @@ body:has(.product) .add-to-cart:active {
   transform: none;
 }
 
+/* ===== Анимация морфинга кнопки "Добавить в корзину" как в OZON ===== */
+
+/* Состояние кнопки при морфинге */
+.add-to-cart.morphed {
+  /* Для статических состояний; во время keyframes отключаем */
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background-color: #13b64c;
+  width: calc(50% - 4px);
+  left: 16px;
+  right: auto;
+  opacity: 0.95;
+  white-space: nowrap;
+}
+
+/* Активная анимация морфинга */
+body.cart-morph-active .add-to-cart {
+  animation: morphToGreen 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+  transition: none !important;
+}
+
+@keyframes morphToGreen {
+  0% {
+    background-color: #29A5FF;
+    width: calc(100% - 32px);
+    left: 16px;
+    right: 16px;
+  }
+  60% {
+    background-color: #13b64c;
+    width: calc(50% - 4px);
+    left: 16px;
+    right: auto;
+  }
+  100% {
+    background-color: #13b64c;
+    width: calc(50% - 4px);
+    left: 16px;
+    right: auto;
+    opacity: 0.95;
+  }
+}
+
+/* Обратная анимация при удалении из корзины */
+body.cart-morph-reverse .add-to-cart {
+  animation: morphToBlue 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+  transition: none !important;
+}
+
+@keyframes morphToBlue {
+  0% {
+    background-color: #13b64c;
+    width: calc(50% - 4px);
+    left: 16px;
+    right: auto;
+    opacity: 0.95;
+  }
+  40% {
+    background-color: #29A5FF;
+    width: calc(100% - 32px);
+    left: 16px;
+    right: 16px;
+  }
+  100% {
+    background-color: #29A5FF;
+    width: calc(100% - 32px);
+    left: 16px;
+    right: 16px;
+    opacity: 1;
+  }
+}
+
+/* Контролы корзины с анимацией появления */
+.product-cart-controls {
+  position: fixed;
+  left: calc(50% + 4px);
+  right: 16px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  z-index: 2000;
+  align-items: center;
+  opacity: 1;
+  transform: translateX(0);
+  transition: all 0.2s ease-out;
+}
+
+/* Анимация появления контролов */
+.product-cart-controls.appearing {
+  animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+  transition: none !important;
+}
+
+@keyframes slideInFromRight {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Обратная анимация скрытия контролов */
+body.cart-morph-reverse .product-cart-controls {
+  animation: slideOutToRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  pointer-events: none;
+  transition: none !important;
+}
+
+@keyframes slideOutToRight {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  40% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+}
+
+/* Анимация изменения количества */
+.qty-value.qty-bounce {
+  animation: qtyBounce 0.2s ease-out;
+}
+
+@keyframes qtyBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
 .text-gray {
   color: #868480;
 }
@@ -1374,34 +1518,16 @@ body.has-checkout-bar .catalog {
   padding-bottom: calc(var(--bottom-nav-height) + 56px + env(safe-area-inset-bottom));
 }
 /* ===== Контролы товара (перейти в корзину + счётчик) ===== */
-.product-cart-controls {
-  position: fixed;
-  left: 16px;
-  right: 16px;
-  bottom: calc(10px + env(safe-area-inset-bottom));
-  display: flex;
-  gap: 8px;
-  z-index: 2000; /* выше подложки и навбара */
-  align-items: center;
-}
+/* Базовые стили перенесены в анимацию выше, здесь только дополнительные */
 
-.product-cart-controls .go-to-cart {
-  flex: 1;
-  background-color: #13b64c;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  height: 46px;
-  font-size: clamp(13px, 3.8vw, 16px);
-  font-weight: 600;
-}
+/* Кнопки перехода в корзину больше нет — оставляем только степпер */
 
 .product-cart-controls .qty-box {
   display: flex;
   align-items: center;
   gap: 6px;
   border-radius: 8px;
-  padding: 6px 8px;
+  padding: 4px;
   height: 46px;
   box-sizing: border-box;
 }
@@ -1413,8 +1539,10 @@ body.has-checkout-bar .catalog {
   color: #fff;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 18px;
 }
+
+/* hover/active как было раньше — без визуальных эффектов */
 
 .product-cart-controls .qty-value {
   width: 45px;
