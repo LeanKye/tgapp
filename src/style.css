@@ -1229,7 +1229,7 @@ body.keyboard-open .bottom-nav {
 }
 
 .bottom-nav .nav-item span {
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
 }
 
@@ -1264,7 +1264,7 @@ body.keyboard-open .bottom-nav {
 
 @media (max-width: 375px) {
   :root { --bottom-nav-height: 48px; }
-  .bottom-nav .nav-item span { font-size: 10px; }
+  .bottom-nav .nav-item span { font-size: 9px; }
 }
 
 /* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
