@@ -1487,10 +1487,11 @@ function attachCartControlHandlers(controls, product) {
 
     // Если удалили последний — анимированно вернуть кнопку «Купить»
     if (nextQty <= 0) {
-      // Защита от повторного запуска во время обратной анимации
-      if (!document.body.classList.contains('cart-morph-reverse')) {
-        document.body.classList.add('cart-morph-reverse');
-      }
+      // Обратная анимация: сначала уводим контролы, затем расширяем кнопку
+      if (!document.body.classList.contains('cart-morph-reverse')) document.body.classList.add('cart-morph-reverse');
+      // Смена текста сразу, чтобы во время расширения был «Добавить в корзину»
+      const buyBtn = document.querySelector('.add-to-cart');
+      if (buyBtn) buyBtn.textContent = 'Добавить в корзину';
       renderBuyOrControls(product, true); // С анимацией
     } else {
       // Анимация изменения количества

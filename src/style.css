@@ -529,6 +529,8 @@ body.cart-morph-reverse .add-to-cart {
   animation: morphToBlue 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
   transition: none !important;
+  /* Синхронизация обратного морфинга: сначала уезжают контролы, затем расширяется кнопка */
+  animation-delay: 0.05s;
 }
 
 @keyframes morphToBlue {
@@ -574,6 +576,11 @@ body.cart-morph-reverse .add-to-cart {
 .product-cart-controls.appearing {
   animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
+  /* Синхронизация со сжатием левой кнопки: запускаем позже */
+  animation-delay: 0.18s;
+  /* Исключаем мерцание до старта анимации */
+  opacity: 0;
+  will-change: transform, opacity;
   transition: none !important;
 }
 
@@ -597,6 +604,8 @@ body.cart-morph-reverse .product-cart-controls {
   animation: slideOutToRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
   transition: none !important;
+  /* Начинаем сразу, чтобы освободить место под расширение кнопки */
+  animation-delay: 0s;
 }
 
 @keyframes slideOutToRight {
