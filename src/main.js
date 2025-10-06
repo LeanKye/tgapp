@@ -850,6 +850,14 @@ class SearchManager {
     };
     this.searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
     this.searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
+    // Расширяем область активации: реагируем на тап по всему контейнеру поиска
+    try {
+      const inputContainer = this.searchInput.closest('.input-container');
+      if (inputContainer) {
+        inputContainer.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
+        inputContainer.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
+      }
+    } catch {}
     
     // Обработчик для закрытия поиска при клике на оверлей
     const searchOverlay = document.getElementById('search-overlay');
