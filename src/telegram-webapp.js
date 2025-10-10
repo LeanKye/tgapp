@@ -37,8 +37,7 @@ class TelegramWebApp {
     // Управление кнопками
     this.updateTelegramHeader();
 
-    // Неблокирующая предзагрузка страниц и ключевых ассетов
-    this.schedulePrefetch();
+    // Предзагрузка страниц отключена — прогружаем только по факту перехода
   }
 
 
@@ -117,55 +116,8 @@ class TelegramWebApp {
     return basePath + 'index.html';
   }
 
-  // Неблокирующая предзагрузка других HTML-страниц и небольших ассетов
-  schedulePrefetch() {
-    const run = () => {
-      try {
-        // Учитываем экономию трафика и очень медленные сети
-        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-        if (conn && (conn.saveData || (conn.effectiveType && ['slow-2g', '2g'].includes(conn.effectiveType)))) {
-          return; // не предзагружаем в режимах экономии/очень медленной сети
-        }
-
-        const basePath = window.location.pathname.replace(/[^/]*$/, '');
-        const allPages = ['index.html', 'category.html', 'product.html', 'cart.html', 'profile.html', 'info.html'];
-
-        // Определяем файл текущей страницы, чтобы не дублировать
-        const currentFile = window.location.pathname.split('/').pop() || 'index.html';
-        const pagesToPrefetch = allPages.filter(p => p !== currentFile);
-
-        // Предзагрузка HTML-документов
-        pagesToPrefetch.forEach((page) => {
-          const link = document.createElement('link');
-          link.rel = 'prefetch';
-          link.as = 'document';
-          link.href = basePath + page;
-          link.crossOrigin = 'anonymous';
-          document.head.appendChild(link);
-        });
-
-        // Небольшие часто используемые изображения (иконки оплаты и т.п.)
-        const images = ['/img/sbp.svg', '/img/mir.svg'];
-        images.forEach((src) => {
-          const link = document.createElement('link');
-          link.rel = 'prefetch';
-          link.as = 'image';
-          link.href = src;
-          link.crossOrigin = 'anonymous';
-          document.head.appendChild(link);
-        });
-      } catch (e) {
-        // Молча игнорируем ошибки предзагрузки
-      }
-    };
-
-    // Планируем на простой, чтобы не мешать первому рендеру
-    if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(run, { timeout: 3000 });
-    } else {
-      setTimeout(run, 800);
-    }
-  }
+  // Предзагрузка отключена — оставляем заглушку, чтобы не ломать вызовы, если появятся в будущем
+  schedulePrefetch() {}
 }
 
 // Глобальная переменная для доступа к экземпляру
