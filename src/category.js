@@ -173,8 +173,8 @@ class CategoryPage {
   // Обработчик для блокировки всех кликов при активном поиске
   document.addEventListener('click', (e) => {
     if (this.isSearchActive) {
-      // Разрешаем клики внутри header и внутри открытого меню
-      if (e.target.closest('.header-container') || e.target.closest('#menu')) {
+      // Разрешаем клики только в зоне поиска и в меню (если оно есть)
+      if (e.target.closest('.search-container') || e.target.closest('#menu')) {
         return;
       }
       e.preventDefault();

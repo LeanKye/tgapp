@@ -925,8 +925,8 @@ class SearchManager {
   // Обработчик для блокировки всех кликов при активном поиске
   document.addEventListener('click', (e) => {
     if (this.isSearchActive) {
-      // Разрешаем клики внутри header
-      if (e.target.closest('.header-container')) {
+      // Разрешаем клики только в зоне поиска
+      if (e.target.closest('.search-container')) {
         return;
       }
       e.preventDefault();
