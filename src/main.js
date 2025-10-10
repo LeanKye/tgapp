@@ -858,14 +858,24 @@ class SearchManager {
         }
       } catch {}
     };
-    this.searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
-    this.searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
-    // Расширяем область активации: реагируем на тап по всему контейнеру поиска
+    // Fast-tap: фокус только по короткому тапу (не при свайпе)
+    let tSX = 0, tSY = 0, tST = 0, tScY = 0, tScX = 0; const T_MOVE = 8, T_HOLD = 300; let tMoved = false;
+    const onTapPD = (e) => { tSX = e.clientX; tSY = e.clientY; tST = performance.now(); tScY = window.scrollY; tScX = window.scrollX; tMoved = false; };
+    const onTapPM = (e) => { if (!tST) return; if (Math.abs(e.clientX - tSX) > T_MOVE || Math.abs(e.clientY - tSY) > T_MOVE || Math.abs(window.scrollY - tScY) > 0 || Math.abs(window.scrollX - tScX) > 0) tMoved = true; };
+    const onTapPU = (e) => { const dur = performance.now() - (tST || performance.now()); const ok = !tMoved && dur <= T_HOLD; tST = 0; if (!ok) return; ensureTopAndFocus(e); };
+    this.searchInput.addEventListener('pointerdown', onTapPD, { passive: true });
+    this.searchInput.addEventListener('pointermove', onTapPM, { passive: true });
+    this.searchInput.addEventListener('pointerup', onTapPU, { passive: false });
+    this.searchInput.addEventListener('touchend', onTapPU, { passive: false });
+
+    // Расширяем область активации: реагируем на тап по всему контейнеру поиска (также только short tap)
     try {
       const inputContainer = this.searchInput.closest('.input-container');
       if (inputContainer) {
-        inputContainer.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
-        inputContainer.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
+        inputContainer.addEventListener('pointerdown', onTapPD, { passive: true });
+        inputContainer.addEventListener('pointermove', onTapPM, { passive: true });
+        inputContainer.addEventListener('pointerup', onTapPU, { passive: false });
+        inputContainer.addEventListener('touchend', onTapPU, { passive: false });
       }
     } catch {}
     

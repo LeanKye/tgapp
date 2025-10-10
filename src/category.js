@@ -107,8 +107,15 @@ class CategoryPage {
         }
       } catch {}
     };
-    searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
-    searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
+    // Fast-tap: фокус только по короткому тапу (не при свайпе)
+    let tSX = 0, tSY = 0, tST = 0, tScY = 0, tScX = 0; const T_MOVE = 8, T_HOLD = 300; let tMoved = false;
+    const onTapPD = (e) => { tSX = e.clientX; tSY = e.clientY; tST = performance.now(); tScY = window.scrollY; tScX = window.scrollX; tMoved = false; };
+    const onTapPM = (e) => { if (!tST) return; if (Math.abs(e.clientX - tSX) > T_MOVE || Math.abs(e.clientY - tSY) > T_MOVE || Math.abs(window.scrollY - tScY) > 0 || Math.abs(window.scrollX - tScX) > 0) tMoved = true; };
+    const onTapPU = (e) => { const dur = performance.now() - (tST || performance.now()); const ok = !tMoved && dur <= T_HOLD; tST = 0; if (!ok) return; ensureTopAndFocus(e); };
+    searchInput.addEventListener('pointerdown', onTapPD, { passive: true });
+    searchInput.addEventListener('pointermove', onTapPM, { passive: true });
+    searchInput.addEventListener('pointerup', onTapPU, { passive: false });
+    searchInput.addEventListener('touchend', onTapPU, { passive: false });
 
     // Скрываем dropdown при клике вне поиска
     document.addEventListener('click', (e) => {
