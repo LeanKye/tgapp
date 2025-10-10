@@ -191,6 +191,13 @@ function setActiveItem() {
 
 function initNav() {
   if (document.querySelector('.bottom-nav')) return;
+  // Проставляем платформенный класс на body для таргетирования CSS (iOS/Android)
+  try {
+    const ua = navigator.userAgent || navigator.vendor || '';
+    const isiOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    document.body.classList.toggle('ios', !!isiOS);
+    document.body.classList.toggle('android', !isiOS);
+  } catch {}
   document.body.classList.add('has-bottom-nav');
   // Фиксируем загрузку страницы в стек навигации
   try { window.AppNav && window.AppNav.recordPageLoad(); } catch {}
