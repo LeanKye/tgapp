@@ -934,6 +934,39 @@ class SearchManager {
       this.deactivateSearch();
     }
   }, { capture: true });
+
+  // Предотвращаем "проклик" при скролле внутри dropdown (iOS/Android ghost click)
+  try {
+    const dd = this.searchDropdown;
+    if (dd) {
+      let dSX = 0, dSY = 0, dMoved = false, dRecent = false, dTimer = null; const TH = 6;
+      const getXY = (e) => {
+        if (typeof e.clientX === 'number') return { x: e.clientX, y: e.clientY };
+        const t = e.touches && e.touches[0];
+        return { x: t ? t.clientX : 0, y: t ? t.clientY : 0 };
+      };
+      const start = (e) => { const p = getXY(e); dSX = p.x; dSY = p.y; dMoved = false; };
+      const move = (e) => { const p = getXY(e); if (Math.abs(p.x - dSX) > TH || Math.abs(p.y - dSY) > TH) dMoved = true; };
+      const end = (e) => {
+        if (dMoved) {
+          try { if (e && e.cancelable) e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+          this.swallowNextClickOnce();
+          dRecent = true; clearTimeout(dTimer); dTimer = setTimeout(() => { dRecent = false; }, 250);
+        }
+      };
+      dd.addEventListener('pointerdown', start, { passive: true });
+      dd.addEventListener('pointermove', move, { passive: true });
+      dd.addEventListener('pointerup', end, { passive: false });
+      dd.addEventListener('touchstart', start, { passive: true });
+      dd.addEventListener('touchmove', move, { passive: true });
+      dd.addEventListener('touchend', end, { passive: false });
+      // Страхуем: если вдруг прилетит click после скролла — гасим его в capture
+      dd.addEventListener('click', (e) => {
+        if (dMoved || dRecent) { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} dMoved = false; dRecent = false; }
+      }, true);
+    }
+  } catch {}
   }
 
   handleInput(query) {
