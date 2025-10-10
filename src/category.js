@@ -317,13 +317,15 @@ class CategoryPage {
       }, 120);
     });
 
-    // Fast-tap с защитой от скролла/удержания
-    let sX=0,sY=0,sT=0,sScY=0,sScX=0; const S_MOVE=8,S_HOLD=300;
-    const sPD=(e)=>{ sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; suggestion.__moved=false; };
-    const sPM=(e)=>{ if(!sT) return; if (Math.abs(e.clientX-sX)>S_MOVE || Math.abs(e.clientY-sY)>S_MOVE || Math.abs(window.scrollY-sScY)>0 || Math.abs(window.scrollX-sScX)>0) suggestion.__moved=true; };
-    const sPU=(e)=>{ const dur=performance.now()-(sT||performance.now()); const ok=!suggestion.__moved && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.deactivateSearch(); navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+    // Fast-tap с защитой от скролла/удержания + учёт прокрутки дропдауна
+    let sX=0,sY=0,sT=0,sScY=0,sScX=0,sDDTop=0; const S_MOVE=8,S_HOLD=300;
+    const sPD=(e)=>{ sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; sDDTop = (document.getElementById('search-dropdown')?.scrollTop)||0; suggestion.__moved=false; };
+    const sPM=(e)=>{ if(!sT) return; const ddTop=(document.getElementById('search-dropdown')?.scrollTop)||0; if (Math.abs(e.clientX-sX)>S_MOVE || Math.abs(e.clientY-sY)>S_MOVE || Math.abs(window.scrollY-sScY)>0 || Math.abs(window.scrollX-sScX)>0 || Math.abs(ddTop - sDDTop)>0) suggestion.__moved=true; };
+    const sPC=()=>{ suggestion.__moved=true; sT=0; };
+    const sPU=(e)=>{ const dur=performance.now()-(sT||performance.now()); const ddTop=(document.getElementById('search-dropdown')?.scrollTop)||0; const scrolled=Math.abs(ddTop - sDDTop)>0; const ok=!suggestion.__moved && !scrolled && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.deactivateSearch(); navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
     suggestion.addEventListener('pointerdown', sPD, { passive: true });
     suggestion.addEventListener('pointermove', sPM, { passive: true });
+    suggestion.addEventListener('pointercancel', sPC, { passive: true });
     suggestion.addEventListener('pointerup', sPU, { passive: false });
     suggestion.addEventListener('touchend', sPU, { passive: false });
 
