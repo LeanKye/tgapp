@@ -1387,18 +1387,6 @@ function setCartItem(product, qty, selectedOptions) {
 function renderBuyOrControls(product, animate = false) {
   const buyBtn = document.querySelector('.add-to-cart');
   const oldControls = document.querySelector('.product-cart-controls');
-  // Защита: не перезапускать морфинг, если уже морфнуто/идёт анимация/есть контролы
-  if (animate) {
-    if (document.body.classList.contains('cart-morph-active') || document.body.classList.contains('cart-morph-reverse')) {
-      animate = false;
-    }
-    if (buyBtn && buyBtn.classList.contains('morphed')) {
-      animate = false;
-    }
-    if (oldControls) {
-      animate = false;
-    }
-  }
   
   // Проверяем наличие именно текущей конфигурации
   const selectedOptions = getSelectedOptions();

@@ -82,14 +82,33 @@ class CategoryPage {
       }
     });
 
-    // Fast‑tap фокус только на короткий тап без свайпа
-    let fx=0, fy=0, ft=0, fsy=0, fsx=0; const MOVE=8, HOLD=300;
-    const fpd=(e)=>{ fx=e.clientX; fy=e.clientY; ft=performance.now(); fsy=window.scrollY; fsx=window.scrollX; searchInput.__moved=false; };
-    const fpm=(e)=>{ if(!ft) return; if(Math.abs(e.clientX-fx)>MOVE||Math.abs(e.clientY-fy)>MOVE||Math.abs(window.scrollY-fsy)>0||Math.abs(window.scrollX-fsx)>0) searchInput.__moved=true; };
-    const fpu=()=>{ const dur=performance.now()-(ft||performance.now()); const ok=!searchInput.__moved && dur<=HOLD; ft=0; if(!ok) return; try { searchInput.focus({ preventScroll: true }); const len=searchInput.value.length; if (typeof searchInput.setSelectionRange==='function') { searchInput.setSelectionRange(len, len); } } catch {} };
-    searchInput.addEventListener('pointerdown', fpd, { passive: true });
-    searchInput.addEventListener('pointermove', fpm, { passive: true });
-    searchInput.addEventListener('pointerup', fpu, { passive: true });
+    // Синхронно поднимаем страницу и фокусируем инпут в рамках жеста пользователя
+    const ensureTopAndFocus = (e) => {
+      try { if (e && e.cancelable) e.preventDefault(); } catch {}
+      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
+      try { document.documentElement.scrollTop = 0; } catch {}
+      try { document.body.scrollTop = 0; } catch {}
+      try {
+        const catalog = document.querySelector('.catalog');
+        if (catalog) {
+          catalog.scrollTop = 0;
+          if (typeof catalog.scrollTo === 'function') {
+            catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+          }
+        }
+      } catch {}
+      try {
+        if (searchInput) {
+          searchInput.focus({ preventScroll: true });
+          const len = searchInput.value.length;
+          if (typeof searchInput.setSelectionRange === 'function') {
+            searchInput.setSelectionRange(len, len);
+          }
+        }
+      } catch {}
+    };
+    searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
+    searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
 
     // Скрываем dropdown при клике вне поиска
     document.addEventListener('click', (e) => {
@@ -224,14 +243,34 @@ class CategoryPage {
       </div>
     `;
 
-    // Убираем click, оставляем только fast‑tap ниже, чтобы скролл не приводил к переходам
-
-    // Гасим pointerdown, чтобы клик не пробивался на слой под dropdown
-    suggestion.addEventListener('pointerdown', (e) => {
+    // Обработчик клика по предложению с анимацией
+    suggestion.addEventListener('click', (e) => {
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
       try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
-    }, { passive: false });
+      // Добавляем класс анимации
+      suggestion.classList.add('clicked');
+      // Мгновенно скрываем overlay/поиск до навигации
+      this.deactivateSearch();
+      
+      // Небольшая задержка перед переходом для показа анимации
+      setTimeout(() => {
+        // Перед навигацией поднимаем страницу вверх, чтобы не было видно «просвета»
+        try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
+        try { document.documentElement.scrollTop = 0; } catch {}
+        try { document.body.scrollTop = 0; } catch {}
+        try {
+          const catalog = document.querySelector('.catalog');
+          if (catalog) {
+            catalog.scrollTop = 0;
+            if (typeof catalog.scrollTo === 'function') {
+              catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+            }
+          }
+        } catch {}
+        navigate(`product.html?product=${product.id}`);
+      }, 120);
+    });
 
     // Fast-tap с защитой от скролла/удержания
     let sX=0,sY=0,sT=0,sScY=0,sScX=0; const S_MOVE=8,S_HOLD=300;
