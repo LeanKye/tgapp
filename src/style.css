@@ -972,7 +972,8 @@ body.cart-morph-reverse .product-cart-controls {
   /* Нативная прокрутка и bounce как у страницы */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
-  overscroll-behavior: auto;
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
 }
 
 .search-dropdown.show {
@@ -4246,6 +4247,12 @@ body.modal-open {
 .bottom-nav {
   contain: layout paint;
   pointer-events: auto;
+}
+/* скрыть нижний бар при активном поиске, без сдвигов */
+body.search-active .bottom-nav {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .bottom-nav * {

@@ -80,7 +80,6 @@ function renderCategories() {
     container.appendChild(card);
   });
 
-  // Ленивая загрузка отключена — фоны категорий выставляются сразу
 }
 
 // Функция для создания карточки категории
@@ -833,40 +832,37 @@ class SearchManager {
       }
     });
 
-    // Синхронно поднимаем страницу и фокусируем инпут в рамках жеста пользователя
-    const ensureTopAndFocus = (e) => {
-      try { if (e && e.cancelable) e.preventDefault(); } catch {}
-      try { window.scrollTo({ top: 0, left: 0, behavior: 'auto' }); } catch {}
-      try { document.documentElement.scrollTop = 0; } catch {}
-      try { document.body.scrollTop = 0; } catch {}
+    // Fast‑tap фокус: фокусируем инпут только на короткий тап без свайпа
+    let fx=0, fy=0, ft=0, fsy=0, fsx=0; const FT_MOVE=8, FT_HOLD=300;
+    const onPD = (e) => { fx=e.clientX; fy=e.clientY; ft=performance.now(); fsy=window.scrollY; fsx=window.scrollX; this.searchInput.__moved=false; };
+    const onPM = (e) => { if(!ft) return; if (Math.abs(e.clientX-fx)>FT_MOVE || Math.abs(e.clientY-fy)>FT_MOVE || Math.abs(window.scrollY-fsy)>0 || Math.abs(window.scrollX-fsx)>0) this.searchInput.__moved=true; };
+    const onPU = (e) => {
+      const dur = performance.now() - (ft || performance.now());
+      const ok = !this.searchInput.__moved && dur <= FT_HOLD;
+      ft = 0;
+      if (!ok) return;
       try {
-        const catalog = document.querySelector('.catalog');
-        if (catalog) {
-          catalog.scrollTop = 0;
-          if (typeof catalog.scrollTo === 'function') {
-            catalog.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-          }
-        }
-      } catch {}
-      try {
-        const input = this.searchInput;
-        if (input) {
-          input.focus({ preventScroll: true });
-          const len = input.value.length;
-          if (typeof input.setSelectionRange === 'function') {
-            input.setSelectionRange(len, len);
-          }
+        this.searchInput.focus({ preventScroll: true });
+        const len = this.searchInput.value.length;
+        if (typeof this.searchInput.setSelectionRange === 'function') {
+          this.searchInput.setSelectionRange(len, len);
         }
       } catch {}
     };
-    this.searchInput.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
-    this.searchInput.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
-    // Расширяем область активации: реагируем на тап по всему контейнеру поиска
+    this.searchInput.addEventListener('pointerdown', onPD, { passive: true });
+    this.searchInput.addEventListener('pointermove', onPM, { passive: true });
+    this.searchInput.addEventListener('pointerup', onPU, { passive: true });
+    // Поддержим тап по всей области контейнера инпута
     try {
       const inputContainer = this.searchInput.closest('.input-container');
       if (inputContainer) {
-        inputContainer.addEventListener('pointerdown', ensureTopAndFocus, { passive: false });
-        inputContainer.addEventListener('touchstart', ensureTopAndFocus, { passive: false });
+        let cx=0, cy=0, ct=0, csy=0, csx=0; const MOVE=8, HOLD=300;
+        const cpd=(e)=>{ cx=e.clientX; cy=e.clientY; ct=performance.now(); csy=window.scrollY; csx=window.scrollX; inputContainer.__moved=false; };
+        const cpm=(e)=>{ if(!ct) return; if(Math.abs(e.clientX-cx)>MOVE||Math.abs(e.clientY-cy)>MOVE||Math.abs(window.scrollY-csy)>0||Math.abs(window.scrollX-csx)>0) inputContainer.__moved=true; };
+        const cpu=()=>{ const dur=performance.now()-(ct||performance.now()); const ok=!inputContainer.__moved && dur<=HOLD; ct=0; if(!ok) return; try { this.searchInput.focus({ preventScroll: true }); const len=this.searchInput.value.length; if (typeof this.searchInput.setSelectionRange==='function') { this.searchInput.setSelectionRange(len, len); } } catch {} };
+        inputContainer.addEventListener('pointerdown', cpd, { passive: true });
+        inputContainer.addEventListener('pointermove', cpm, { passive: true });
+        inputContainer.addEventListener('pointerup', cpu, { passive: true });
       }
     } catch {}
     
@@ -995,22 +991,7 @@ class SearchManager {
       this.swallowNextClickOnce();
     }, { passive: false });
 
-    // Обработчик клика по предложению с анимацией
-    suggestion.addEventListener('click', (e) => {
-      // Блокируем дальнейшее всплытие/дефолт, чтобы клик не попал на баннеры под dropdown
-      try { e.preventDefault(); } catch {}
-      try { e.stopPropagation(); } catch {}
-      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
-      // Поглощаем потенциальный "вторичный" click на документе (iOS Safari)
-      this.swallowNextClickOnce();
-      // Добавляем класс анимации
-      suggestion.classList.add('clicked');
-      
-      // Небольшая задержка перед переходом для показа анимации
-      setTimeout(() => {
-        this.selectProduct(product);
-      }, 120);
-    });
+    // Убираем click, чтобы скролл/свайп не приводили к переходам — используем только fast‑tap ниже
 
   // Fast-tap с защитой от скролла/удержания
   let sSX=0,sSY=0,sST=0,sScrollY=0,sScrollX=0; const S_MOVE=8,S_HOLD=300;
