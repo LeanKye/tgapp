@@ -1354,7 +1354,8 @@ body.info-page.has-bottom-nav main::after {
   align-items: stretch; /* растягиваем элементы по высоте бара */
   justify-content: space-around;
   padding-bottom: max(0px, calc(env(safe-area-inset-bottom) - 2px));
-  z-index: 800; /* ниже модалок и кнопки Купить */
+  /* Держим панель поверх оверлея поиска, но ниже полноэкранных модалок */
+  z-index: 10002;
   /* Фикс iOS: панель всегда прижата к низу, даже с клавиатурой */
   transform: translateZ(0);
   will-change: transform;
@@ -1423,13 +1424,12 @@ body.keyboard-open .bottom-nav {
 /* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
 @supports (bottom: env(keyboard-inset-height)) {
   .bottom-nav {
-    /* По умолчанию прижата к низу */
+    /* Всегда прижата к низу, не убегает под клавиатуру */
     bottom: 0;
     transform: none;
   }
   body.keyboard-open .bottom-nav {
-    /* Когда клавиатура открыта, компенсируем её высоту */
-    bottom: calc(0px - env(keyboard-inset-height));
+    bottom: 0;
     transform: none;
   }
 }
