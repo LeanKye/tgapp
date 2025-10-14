@@ -1,5 +1,47 @@
 // Нижняя навигация для всех страниц
 
+// --- Page Fade Transition utilities ---
+const PAGE_TRANSITION_ID = 'page-transition';
+
+function ensurePageTransitionOverlay() {
+  if (document.getElementById(PAGE_TRANSITION_ID)) return;
+  const el = document.createElement('div');
+  el.id = PAGE_TRANSITION_ID;
+  el.className = 'page-transition show';
+  document.body.appendChild(el);
+}
+
+function showPageTransition(duration = 180) {
+  ensurePageTransitionOverlay();
+  const el = document.getElementById(PAGE_TRANSITION_ID);
+  if (!el) return Promise.resolve();
+  return new Promise((resolve) => {
+    void el.offsetWidth; // reflow
+    el.classList.add('show');
+    setTimeout(resolve, duration + 40);
+  });
+}
+
+function hidePageTransition() {
+  const el = document.getElementById(PAGE_TRANSITION_ID);
+  if (!el) return;
+  el.classList.remove('show');
+}
+
+// Плавное проявление после загрузки: ждём DOM, затем скрываем оверлей
+const reveal = () => setTimeout(() => { try { hidePageTransition(); } catch {} }, 120);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  try { ensurePageTransitionOverlay(); } catch {}
+  reveal();
+} else {
+  document.addEventListener('DOMContentLoaded', () => {
+    try { ensurePageTransitionOverlay(); } catch {}
+    reveal();
+  });
+}
+// При возврате из bfcache тоже скрываем
+window.addEventListener('pageshow', (e) => { try { hidePageTransition(); } catch {} });
+
 function buildBottomNav() {
   const nav = document.createElement('nav');
   nav.className = 'bottom-nav';
@@ -123,7 +165,7 @@ function recordPageLoad() {
   }
 }
 
-function go(path) {
+async function go(path) {
   const entry = normalizeEntry(path);
   const stack = readNavStack();
   // Если идём на карточку товара — сразу запомним её как последнюю
@@ -136,10 +178,11 @@ function go(path) {
   }
   const basePath = getBasePath();
   const normalized = path.startsWith('/') ? path.slice(1) : path;
+  await showPageTransition(180);
   window.location.href = basePath + normalized;
 }
 
-function goHomeSmart() {
+async function goHomeSmart() {
   const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
   // Если уже на главной — ничего не делаем (никаких переходов/перезагрузок)
   if (file.includes('index')) {
@@ -160,6 +203,7 @@ function goHomeSmart() {
   const lastProduct = sessionStorage.getItem('hooli_last_product');
   if (lastProduct && normalizeEntry(lastProduct) !== normalizeEntry(file + (location.search || ''))) {
     const basePath = getBasePath();
+    await showPageTransition(180);
     window.location.href = basePath + lastProduct.replace(/^\//, '');
     return;
   }
