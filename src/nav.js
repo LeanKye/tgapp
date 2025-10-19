@@ -2,6 +2,27 @@
 
 // Анимации переходов и оверлей удалены для моментальной навигации
 
+function playPageExit() {
+  const body = document.body;
+  if (body.classList.contains('leaving')) return Promise.resolve();
+  const computed = getComputedStyle(body).getPropertyValue('--page-fade-out').trim();
+  const dur = Math.max(0, parseInt(computed || '120', 10)) || 120;
+  body.classList.add('leaving');
+  return new Promise((resolve) => {
+    const onEnd = (e) => {
+      if (e.target === body && e.propertyName === 'opacity') {
+        body.removeEventListener('transitionend', onEnd);
+        resolve();
+      }
+    };
+    body.addEventListener('transitionend', onEnd);
+    setTimeout(() => {
+      body.removeEventListener('transitionend', onEnd);
+      resolve();
+    }, dur + 80);
+  });
+}
+
 function buildBottomNav() {
   const nav = document.createElement('nav');
   nav.className = 'bottom-nav';
@@ -138,6 +159,7 @@ async function go(path) {
   }
   const basePath = getBasePath();
   const normalized = path.startsWith('/') ? path.slice(1) : path;
+  await playPageExit();
   window.location.href = basePath + normalized;
 }
 
@@ -162,6 +184,7 @@ async function goHomeSmart() {
   const lastProduct = sessionStorage.getItem('hooli_last_product');
   if (lastProduct && normalizeEntry(lastProduct) !== normalizeEntry(file + (location.search || ''))) {
     const basePath = getBasePath();
+    await playPageExit();
     window.location.href = basePath + lastProduct.replace(/^\//, '');
     return;
   }
@@ -207,8 +230,9 @@ function initNav() {
   setActiveItem();
 
   const basePath = window.location.pathname.replace(/[^/]*$/, '');
-  const go = (path) => {
+  const go = async (path) => {
     const normalized = path.startsWith('/') ? path.slice(1) : path;
+    await playPageExit();
     window.location.href = basePath + normalized;
   };
 

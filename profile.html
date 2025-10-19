@@ -77,16 +77,10 @@
   </div>
 
   <script type="module" src="src/telegram-webapp.js"></script>
+  <script type="module" src="src/page-fade.js"></script>
   <script type="module" src="src/nav.js"></script>
   <script type="module" src="src/profile.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.body.classList.remove('preload');
-        document.body.classList.add('loaded');
-      }, 100);
-    });
-  </script>
+  
 </body>
 
 </html>

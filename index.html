@@ -113,20 +113,11 @@
     
     
   </div>
+      <script type="module" src="src/page-fade.js"></script>
       <script type="module" src="src/telegram-webapp.js"></script>
       <script type="module" src="src/nav.js"></script>
     <script type="module" src="src/bounce-scroll.js"></script>
     <script type="module" src="src/main.js"></script>
-  <script>
-    // Убираем preload класс и показываем контент после загрузки
-    document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => {
-        document.body.classList.remove('preload');
-        document.body.classList.add('loaded');
-      }, 100);
-      
-
-    });
-  </script>
+  
 </body>
 </html>

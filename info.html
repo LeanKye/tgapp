@@ -391,17 +391,12 @@
         </section>
     </main>
 
+    <script type="module" src="src/page-fade.js"></script>
     <script type="module" src="src/telegram-webapp.js"></script>
     <script type="module" src="src/nav.js"></script>
     <script>
-        // Убираем preload класс и показываем контент после загрузки
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.body.classList.remove('preload');
-                document.body.classList.add('loaded');
-            }, 100);
-            
-            // Инициализируем динамический заголовок
+            // Инициализируем динамический заголовок (fade-in теперь делает page-fade.js)
             initDynamicHeader();
         });
 
