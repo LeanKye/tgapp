@@ -4352,18 +4352,4 @@ body.modal-open {
   }
 }
 
-/* Переход между страницами: fade-in/fade-out оверлей */
-.page-transition {
-  position: fixed;
-  inset: 0;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 180ms ease;
-  z-index: 9999;
-}
-
-.page-transition.show {
-  opacity: 1;
-  pointer-events: auto;
-}
+/* Удалены стили оверлея перехода */
