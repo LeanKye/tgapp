@@ -963,7 +963,12 @@ class SearchManager {
       dd.addEventListener('touchend', end, { passive: false });
       // Страхуем: если вдруг прилетит click после скролла — гасим его в capture
       dd.addEventListener('click', (e) => {
-        if (dMoved || dRecent) { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} dMoved = false; dRecent = false; }
+        // Не блокируем клики по самим элементам подсказок даже сразу после скролла
+        if ((dMoved || dRecent) && !e.target.closest('.search-suggestion')) {
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+        }
+        dMoved = false; dRecent = false;
       }, true);
     }
   } catch {}
@@ -1032,8 +1037,7 @@ class SearchManager {
     suggestion.addEventListener('pointerdown', (e) => {
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
-      try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
-      // Дополнительно страхуемся на уровне документа
+      // Не используем stopImmediatePropagation, чтобы fast-tap обработчики на этом же элементе сработали
       this.swallowNextClickOnce();
     }, { passive: false });
 

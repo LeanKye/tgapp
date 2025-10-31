@@ -216,7 +216,12 @@ class CategoryPage {
       dd.addEventListener('touchend', end, { passive: false });
       // Страхуем: если вдруг прилетит click после скролла — гасим его в capture
       dd.addEventListener('click', (e) => {
-        if (dMoved || dRecent) { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} dMoved = false; dRecent = false; }
+        // Не блокируем клики по элементам подсказок даже сразу после скролла
+        if ((dMoved || dRecent) && !e.target.closest('.search-suggestion')) {
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
+        }
+        dMoved = false; dRecent = false;
       }, true);
     }
   } catch {}
