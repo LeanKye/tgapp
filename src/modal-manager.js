@@ -346,9 +346,10 @@ class ModalManager {
 
   // Настройка событий закрытия
   setupCloseEvents(modal, modalId) {
-    // Закрытие по клику на фон
+    // Закрытие по клику на фон (игнорируем первый синтетический click сразу после открытия)
     modal.addEventListener('click', (e) => {
       if (e.target === modal) {
+        if (modal.dataset.justOpened) return;
         this.closeModal(modalId);
       }
     });
@@ -438,6 +439,12 @@ class ModalManager {
 
     // Убеждаемся, что обработчики событий подключены
     this.setupModalEvents(modalId);
+
+    // Игнорируем один следующий click после открытия (синтетический после pointerup)
+    try {
+      modal.dataset.justOpened = '1';
+      setTimeout(() => { try { delete modal.dataset.justOpened; } catch {} }, 250);
+    } catch {}
 
     // Показываем модальное окно с анимацией
     if (modalId === 'checkout-modal') {

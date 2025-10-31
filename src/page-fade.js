@@ -51,6 +51,8 @@
     const dur = mapDuration(ms);
     document.body.style.setProperty('--page-fade-in', `${dur}ms`);
     document.body.classList.remove('leaving');
+    // Возвращаем анимации элементов страницы
+    document.body.classList.remove('preload');
     if (dur === 0) {
       const prev = document.body.style.transition;
       document.body.style.transition = 'none';
@@ -66,6 +68,7 @@
     if (e.persisted) {
       document.body.style.setProperty('--page-fade-in', '0ms');
       document.body.classList.remove('leaving');
+      document.body.classList.remove('preload');
       document.body.classList.add('loaded');
     }
   });
