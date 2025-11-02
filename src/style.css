@@ -1424,7 +1424,7 @@ body.keyboard-open .bottom-nav {
   .bottom-nav .nav-item span { font-size: 9px; }
 }
 
-/* iOS 16+: используем нативный inset клавиатуры, уводим панель под клавиатуру */
+/* iOS 16+: панель всегда прижата к низу, клавиатура накладывается поверх */
 @supports (bottom: env(keyboard-inset-height)) {
   body.ios .bottom-nav {
     /* Всегда прижата к низу, не убегает под клавиатуру */
@@ -1432,8 +1432,8 @@ body.keyboard-open .bottom-nav {
     transform: none;
   }
   body.ios.keyboard-open .bottom-nav {
-    /* На iOS визуальный viewport уменьшается — смещаем панель под клавиатуру */
-    bottom: calc(0px - env(keyboard-inset-height));
+    /* Не смещаем панель под клавиатуру — оставляем на месте */
+    bottom: 0;
     transform: none;
   }
 }

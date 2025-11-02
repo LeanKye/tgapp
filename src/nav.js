@@ -327,11 +327,16 @@ function initNav() {
       if (isEditable(e.target)) setKeyboardState(true);
     });
     window.addEventListener('focusout', () => {
-      // Ждём, пока DOM обновит activeElement, затем проверяем
-      setTimeout(() => {
-        setKeyboardState(isEditable(document.activeElement));
-      }, 0);
+      // Снимаем флаг сразу; если фокус перейдёт на другой инпут, focusin выставит его снова
+      setKeyboardState(isEditable(document.activeElement));
     });
+    // Быстрый фолбэк: тап вне инпутов — считаем клавиатуру закрытой
+    document.addEventListener('pointerdown', (e) => {
+      const t = e.target;
+      if (!(t && t.closest('input, textarea, [contenteditable]'))) {
+        setKeyboardState(false);
+      }
+    }, { passive: true });
   } catch {}
 }
 
