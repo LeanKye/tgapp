@@ -306,23 +306,12 @@ function initNav() {
 
     const vv = window.visualViewport;
     if (vv && typeof vv.addEventListener === 'function') {
-      // Динамическая базовая высота (может меняться из-за баров/ориентации)
-      let baseHeight = vv.height;
-      const OPEN_THRESHOLD = 80;   // > 80px — считаем, что клавиатура открыта
-      const CLOSE_THRESHOLD = 40;  // < 40px — считаем, что клавиатура закрыта
-
+      // Базовая высота для сравнения (после загрузки страницы)
+      const baseHeight = vv.height;
       const updateFromViewport = () => {
-        // Обновляем базовую высоту, если стала больше (например, после поворота)
-        if (vv.height > baseHeight) baseHeight = vv.height;
         const shrunkBy = Math.max(0, baseHeight - vv.height);
-        if (shrunkBy > OPEN_THRESHOLD) {
-          setKeyboardState(true);
-          return;
-        }
-        if (shrunkBy < CLOSE_THRESHOLD) {
-          // Мгновенно снимаем флаг — помогает при закрытии свайпом, когда focusout не приходит
-          setKeyboardState(false);
-        }
+        // Порог ~80px — более чувствительный порог для быстрого реагирования
+        setKeyboardState(shrunkBy > 80);
       };
       vv.addEventListener('resize', updateFromViewport);
       vv.addEventListener('scroll', updateFromViewport);
@@ -338,16 +327,11 @@ function initNav() {
       if (isEditable(e.target)) setKeyboardState(true);
     });
     window.addEventListener('focusout', () => {
-      // Снимаем флаг сразу; если фокус перейдёт на другой инпут, focusin выставит его снова
-      setKeyboardState(isEditable(document.activeElement));
+      // Ждём, пока DOM обновит activeElement, затем проверяем
+      setTimeout(() => {
+        setKeyboardState(isEditable(document.activeElement));
+      }, 0);
     });
-    // Быстрый фолбэк: тап вне инпутов — считаем клавиатуру закрытой
-    document.addEventListener('pointerdown', (e) => {
-      const t = e.target;
-      if (!(t && t.closest('input, textarea, [contenteditable]'))) {
-        setKeyboardState(false);
-      }
-    }, { passive: true });
   } catch {}
 }
 
