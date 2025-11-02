@@ -1502,13 +1502,25 @@ function attachCartControlHandlers(controls, product) {
     }
   };
   
-  // Fast-tap для −/+ с защитой от скролла/удержания
+  // Fast-tap для −/+ с защитой от скролла/удержания, без троттлинга быстрых тапов
   let qx=0,qy=0,qt=0,qsy=0,qsx=0; const MOVEQ=8,HOLDQ=300;
-  const qpd=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; qx=e.clientX; qy=e.clientY; qt=performance.now(); qsy=window.scrollY; qsx=window.scrollX; btn.__moved=false; btn.__ftTarget=true; };
-  const qpu=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; const moved=Math.abs(e.clientX-qx)>MOVEQ||Math.abs(e.clientY-qy)>MOVEQ||Math.abs(window.scrollY-qsy)>0||Math.abs(window.scrollX-qsx)>0; const dur=performance.now()-(qt||performance.now()); qt=0; if(moved||dur>HOLDQ) return; if(btn.__fastTapLock) return; btn.__fastTapLock=true; try { clickHandler(e); } finally { setTimeout(()=>{ btn.__fastTapLock=false; }, 250);} };
+  let lastTapAt=0, lastTapEl=null;
+  const qpd=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; qx=e.clientX; qy=e.clientY; qt=performance.now(); qsy=window.scrollY; qsx=window.scrollX; };
+  const qpu=(e)=>{
+    const btn=e.target.closest('[data-action]');
+    if(!btn) return;
+    const moved=Math.abs(e.clientX-qx)>MOVEQ||Math.abs(e.clientY-qy)>MOVEQ||Math.abs(window.scrollY-qsy)>0||Math.abs(window.scrollX-qsx)>0;
+    const now=performance.now();
+    const dur=now-(qt||now);
+    qt=0;
+    if(moved||dur>HOLDQ) return;
+    // Дедупликация возможных двойных событий, но без задержки быстрых последовательных тапов
+    if(lastTapEl===btn && (now-lastTapAt)<80) return;
+    lastTapEl=btn; lastTapAt=now;
+    clickHandler(e);
+  };
   controls.addEventListener('pointerdown', qpd, { passive: true });
   controls.addEventListener('pointerup', qpu, { passive: true });
-  controls.addEventListener('touchend', qpu, { passive: true });
 }
 
 function handleAddToCartFromProduct() {
