@@ -306,12 +306,23 @@ function initNav() {
 
     const vv = window.visualViewport;
     if (vv && typeof vv.addEventListener === 'function') {
-      // Базовая высота для сравнения (после загрузки страницы)
-      const baseHeight = vv.height;
+      // Динамическая базовая высота (может меняться из-за баров/ориентации)
+      let baseHeight = vv.height;
+      const OPEN_THRESHOLD = 80;   // > 80px — считаем, что клавиатура открыта
+      const CLOSE_THRESHOLD = 40;  // < 40px — считаем, что клавиатура закрыта
+
       const updateFromViewport = () => {
+        // Обновляем базовую высоту, если стала больше (например, после поворота)
+        if (vv.height > baseHeight) baseHeight = vv.height;
         const shrunkBy = Math.max(0, baseHeight - vv.height);
-        // Только открываем клавиатуру по shrink; закрытие управляется фокусом/тапом для мгновенности
-        if (shrunkBy > 80) setKeyboardState(true);
+        if (shrunkBy > OPEN_THRESHOLD) {
+          setKeyboardState(true);
+          return;
+        }
+        if (shrunkBy < CLOSE_THRESHOLD) {
+          // Мгновенно снимаем флаг — помогает при закрытии свайпом, когда focusout не приходит
+          setKeyboardState(false);
+        }
       };
       vv.addEventListener('resize', updateFromViewport);
       vv.addEventListener('scroll', updateFromViewport);
