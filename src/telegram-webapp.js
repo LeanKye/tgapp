@@ -28,8 +28,14 @@ class TelegramWebApp {
     // Базовые настройки
     this.tg.ready();
     this.tg.expand();
-    this.tg.disableVerticalSwipes();
-    this.tg.setHeaderColor('#000000');
+    // Вызываем отключение вертикальных свайпов только если поддерживается текущей версией API
+    if (typeof this.tg.isVersionAtLeast === 'function' && this.tg.isVersionAtLeast('6.1') && typeof this.tg.disableVerticalSwipes === 'function') {
+      this.tg.disableVerticalSwipes();
+    }
+    // Устанавливаем цвет заголовка только если поддерживается
+    if (typeof this.tg.isVersionAtLeast === 'function' && this.tg.isVersionAtLeast('6.1') && typeof this.tg.setHeaderColor === 'function') {
+      this.tg.setHeaderColor('#000000');
+    }
 
     // Настройки UI
     this.setupUIBehavior();
@@ -86,18 +92,22 @@ class TelegramWebApp {
   updateTelegramHeader() {
     if (!this.tg) return;
 
+    const hasMainButton = !!(this.tg.MainButton && typeof this.tg.MainButton.hide === 'function');
+    const backBtn = this.tg.BackButton;
+    const hasBackButton = !!(backBtn && typeof backBtn.show === 'function' && typeof backBtn.hide === 'function' && typeof backBtn.onClick === 'function' && typeof backBtn.offClick === 'function' && typeof this.tg.isVersionAtLeast === 'function' && this.tg.isVersionAtLeast('6.1'));
+
     if (this.currentPage === "home") {
       // На главной странице скрываем все кнопки
-      this.tg.BackButton.hide();
-      this.tg.MainButton.hide();
+      if (hasBackButton) backBtn.hide();
+      if (hasMainButton) this.tg.MainButton.hide();
     } else {
       // На остальных страницах показываем кнопку "Назад" и ведем на главную
-      this.tg.MainButton.hide();
-      this.tg.BackButton.show();
+      if (hasMainButton) this.tg.MainButton.hide();
+      if (hasBackButton) backBtn.show();
 
       // Удаляем предыдущий обработчик, если был
-      if (this._backHandler) {
-        try { this.tg.BackButton.offClick(this._backHandler); } catch (_) {}
+      if (this._backHandler && hasBackButton) {
+        try { backBtn.offClick(this._backHandler); } catch (_) {}
       }
 
       this._backHandler = () => {
@@ -105,7 +115,7 @@ class TelegramWebApp {
         const homeUrl = this.resolveHomeUrl();
         window.location.replace(homeUrl);
       };
-      this.tg.BackButton.onClick(this._backHandler);
+      if (hasBackButton) backBtn.onClick(this._backHandler);
     }
   }
 
