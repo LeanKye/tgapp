@@ -310,8 +310,8 @@ function initNav() {
       const baseHeight = vv.height;
       const updateFromViewport = () => {
         const shrunkBy = Math.max(0, baseHeight - vv.height);
-        // Порог ~80px — более чувствительный порог для быстрого реагирования
-        setKeyboardState(shrunkBy > 80);
+        // Только открываем клавиатуру по shrink; закрытие управляется фокусом/тапом для мгновенности
+        if (shrunkBy > 80) setKeyboardState(true);
       };
       vv.addEventListener('resize', updateFromViewport);
       vv.addEventListener('scroll', updateFromViewport);
