@@ -74,7 +74,7 @@ function createCartItemHTML(item) {
         <div class="cart-right-footer">
           <div class="qty-control">
             <button class="reset-Button qty-btn square" data-action="dec">−</button>
-            <div class="qty-value square">${item.qty || 1}</div>
+            <div class="qty-value square"><span class="qty-text">${item.qty || 1}</span></div>
             <button class="reset-Button qty-btn square" data-action="inc">+</button>
           </div>
         </div>
@@ -149,10 +149,59 @@ function attachEvents() {
     const actionBtn = e.target.closest('[data-action]');
     if (!actionBtn) return;
     const action = actionBtn.getAttribute('data-action');
-    if (action === 'remove') removeItem(id);
-    if (action === 'inc') updateQty(id, +1);
-    if (action === 'dec') updateQty(id, -1);
-    renderCart();
+    
+    if (action === 'remove') {
+      // Показываем модалку подтверждения
+      const items = readCart();
+      const item = items.find(i => String(i.id) === String(id));
+      if (!item) return;
+      
+      // Инициализируем модалку при необходимости
+      if (!window.cartModalManager) {
+        window.cartModalManager = new ModalManager();
+      }
+      
+      window.cartModalManager.openModal('delete-confirm-modal', {
+        productName: item.title || 'товар',
+        onConfirm: () => {
+          removeItem(id);
+          renderCart();
+        },
+        onCancel: () => {
+          // Ничего не делаем
+        }
+      });
+      return;
+    }
+    
+    if (action === 'inc' || action === 'dec') {
+      // Обновляем количество в localStorage
+      if (action === 'inc') updateQty(id, +1);
+      if (action === 'dec') updateQty(id, -1);
+      
+      // Получаем обновленное значение
+      const items = readCart();
+      const updatedItem = items.find(i => i.id === id);
+      if (!updatedItem) return;
+      
+      // Обновляем только текст количества с анимацией (без перерисовки всего элемента)
+      const qtyTextEl = itemEl.querySelector('.qty-text');
+      if (qtyTextEl) {
+        qtyTextEl.classList.add('qty-bounce');
+        qtyTextEl.textContent = String(updatedItem.qty);
+        setTimeout(() => qtyTextEl.classList.remove('qty-bounce'), 200);
+      }
+      
+      // Обновляем только сумму и счётчик
+      const allItems = readCart();
+      const { total, count } = calculateTotals(allItems);
+      const countEl = document.getElementById('checkout-count');
+      const totalEl = document.getElementById('checkout-total');
+      if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
+      if (totalEl) totalEl.innerHTML = formatPrice(total);
+      
+      window.dispatchEvent(new Event('cart:updated'));
+    }
   });
 
   // Fast-tap: делегированный с защитой от скролла/удержания
@@ -263,10 +312,27 @@ function attachEvents() {
   deleteBtn?.addEventListener('click', () => {
     const selectedIds = new Set(getSelectedIds());
     if (selectedIds.size === 0) return;
-    const items = readCart().filter(i => !selectedIds.has(String(i.id)));
-    writeCart(items);
-    renderCart();
-    window.dispatchEvent(new Event('cart:updated'));
+    
+    // Инициализируем модалку при необходимости
+    if (!window.cartModalManager) {
+      window.cartModalManager = new ModalManager();
+    }
+    
+    const count = selectedIds.size;
+    const productName = count === 1 ? 'этот товар' : `${count} ${count === 1 ? 'товар' : (count >= 2 && count <= 4 ? 'товара' : 'товаров')}`;
+    
+    window.cartModalManager.openModal('delete-confirm-modal', {
+      productName: productName,
+      onConfirm: () => {
+        const items = readCart().filter(i => !selectedIds.has(String(i.id)));
+        writeCart(items);
+        renderCart();
+        window.dispatchEvent(new Event('cart:updated'));
+      },
+      onCancel: () => {
+        // Ничего не делаем
+      }
+    });
   });
 }
 

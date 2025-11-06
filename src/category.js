@@ -293,8 +293,61 @@ class CategoryPage {
       </div>
     `;
 
+    // Tracking scroll and momentum state
+    let isScrolling = false;
+    let scrollTimer = null;
+    let lastScrollTop = 0;
+    let momentumActive = false;
+    const searchDropdown = document.getElementById('search-dropdown');
+    
+    // Monitor scrolling state of dropdown
+    const trackScrolling = () => {
+      if (!searchDropdown) return;
+      
+      const currentScrollTop = searchDropdown.scrollTop;
+      
+      // Detect if there's scrolling momentum
+      if (Math.abs(currentScrollTop - lastScrollTop) > 1) {
+        isScrolling = true;
+        momentumActive = true;
+      }
+      
+      lastScrollTop = currentScrollTop;
+      
+      // Clear previous timer
+      clearTimeout(scrollTimer);
+      
+      // Set timer to detect scroll end
+      scrollTimer = setTimeout(() => {
+        isScrolling = false;
+        // Keep momentum flag for a bit longer to catch tap-to-stop
+        setTimeout(() => {
+          momentumActive = false;
+        }, 100);
+      }, 150);
+    };
+    
+    // Start tracking when dropdown is shown
+    if (searchDropdown) {
+      searchDropdown.addEventListener('scroll', trackScrolling, { passive: true });
+    }
+
     // Обработчик клика по предложению с анимацией
     suggestion.addEventListener('click', (e) => {
+      // Don't navigate if we're stopping scroll momentum
+      if (momentumActive || isScrolling) {
+        try { e.preventDefault(); } catch {}
+        try { e.stopPropagation(); } catch {}
+        // Stop the momentum
+        if (searchDropdown) {
+          const currentPos = searchDropdown.scrollTop;
+          searchDropdown.scrollTop = currentPos;
+        }
+        momentumActive = false;
+        isScrolling = false;
+        return;
+      }
+      
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
       try { if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation(); } catch {}
@@ -324,10 +377,40 @@ class CategoryPage {
 
     // Fast-tap с защитой от скролла/удержания + учёт прокрутки дропдауна
     let sX=0,sY=0,sT=0,sScY=0,sScX=0,sDDTop=0; const S_MOVE=8,S_HOLD=300;
-    const sPD=(e)=>{ sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; sDDTop = (document.getElementById('search-dropdown')?.scrollTop)||0; suggestion.__moved=false; };
+    const sPD=(e)=>{ 
+      // Check for momentum first
+      if (momentumActive || isScrolling) {
+        suggestion.__moved=true;
+        return;
+      }
+      sX=e.clientX; sY=e.clientY; sT=performance.now(); sScY=window.scrollY; sScX=window.scrollX; sDDTop = (document.getElementById('search-dropdown')?.scrollTop)||0; suggestion.__moved=false; 
+    };
     const sPM=(e)=>{ if(!sT) return; const ddTop=(document.getElementById('search-dropdown')?.scrollTop)||0; if (Math.abs(e.clientX-sX)>S_MOVE || Math.abs(e.clientY-sY)>S_MOVE || Math.abs(window.scrollY-sScY)>0 || Math.abs(window.scrollX-sScX)>0 || Math.abs(ddTop - sDDTop)>0) suggestion.__moved=true; };
     const sPC=()=>{ suggestion.__moved=true; sT=0; };
-    const sPU=(e)=>{ const dur=performance.now()-(sT||performance.now()); const ddTop=(document.getElementById('search-dropdown')?.scrollTop)||0; const scrolled=Math.abs(ddTop - sDDTop)>0; const ok=!suggestion.__moved && !scrolled && dur<=S_HOLD; sT=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock=true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.deactivateSearch(); navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+    const sPU=(e)=>{ 
+      // Don't navigate if momentum was active
+      if (momentumActive || isScrolling) {
+        try { e && e.preventDefault && e.preventDefault(); } catch {} 
+        try { e && e.stopPropagation && e.stopPropagation(); } catch {}
+        return;
+      }
+      const dur=performance.now()-(sT||performance.now()); 
+      const ddTop=(document.getElementById('search-dropdown')?.scrollTop)||0; 
+      const scrolled=Math.abs(ddTop - sDDTop)>0; 
+      const ok=!suggestion.__moved && !scrolled && dur<=S_HOLD; 
+      sT=0; 
+      if(!ok) return; 
+      if (suggestion.__fastTapLock) return; 
+      suggestion.__fastTapLock=true; 
+      try { 
+        try { e && e.preventDefault && e.preventDefault(); } catch {} 
+        try { e && e.stopPropagation && e.stopPropagation(); } catch {} 
+        this.deactivateSearch(); 
+        navigate(`product.html?product=${product.id}`);  
+      } finally { 
+        setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);
+      } 
+    };
     suggestion.addEventListener('pointerdown', sPD, { passive: true });
     suggestion.addEventListener('pointermove', sPM, { passive: true });
     suggestion.addEventListener('pointercancel', sPC, { passive: true });

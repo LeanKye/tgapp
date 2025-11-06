@@ -1280,8 +1280,7 @@ function initPayment() {
   const bpd=(e)=>{ bx=e.clientX; by=e.clientY; bt=performance.now(); bsy=window.scrollY; bsx=window.scrollX; buyButton.__moved=false; };
   const bpm=(e)=>{ if(!bt) return; if(Math.abs(e.clientX-bx)>MOVEB||Math.abs(e.clientY-by)>MOVEB||Math.abs(window.scrollY-bsy)>0||Math.abs(window.scrollX-bsx)>0) buyButton.__moved=true; };
   const bpu=()=>{ const dur=performance.now()-(bt||performance.now()); const ok=!buyButton.__moved && dur<=HOLDB; bt=0; if(!ok) return; if (buyButton.__fastTapLock) return; 
-    // Блокируем на время анимации; если анимация идёт — игнорируем тап
-    if (document.body.classList.contains('cart-morph-active') || document.body.classList.contains('cart-morph-reverse')) return;
+    // Разрешаем клик даже во время анимации морфинга
     buyButton.__fastTapLock=true; try {
     // Если кнопка в морфнутом состоянии — ведём в корзину
     if (buyButton.classList.contains('morphed')) {
@@ -1440,6 +1439,9 @@ function renderBuyOrControls(product, animate = false) {
       // Добавляем контролы справа
       document.body.appendChild(controls);
       controls.classList.add('appearing');
+      
+      // Блокируем кнопки количества на время анимации
+      controls.setAttribute('data-animating', 'true');
 
       // Снимаем флаг cart-morph-active по окончании анимаций
       const onEnd = (e) => {
@@ -1449,10 +1451,17 @@ function renderBuyOrControls(product, animate = false) {
           document.body.classList.remove('cart-morph-active');
           buyBtn.removeEventListener('animationend', onEnd, true);
           controls.removeEventListener('animationend', onEnd, true);
+          // Разблокируем кнопки после анимации
+          controls.removeAttribute('data-animating');
         }
       };
       buyBtn.addEventListener('animationend', onEnd, true);
       controls.addEventListener('animationend', onEnd, true);
+      
+      // Также разблокируем через время на случай если анимация не сработает
+      setTimeout(() => {
+        controls.removeAttribute('data-animating');
+      }, 450);
     } else {
       // Без анимации: кнопка остаётся слева, добавляем контролы справа
       if (buyBtn) {
@@ -1478,6 +1487,10 @@ function attachCartControlHandlers(controls, product) {
   const clickHandler = (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
+    
+    // Блокируем клики во время анимации выкатывания
+    if (controls.getAttribute('data-animating') === 'true') return;
+    
     const action = btn.getAttribute('data-action');
     const current = getCartItem(product, getSelectedOptions()) || { qty: 0 };
     let nextQty = current.qty || 1;
@@ -1509,6 +1522,10 @@ function attachCartControlHandlers(controls, product) {
   const qpu=(e)=>{
     const btn=e.target.closest('[data-action]');
     if(!btn) return;
+    
+    // Блокируем быстрые тапы во время анимации выкатывания
+    if (controls.getAttribute('data-animating') === 'true') return;
+    
     const moved=Math.abs(e.clientX-qx)>MOVEQ||Math.abs(e.clientY-qy)>MOVEQ||Math.abs(window.scrollY-qsy)>0||Math.abs(window.scrollX-qsx)>0;
     const now=performance.now();
     const dur=now-(qt||now);

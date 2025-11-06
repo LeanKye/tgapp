@@ -1033,8 +1033,60 @@ class SearchManager {
       <div class="search-suggestion-price">${formatPriceCard(product.price)}</div>
     `;
 
+    // Tracking scroll and momentum state
+    let isScrolling = false;
+    let scrollTimer = null;
+    let lastScrollTop = 0;
+    let momentumActive = false;
+    
+    // Monitor scrolling state of dropdown
+    const trackScrolling = () => {
+      if (!this.searchDropdown) return;
+      
+      const currentScrollTop = this.searchDropdown.scrollTop;
+      
+      // Detect if there's scrolling momentum
+      if (Math.abs(currentScrollTop - lastScrollTop) > 1) {
+        isScrolling = true;
+        momentumActive = true;
+      }
+      
+      lastScrollTop = currentScrollTop;
+      
+      // Clear previous timer
+      clearTimeout(scrollTimer);
+      
+      // Set timer to detect scroll end
+      scrollTimer = setTimeout(() => {
+        isScrolling = false;
+        // Keep momentum flag for a bit longer to catch tap-to-stop
+        setTimeout(() => {
+          momentumActive = false;
+        }, 100);
+      }, 150);
+    };
+    
+    // Start tracking when dropdown is shown
+    if (this.searchDropdown) {
+      this.searchDropdown.addEventListener('scroll', trackScrolling, { passive: true });
+    }
+
     // Гасим pointerdown сразу, чтобы событие не ушло на элементы под dropdown при быстрых тапах
     suggestion.addEventListener('pointerdown', (e) => {
+      // If momentum scroll is active, just stop it, don't navigate
+      if (momentumActive || isScrolling) {
+        try { e.preventDefault(); } catch {}
+        try { e.stopPropagation(); } catch {}
+        // Stop the momentum by setting scroll position
+        if (this.searchDropdown) {
+          const currentPos = this.searchDropdown.scrollTop;
+          this.searchDropdown.scrollTop = currentPos;
+        }
+        momentumActive = false;
+        isScrolling = false;
+        return;
+      }
+      
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
       // Не используем stopImmediatePropagation, чтобы fast-tap обработчики на этом же элементе сработали
@@ -1043,6 +1095,13 @@ class SearchManager {
 
     // Обработчик клика по предложению с анимацией
     suggestion.addEventListener('click', (e) => {
+      // Don't navigate if we're stopping scroll momentum
+      if (momentumActive || isScrolling) {
+        try { e.preventDefault(); } catch {}
+        try { e.stopPropagation(); } catch {}
+        return;
+      }
+      
       // Блокируем дальнейшее всплытие/дефолт, чтобы клик не попал на баннеры под dropdown
       try { e.preventDefault(); } catch {}
       try { e.stopPropagation(); } catch {}
@@ -1060,15 +1119,64 @@ class SearchManager {
 
   // Fast-tap с защитой от скролла/удержания
   let sSX=0,sSY=0,sST=0,sScrollY=0,sScrollX=0,sDDTop=0; const S_MOVE=8,S_HOLD=300;
-  const sPD=(e)=>{ sSX=e.clientX; sSY=e.clientY; sST=performance.now(); sScrollY=window.scrollY; sScrollX=window.scrollX; sDDTop=this.searchDropdown ? this.searchDropdown.scrollTop : 0; suggestion.__moved=false; };
+  const sPD=(e)=>{ 
+    // Check for momentum first
+    if (momentumActive || isScrolling) {
+      suggestion.__moved=true;
+      return;
+    }
+    sSX=e.clientX; sSY=e.clientY; sST=performance.now(); sScrollY=window.scrollY; sScrollX=window.scrollX; sDDTop=this.searchDropdown ? this.searchDropdown.scrollTop : 0; suggestion.__moved=false; 
+  };
   const sPM=(e)=>{ if(!sST) return; const ddTop=this.searchDropdown?this.searchDropdown.scrollTop:0; if (Math.abs(e.clientX-sSX)>S_MOVE || Math.abs(e.clientY-sSY)>S_MOVE || Math.abs(window.scrollY-sScrollY)>0 || Math.abs(window.scrollX-sScrollX)>0 || Math.abs(ddTop - sDDTop)>0) suggestion.__moved=true; };
   const sPC=()=>{ suggestion.__moved=true; sST=0; };
-  const sPU=(e)=>{ const dur=performance.now()-(sST||performance.now()); const ddTop=this.searchDropdown?this.searchDropdown.scrollTop:0; const scrolled= Math.abs(ddTop - sDDTop)>0; const ok=!suggestion.__moved && !scrolled && dur<=S_HOLD; sST=0; if(!ok) return; if (suggestion.__fastTapLock) return; suggestion.__fastTapLock = true; try { try { e && e.preventDefault && e.preventDefault(); } catch {} try { e && e.stopPropagation && e.stopPropagation(); } catch {} this.selectProduct(product); } finally { setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);} };
+  const sPU=(e)=>{ 
+    // Don't navigate if momentum was active
+    if (momentumActive || isScrolling) {
+      try { e && e.preventDefault && e.preventDefault(); } catch {} 
+      try { e && e.stopPropagation && e.stopPropagation(); } catch {}
+      return;
+    }
+    const dur=performance.now()-(sST||performance.now()); 
+    const ddTop=this.searchDropdown?this.searchDropdown.scrollTop:0; 
+    const scrolled= Math.abs(ddTop - sDDTop)>0; 
+    const ok=!suggestion.__moved && !scrolled && dur<=S_HOLD; 
+    sST=0; 
+    if(!ok) return; 
+    if (suggestion.__fastTapLock) return; 
+    suggestion.__fastTapLock = true; 
+    try { 
+      try { e && e.preventDefault && e.preventDefault(); } catch {} 
+      try { e && e.stopPropagation && e.stopPropagation(); } catch {} 
+      this.selectProduct(product); 
+    } finally { 
+      setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);
+    } 
+  };
   suggestion.addEventListener('pointerdown', sPD, { passive: true });
   suggestion.addEventListener('pointermove', sPM, { passive: true });
   suggestion.addEventListener('pointercancel', sPC, { passive: true });
-  suggestion.addEventListener('pointerup', (e) => { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} this.swallowNextClickOnce(); sPU(e); }, { passive: false });
-  suggestion.addEventListener('touchend', (e) => { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} this.swallowNextClickOnce(); sPU(e); }, { passive: false });
+  suggestion.addEventListener('pointerup', (e) => { 
+    if (momentumActive || isScrolling) {
+      try { e.preventDefault(); } catch {} 
+      try { e.stopPropagation(); } catch {}
+      return;
+    }
+    try { e.preventDefault(); } catch {} 
+    try { e.stopPropagation(); } catch {} 
+    this.swallowNextClickOnce(); 
+    sPU(e); 
+  }, { passive: false });
+  suggestion.addEventListener('touchend', (e) => { 
+    if (momentumActive || isScrolling) {
+      try { e.preventDefault(); } catch {} 
+      try { e.stopPropagation(); } catch {}
+      return;
+    }
+    try { e.preventDefault(); } catch {} 
+    try { e.stopPropagation(); } catch {} 
+    this.swallowNextClickOnce(); 
+    sPU(e); 
+  }, { passive: false });
 
     return suggestion;
   }

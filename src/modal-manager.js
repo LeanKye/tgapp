@@ -50,6 +50,7 @@ class ModalManager {
     // Создаем базовые модальные окна
     this.createLabelModal();
     this.createCheckoutModal();
+    this.createDeleteConfirmModal();
   }
 
   // Создание модального окна для лейблов
@@ -75,6 +76,32 @@ class ModalManager {
 
     document.body.insertAdjacentHTML('beforeend', modalHTML);
     this.setupModalEvents('label-modal');
+  }
+
+  // Создание модального окна подтверждения удаления
+  createDeleteConfirmModal() {
+    if (document.getElementById('delete-confirm-modal')) return;
+
+    const modalHTML = `
+      <div id="delete-confirm-modal" class="modal-overlay">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div class="modal-icon">🗑️</div>
+            <h3 class="modal-title">Удалить товар?</h3>
+          </div>
+          <div class="modal-body">
+            <p class="modal-text">Вы уверены, что хотите удалить <strong id="delete-product-name"></strong> из корзины?</p>
+          </div>
+          <div class="modal-footer modal-footer-buttons">
+            <button id="modal-cancel-delete" class="modal-button modal-button-secondary">Отмена</button>
+            <button id="modal-confirm-delete" class="modal-button modal-button-danger">Удалить</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    this.setupModalEvents('delete-confirm-modal');
   }
 
   // Создание модального окна оформления
@@ -144,13 +171,18 @@ class ModalManager {
     this.setupCloseEvents(modal, modalId);
     
     // Настройка drag событий для модальных окон
-    if (modalId === 'label-modal' || modalId === 'checkout-modal') {
+    if (modalId === 'label-modal' || modalId === 'checkout-modal' || modalId === 'delete-confirm-modal') {
       this.setupDragEvents(modal, content);
     }
     
     // Дополнительные обработчики для модального окна оформления
     if (modalId === 'checkout-modal') {
       this.setupCheckoutEvents(modal);
+    }
+    
+    // Дополнительные обработчики для модального окна удаления
+    if (modalId === 'delete-confirm-modal') {
+      this.setupDeleteConfirmEvents(modal);
     }
 
     // Помечаем, что обработчики подключены
@@ -372,6 +404,33 @@ class ModalManager {
     }
   }
 
+  // Дополнительные обработчики для модального окна удаления
+  setupDeleteConfirmEvents(modal) {
+    // Кнопка отмены
+    const cancelBtn = modal.querySelector('#modal-cancel-delete');
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', () => {
+        this.closeModal('delete-confirm-modal');
+        if (this.onDeleteCancel) {
+          this.onDeleteCancel();
+          this.onDeleteCancel = null;
+        }
+      });
+    }
+
+    // Кнопка подтверждения удаления
+    const confirmBtn = modal.querySelector('#modal-confirm-delete');
+    if (confirmBtn) {
+      confirmBtn.addEventListener('click', () => {
+        this.closeModal('delete-confirm-modal');
+        if (this.onDeleteConfirm) {
+          this.onDeleteConfirm();
+          this.onDeleteConfirm = null;
+        }
+      });
+    }
+  }
+  
   // Дополнительные обработчики для модального окна оформления
   setupCheckoutEvents(modal) {
     // Закрытие по клику на крестик
@@ -413,6 +472,18 @@ class ModalManager {
         text.textContent = data.labelInfo.description;
       }
     }
+    
+    // Заполняем данные для delete-confirm-modal
+    if (modalId === 'delete-confirm-modal' && data.productName) {
+      const productNameEl = modal.querySelector('#delete-product-name');
+      if (productNameEl) {
+        productNameEl.textContent = data.productName;
+      }
+      
+      // Сохраняем колбэки
+      this.onDeleteConfirm = data.onConfirm;
+      this.onDeleteCancel = data.onCancel;
+    }
 
     // Заполняем данные для checkout-modal
     if (modalId === 'checkout-modal' && data.paymentData) {
@@ -449,7 +520,7 @@ class ModalManager {
     // Показываем модальное окно с анимацией
     if (modalId === 'checkout-modal') {
       this.animateCheckoutModalOpen(modal);
-    } else if (modalId === 'label-modal') {
+    } else if (modalId === 'label-modal' || modalId === 'delete-confirm-modal') {
       this.animateLabelModalOpen(modal);
     }
   }
@@ -469,7 +540,7 @@ class ModalManager {
     // Для всех модальных окон используем JavaScript анимации
     if (modalId === 'checkout-modal') {
       this.animateCheckoutModalClose(modal);
-    } else if (modalId === 'label-modal') {
+    } else if (modalId === 'label-modal' || modalId === 'delete-confirm-modal') {
       this.animateLabelModalClose(modal);
     }
   }
@@ -492,7 +563,7 @@ class ModalManager {
     content.style.transition = 'none';
     
     // Запускаем анимацию
-    const duration = 300;
+    const duration = 200; // Ускоренная анимация
     const startTime = Date.now();
     
     const animate = () => {
@@ -538,7 +609,7 @@ class ModalManager {
     // Разблокируем скролл после завершения анимации
     
     // Запускаем анимацию закрытия
-    const duration = 300;
+    const duration = 200; // Ускоренная анимация
     const startTime = Date.now();
     const baseAlpha = 0.5;
     
@@ -592,7 +663,7 @@ class ModalManager {
     content.style.transition = 'none';
     
     // Запускаем анимацию
-    const duration = 300;
+    const duration = 200; // Ускоренная анимация, так же как для лейблов
     const startTime = Date.now();
     
     const animate = () => {
@@ -638,7 +709,7 @@ class ModalManager {
     // Разблокируем скролл после завершения анимации
     
     // Запускаем анимацию закрытия
-    const duration = 300;
+    const duration = 200; // Ускоренная анимация, так же как для лейблов
     const startTime = Date.now();
     const baseAlpha = 0.5;
     
@@ -684,7 +755,7 @@ class ModalManager {
     // Возвращаем на ту же длительность/кривую, как и открытие/закрытие
     const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
-    const duration = 300;
+    const duration = 200; // Ускоренная анимация
     const startTime = Date.now();
     const baseAlpha = 0.5;
 
@@ -731,7 +802,7 @@ class ModalManager {
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
     // Длительность пропорциональна оставшемуся пути, чтобы оверлей не зависал
     const remaining = 100 - startPercent;
-    const duration = Math.max(120, Math.round(300 * (remaining / 100))); // от 120мс до 300мс
+    const duration = Math.max(100, Math.round(200 * (remaining / 100))); // от 100мс до 200мс (ускоренная)
     const startTime = Date.now();
     const baseAlpha = 0.5;
 
