@@ -136,6 +136,9 @@ function renderCart() {
   if (totalEl) totalEl.innerHTML = formatPrice(total);
 }
 
+// Map для отслеживания блокировки по товарам (предотвращение двойных нажатий)
+const qtyButtonLocks = new Map();
+
 function attachEvents() {
   document.getElementById('to-main-btn')?.addEventListener('click', () => {
     const basePath = window.location.pathname.replace(/[^/]*$/, '');
@@ -143,6 +146,11 @@ function attachEvents() {
   });
 
   document.getElementById('cart-list')?.addEventListener('click', (e) => {
+    // Пропускаем обычные клики, если они заблокированы после fast-tap
+    if (window.__cartFastTapBlockClickUntil && performance.now() < window.__cartFastTapBlockClickUntil && !e.__fastTapSynthetic) {
+      return;
+    }
+    
     const itemEl = e.target.closest('.cart-item');
     if (!itemEl) return;
     const id = itemEl.getAttribute('data-id');
@@ -175,6 +183,10 @@ function attachEvents() {
     }
     
     if (action === 'inc' || action === 'dec') {
+      // Предотвращаем двойные нажатия на конкретный товар (100ms достаточно для предотвращения двойного tap)
+      if (qtyButtonLocks.get(id)) return;
+      qtyButtonLocks.set(id, true);
+      
       // Обновляем количество в localStorage
       if (action === 'inc') updateQty(id, +1);
       if (action === 'dec') updateQty(id, -1);
@@ -182,7 +194,10 @@ function attachEvents() {
       // Получаем обновленное значение
       const items = readCart();
       const updatedItem = items.find(i => i.id === id);
-      if (!updatedItem) return;
+      if (!updatedItem) {
+        qtyButtonLocks.delete(id);
+        return;
+      }
       
       // Обновляем только текст количества с анимацией (без перерисовки всего элемента)
       const qtyTextEl = itemEl.querySelector('.qty-text');
@@ -201,6 +216,11 @@ function attachEvents() {
       if (totalEl) totalEl.innerHTML = formatPrice(total);
       
       window.dispatchEvent(new Event('cart:updated'));
+      
+      // Разблокируем через короткое время (100ms - достаточно чтобы избежать двойного срабатывания, но быстро разрешить новые нажатия)
+      setTimeout(() => {
+        qtyButtonLocks.delete(id);
+      }, 100);
     }
   });
 
