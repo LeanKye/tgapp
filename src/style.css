@@ -2540,7 +2540,7 @@ body.has-bottom-nav .product-cart-controls {
 .variant-group {
   transform: scaleY(0);
   transform-origin: top;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  transition: transform 0.3s ease, opacity 0.3s ease, max-height 0.33s ease, margin-top 0.33s ease;
   opacity: 0;
   overflow: hidden;
   max-height: 0;
@@ -2618,11 +2618,29 @@ body.has-bottom-nav .product-cart-controls {
   margin-top: 20px; /* Отступ между группами кнопок как на макете */
 }
 
+/* Синхронное обратное движение групп при сворачивании */
+#checkout.expanded.collapsing .period-group,
+#checkout.expanded.collapsing .edition-group {
+  margin-top: 20px; /* как в закрытом состоянии */
+}
+
 /* Анимация сдвига групп при раскрытии variant-group - кнопки периода отъезжают вниз */
 #checkout.expanded .period-group,
 #checkout.expanded .edition-group {
   margin-top: 8px;
   transition: all 0.3s ease;
+}
+
+/* Подравниваем длительность в фазе сворачивания, чтобы совпадала с max-height */
+#checkout.expanded.collapsing .period-group,
+#checkout.expanded.collapsing .edition-group {
+  transition: margin-top 0.33s ease;
+}
+
+/* Во время сворачивания margin-top у variant-group сразу движется к закрытому значению,
+   чтобы при снятии expanded не было скачка */
+#checkout.expanded.collapsing .variant-group {
+  margin-top: 20px;
 }
 
 /* При раскрытии панели кнопки периода отъезжают вниз, давая место для вариантов */
@@ -3029,6 +3047,17 @@ body.has-bottom-nav .product-cart-controls {
   }
 }
 
+/* Синхронное обратное движение групп при сворачивании (адаптив до 480px) */
+@media (max-width: 480px) {
+  #checkout.expanded.collapsing .period-group,
+  #checkout.expanded.collapsing .edition-group {
+    margin-top: 16px; /* как в закрытом состоянии */
+  }
+  #checkout.expanded.collapsing .variant-group {
+    margin-top: 20px; /* базовое закрытое значение для variant-group */
+  }
+}
+
 @media (max-width: 768px) {
   .search-overlay {
     background: linear-gradient(to bottom, transparent 0%, transparent 114px, rgba(0, 0, 0, 0.5) 114px);
@@ -3168,6 +3197,18 @@ body.has-bottom-nav .product-cart-controls {
   #checkout.expanded .variant-group {
     margin-top: 26px;
   }
+
+  /* Синхронное обратное движение групп при сворачивании (планшеты) */
+  #checkout.expanded.collapsing .period-group,
+  #checkout.expanded.collapsing .edition-group {
+    margin-top: 4px; /* базовое закрытое значение */
+  }
+  #checkout.expanded.collapsing .period-group {
+    margin-top: -16px; /* как в закрытом состоянии для period */
+  }
+  #checkout.expanded.collapsing .variant-group {
+    margin-top: 20px; /* базовое закрытое значение для variant-group */
+  }
 }
 
 @media (min-width: 1024px) {
@@ -3287,7 +3328,7 @@ body.has-bottom-nav .product-cart-controls {
   }
   to {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-32px);
   }
 }
 
@@ -3304,7 +3345,7 @@ body.has-bottom-nav .product-cart-controls {
 }
 
 .variant-group.collapsing {
-  animation: fadeOutToTop 0.3s ease forwards;
+  animation: fadeOutToTop 0.33s ease forwards;
 }
 
 /* Анимация для показа выбора */
