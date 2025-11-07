@@ -496,7 +496,7 @@ body:has(.product) .add-to-cart:active {
   /* Статическое состояние без промежуточных переходов, морфинг только через keyframes */
   transition: none;
   background-color: #13b64c;
-  width: calc(50% - 4px);
+  width: calc(55%);
   left: 16px;
   right: auto;
   opacity: 0.95;
@@ -519,13 +519,13 @@ body.cart-morph-active .add-to-cart {
   }
   60% {
     background-color: #13b64c;
-    width: calc(50% - 4px);
+    width: calc(55%);
     left: 16px;
     right: auto;
   }
   100% {
     background-color: #13b64c;
-    width: calc(50% - 4px);
+    width: calc(55%);
     left: 16px;
     right: auto;
     opacity: 0.95;
@@ -544,7 +544,7 @@ body.cart-morph-reverse .add-to-cart {
 @keyframes morphToBlue {
   0% {
     background-color: #13b64c;
-    width: calc(50% - 4px);
+    width: calc(55%);
     left: 16px;
     right: auto;
     opacity: 0.95;
@@ -567,11 +567,11 @@ body.cart-morph-reverse .add-to-cart {
 /* Контролы корзины с анимацией появления */
 .product-cart-controls {
   position: fixed;
-  left: calc(50% + 4px);
+  left: calc(16px + 55% + 2px);
   right: 16px;
   bottom: calc(10px + env(safe-area-inset-bottom));
   display: flex;
-  gap: 8px;
+  gap: 4px;
   justify-content: flex-end;
   z-index: 2000;
   align-items: center;
@@ -1544,9 +1544,9 @@ body.has-checkout-bar .catalog {
 .product-cart-controls .qty-box {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border-radius: 8px;
-  padding: 4px;
+  padding: 4px 0px;
   height: 46px;
   box-sizing: border-box;
 }
