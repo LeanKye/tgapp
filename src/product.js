@@ -1403,13 +1403,20 @@ function renderBuyOrControls(product, animate = false) {
         document.body.classList.add('cart-morph-reverse');
         // Блокируем кнопки количества на время анимации закрытия
         try { oldControls.setAttribute('data-animating', 'true'); } catch(e) {}
-        setTimeout(() => {
-          oldControls.remove();
-          if (buyBtn) {
-            buyBtn.classList.remove('morphed');
-          }
+        // Синхронизируем завершение: ждём конец обеих анимаций
+        let btnDone=false, ctrDone=false, cleaned=false;
+        const cleanup=()=>{ if(cleaned) return; cleaned=true;
+          try { buyBtn && buyBtn.removeEventListener('animationend', onBtnEnd, true); } catch(e) {}
+          try { oldControls && oldControls.removeEventListener('animationend', onCtrEnd, true); } catch(e) {}
+          if (buyBtn) buyBtn.classList.remove('morphed');
           document.body.classList.remove('cart-morph-reverse');
-        }, 400);
+        };
+        const onBtnEnd=(e)=>{ if(!e || e.animationName!=='morphToBlue') return; btnDone=true; if(ctrDone) cleanup(); };
+        const onCtrEnd=(e)=>{ if(!e || e.animationName!=='slideOutToRight') return; ctrDone=true; try { oldControls.remove(); } catch(e) {} if(btnDone) cleanup(); };
+        if (buyBtn) buyBtn.addEventListener('animationend', onBtnEnd, true);
+        if (oldControls) oldControls.addEventListener('animationend', onCtrEnd, true);
+        // Фолбэк на случай отсутствия событий
+        setTimeout(()=>{ if(!ctrDone){ try{ oldControls.remove(); }catch(e){} ctrDone=true; } if(!btnDone){ btnDone=true; } cleanup(); }, 700);
       } else {
         oldControls.remove();
         if (buyBtn) {
