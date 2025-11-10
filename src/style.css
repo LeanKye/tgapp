@@ -496,11 +496,13 @@ body:has(.product) .add-to-cart:active {
   /* Статическое состояние без промежуточных переходов, морфинг только через keyframes */
   transition: none;
   background-color: #13b64c;
-  width: calc(55%);
+  /* Ширина ограничена, чтобы справа гарантированно помещался степпер (3*45px + 2*4px = 143px) + поля 16px и зазор 8px */
+  width: clamp(0px, 55%, calc(100% - 183px));
   left: 16px;
   right: auto;
   opacity: 0.95;
   white-space: nowrap;
+  transform: none !important;
 }
 
 /* Активная анимация морфинга */
@@ -572,12 +574,14 @@ body.cart-morph-reverse .add-to-cart {
 /* Контролы корзины с анимацией появления */
 .product-cart-controls {
   position: fixed;
-  left: calc(16px + 55% + 2px);
+  /* Ставим слева отступ 16px + фактическая ширина кнопки (с тем же ограничением) + фиксированный зазор 8px */
+  left: calc(16px + clamp(0px, 55%, calc(100% - 183px)) + 8px);
   right: 16px;
   bottom: calc(10px + env(safe-area-inset-bottom));
   display: flex;
   gap: 4px;
-  justify-content: flex-end;
+  /* Выравниваем контент слева, чтобы визуальный зазор слева от контейнера был ровно 8px */
+  justify-content: flex-start;
   z-index: 2000;
   align-items: center;
   opacity: 1;
@@ -3204,6 +3208,11 @@ body.has-bottom-nav .product-cart-controls {
   .add-to-cart:active {
     /* Эффект «физического» нажатия с сохранением центрирования */
     transform: translateX(-50%) scale(0.98);
+  }
+  
+  /* В морфнутом состоянии всегда фиксируем позицию слева и убираем любые трансформации */
+  .add-to-cart.morphed:active {
+    transform: none !important;
   }
   
  
