@@ -470,6 +470,8 @@ body.has-bottom-nav .product {
   /* Переход для эффекта нажатия */
   transition: transform 0.08s ease-out;
   cursor: pointer;
+  /* Изоляция от внешнего рефлоу на время анимаций фиксированного элемента */
+  contain: layout paint;
 }
 
 /* Поднимаем кнопку над нижней навигацией, но ещё ближе к панели */
@@ -510,6 +512,7 @@ body.cart-morph-active .add-to-cart {
   animation: morphToGreen 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
   pointer-events: none;
   transition: none !important;
+  will-change: transform, width, left, opacity, background-color;
 }
 
 /* Разрешаем клик по уже «morphed» кнопке во время морфинга */
@@ -545,7 +548,8 @@ body.cart-morph-reverse .add-to-cart {
   pointer-events: none;
   transition: none !important;
   /* Синхронизация обратного морфинга: сначала уезжают контролы, затем расширяется кнопка */
-  animation-delay: 0.05s;
+  animation-delay: 0s;
+  will-change: transform, width, left, opacity, background-color;
 }
 
 @keyframes morphToBlue {
@@ -589,6 +593,8 @@ body.cart-morph-reverse .add-to-cart {
   /* Избегаем микродёргания после завершения keyframes-анимации */
   transition: none;
   will-change: auto;
+  /* Изоляция от внешнего рефлоу для фиксированного элемента */
+  contain: layout paint;
 }
 
 /* Анимация появления контролов */
@@ -600,6 +606,7 @@ body.cart-morph-reverse .add-to-cart {
   opacity: 0;
   transition: none !important;
   pointer-events: none;
+  will-change: transform, opacity;
 }
 
 @keyframes slideInFromRight {
@@ -624,6 +631,7 @@ body.cart-morph-reverse .product-cart-controls {
   transition: none !important;
   /* Начинаем сразу, чтобы освободить место под расширение кнопки */
   animation-delay: 0s;
+  will-change: transform, opacity;
 }
 
 @keyframes slideOutToRight {
