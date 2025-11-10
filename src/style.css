@@ -526,13 +526,13 @@ body.cart-morph-active .add-to-cart.morphed {
   }
   60% {
     background-color: #13b64c;
-    width: calc(55%);
+    width: clamp(0px, 55%, calc(100% - 183px));
     left: 16px;
     right: auto;
   }
   100% {
     background-color: #13b64c;
-    width: calc(55%);
+    width: clamp(0px, 55%, calc(100% - 183px));
     left: 16px;
     right: auto;
     opacity: 0.95;
@@ -551,7 +551,7 @@ body.cart-morph-reverse .add-to-cart {
 @keyframes morphToBlue {
   0% {
     background-color: #13b64c;
-    width: calc(55%);
+    width: clamp(0px, 55%, calc(100% - 183px));
     left: 16px;
     right: auto;
     opacity: 0.95;
