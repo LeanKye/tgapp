@@ -510,6 +510,11 @@ body.cart-morph-active .add-to-cart {
   transition: none !important;
 }
 
+/* Разрешаем клик по уже «morphed» кнопке во время морфинга */
+body.cart-morph-active .add-to-cart.morphed {
+  pointer-events: auto;
+}
+
 @keyframes morphToGreen {
   0% {
     background-color: #29A5FF;
@@ -590,6 +595,7 @@ body.cart-morph-reverse .add-to-cart {
   /* Исключаем мерцание до старта анимации */
   opacity: 0;
   transition: none !important;
+  pointer-events: none;
 }
 
 @keyframes slideInFromRight {

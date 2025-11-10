@@ -1399,6 +1399,8 @@ function renderBuyOrControls(product, animate = false) {
         // Мгновенно меняем текст, чтобы он был виден в процессе анимации
         if (buyBtn) buyBtn.textContent = 'Добавить в корзину';
         document.body.classList.add('cart-morph-reverse');
+        // Блокируем кнопки количества на время анимации закрытия
+        try { oldControls.setAttribute('data-animating', 'true'); } catch(e) {}
         setTimeout(() => {
           oldControls.remove();
           if (buyBtn) {
