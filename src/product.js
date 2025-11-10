@@ -869,66 +869,23 @@ function initCheckoutPanel() {
       showSelectionAnimation();
     }
     
-    // Включаем состояние синхронного обратного движения групп
-    checkoutContainer.classList.add('collapsing');
-    
     // Запускаем анимацию закрытия для variant-group
-    // Готовим плавное уменьшение высоты, чтобы остальные группы поднимались во время анимации
-    try {
-      const currentHeight = variantGroup.scrollHeight;
-      if (currentHeight && currentHeight > 0) {
-        variantGroup.style.maxHeight = currentHeight + 'px';
-        variantGroup.style.overflow = 'hidden';
-        // Форсируем reflow перед изменением
-        // eslint-disable-next-line no-unused-expressions
-        variantGroup.offsetHeight;
-        // Дадим анимации "ухода" стартовать и через небольшой интервал начнём схлопывание
-        setTimeout(() => {
-          variantGroup.style.maxHeight = '0px';
-        }, 50);
-      }
-    } catch {}
-    
     variantGroup.classList.add('collapsing');
     variantGroup.classList.remove('expanding');
+    
+    // Одновременно убираем класс expanded, чтобы другие группы начали анимацию перемещения
+    checkoutContainer.classList.remove('expanded');
+    checkoutArrow.classList.remove('expanded');
+    
     // Сразу возвращаем другие группы в активное состояние
     periodGroup.classList.remove('inactive');
     editionGroup.classList.remove('inactive');
     
-    // После завершения анимации убираем все классы (по событию, с фолбэком по таймеру)
-    let collapseFinished = false;
-    const finishCollapse = () => {
-      if (collapseFinished) return;
-      collapseFinished = true;
-      if (collapseTimer) {
-        clearTimeout(collapseTimer);
-        collapseTimer = null;
-      }
+    // После завершения анимации убираем все классы
+    collapseTimer = setTimeout(() => {
       variantGroup.classList.remove('expanded', 'collapsing');
-      variantGroup.style.maxHeight = '';
-      variantGroup.style.overflow = '';
-      checkoutContainer.classList.remove('expanded');
-      checkoutContainer.classList.remove('collapsing');
-      checkoutArrow.classList.remove('expanded');
       isAnimatingCheckout = false;
-      // Очистка обработчиков
-      variantGroup.removeEventListener('transitionend', onTransitionEnd);
-      variantGroup.removeEventListener('animationend', onAnimationEnd);
-    };
-    const onTransitionEnd = (e) => {
-      // Нас интересует окончание схлопывания по max-height
-      if (e && e.target === variantGroup && (e.propertyName === 'max-height' || e.propertyName === 'opacity')) {
-        finishCollapse();
-      }
-    };
-    const onAnimationEnd = (e) => {
-      if (!e || e.target !== variantGroup) return;
-      finishCollapse();
-    };
-    variantGroup.addEventListener('transitionend', onTransitionEnd);
-    variantGroup.addEventListener('animationend', onAnimationEnd);
-    // Фолбэк на случай если событие не сработает
-    collapseTimer = setTimeout(finishCollapse, COLLAPSE_DURATION_MS + 100);
+    }, COLLAPSE_DURATION_MS);
     
     // Обновляем текст заголовка
     updateHeaderText();
@@ -958,9 +915,6 @@ function initCheckoutPanel() {
     checkoutContainer.classList.add('expanded');
     checkoutArrow.classList.add('expanded');
     variantGroup.classList.add('expanded');
-    // На всякий случай очистим inline-стили, которые могли остаться после схлопывания
-    variantGroup.style.maxHeight = '';
-    variantGroup.style.overflow = '';
     
     // Сразу делаем другие группы неактивными и запускаем анимацию появления variant-group
     periodGroup.classList.add('inactive');
