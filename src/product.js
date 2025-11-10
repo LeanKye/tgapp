@@ -1279,7 +1279,9 @@ function initPayment() {
   let bx=0,by=0,bt=0,bsy=0,bsx=0; const MOVEB=8,HOLDB=300;
   const bpd=(e)=>{ bx=e.clientX; by=e.clientY; bt=performance.now(); bsy=window.scrollY; bsx=window.scrollX; buyButton.__moved=false; };
   const bpm=(e)=>{ if(!bt) return; if(Math.abs(e.clientX-bx)>MOVEB||Math.abs(e.clientY-by)>MOVEB||Math.abs(window.scrollY-bsy)>0||Math.abs(window.scrollX-bsx)>0) buyButton.__moved=true; };
-  const bpu=()=>{ const dur=performance.now()-(bt||performance.now()); const ok=!buyButton.__moved && dur<=HOLDB; bt=0; if(!ok) return; if (buyButton.__fastTapLock) return; 
+  const bpu=()=>{ const dur=performance.now()-(bt||performance.now()); const ok=!buyButton.__moved && dur<=HOLDB; bt=0; if(!ok) return; 
+    // Разрешаем повторный тап во время морфинга (когда кнопка уже morphed)
+    if (buyButton.__fastTapLock && !buyButton.classList.contains('morphed')) return; 
     // Разрешаем клик даже во время анимации морфинга
     buyButton.__fastTapLock=true; try {
     // Если кнопка в морфнутом состоянии — ведём в корзину
