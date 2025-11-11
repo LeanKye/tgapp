@@ -397,9 +397,14 @@ class ModalManager {
     if (modalId === 'label-modal') {
       const closeBtn = modal.querySelector('#modal-close');
       if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          this.closeModal(modalId);
-        });
+        let active=false;
+        const onPD=()=>{ active=true; };
+        const onPL=()=>{ active=false; };
+        const onPU=()=>{ if(!active) return; active=false; this.closeModal(modalId); };
+        closeBtn.addEventListener('pointerdown', onPD, { passive: true });
+        closeBtn.addEventListener('pointerleave', onPL, { passive: true });
+        closeBtn.addEventListener('pointercancel', onPL, { passive: true });
+        closeBtn.addEventListener('pointerup', onPU, { passive: true });
       }
     }
   }
@@ -409,25 +414,27 @@ class ModalManager {
     // Кнопка отмены
     const cancelBtn = modal.querySelector('#modal-cancel-delete');
     if (cancelBtn) {
-      cancelBtn.addEventListener('click', () => {
-        this.closeModal('delete-confirm-modal');
-        if (this.onDeleteCancel) {
-          this.onDeleteCancel();
-          this.onDeleteCancel = null;
-        }
-      });
+      let activeC=false;
+      const cPD=()=>{ activeC=true; };
+      const cPL=()=>{ activeC=false; };
+      const cPU=()=>{ if(!activeC) return; activeC=false; this.closeModal('delete-confirm-modal'); if (this.onDeleteCancel) { this.onDeleteCancel(); this.onDeleteCancel = null; } };
+      cancelBtn.addEventListener('pointerdown', cPD, { passive: true });
+      cancelBtn.addEventListener('pointerleave', cPL, { passive: true });
+      cancelBtn.addEventListener('pointercancel', cPL, { passive: true });
+      cancelBtn.addEventListener('pointerup', cPU, { passive: true });
     }
 
     // Кнопка подтверждения удаления
     const confirmBtn = modal.querySelector('#modal-confirm-delete');
     if (confirmBtn) {
-      confirmBtn.addEventListener('click', () => {
-        this.closeModal('delete-confirm-modal');
-        if (this.onDeleteConfirm) {
-          this.onDeleteConfirm();
-          this.onDeleteConfirm = null;
-        }
-      });
+      let activeD=false;
+      const dPD=()=>{ activeD=true; };
+      const dPL=()=>{ activeD=false; };
+      const dPU=()=>{ if(!activeD) return; activeD=false; this.closeModal('delete-confirm-modal'); if (this.onDeleteConfirm) { this.onDeleteConfirm(); this.onDeleteConfirm = null; } };
+      confirmBtn.addEventListener('pointerdown', dPD, { passive: true });
+      confirmBtn.addEventListener('pointerleave', dPL, { passive: true });
+      confirmBtn.addEventListener('pointercancel', dPL, { passive: true });
+      confirmBtn.addEventListener('pointerup', dPU, { passive: true });
     }
   }
   

@@ -412,5 +412,3 @@ document.addEventListener('DOMContentLoaded', () => {
   attachEvents();
   renderCart();
 });
-
-

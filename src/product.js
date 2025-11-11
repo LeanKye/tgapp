@@ -1279,7 +1279,7 @@ function initPayment() {
   let bx=0,by=0,bt=0,bsy=0,bsx=0; const MOVEB=8,HOLDB=300;
   const bpd=(e)=>{ bx=e.clientX; by=e.clientY; bt=performance.now(); bsy=window.scrollY; bsx=window.scrollX; buyButton.__moved=false; };
   const bpm=(e)=>{ if(!bt) return; if(Math.abs(e.clientX-bx)>MOVEB||Math.abs(e.clientY-by)>MOVEB||Math.abs(window.scrollY-bsy)>0||Math.abs(window.scrollX-bsx)>0) buyButton.__moved=true; };
-  const bpu=()=>{ const dur=performance.now()-(bt||performance.now()); const ok=!buyButton.__moved && dur<=HOLDB; bt=0; if(!ok) return; 
+  const bpu=()=>{ const ok=!buyButton.__moved; bt=0; if(!ok) return; 
     // Разрешаем повторный тап во время морфинга (когда кнопка уже morphed)
     if (buyButton.__fastTapLock && !buyButton.classList.contains('morphed')) return; 
     // Разрешаем клик даже во время анимации морфинга
@@ -1529,7 +1529,8 @@ function attachCartControlHandlers(controls, product) {
   // Fast-tap для −/+ с защитой от скролла/удержания, без троттлинга быстрых тапов
   let qx=0,qy=0,qt=0,qsy=0,qsx=0; const MOVEQ=8,HOLDQ=300;
   let lastTapAt=0, lastTapEl=null;
-  const qpd=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; qx=e.clientX; qy=e.clientY; qt=performance.now(); qsy=window.scrollY; qsx=window.scrollX; };
+  let qDownBtn=null;
+  const qpd=(e)=>{ const btn=e.target.closest('[data-action]'); if(!btn) return; qx=e.clientX; qy=e.clientY; qt=performance.now(); qsy=window.scrollY; qsx=window.scrollX; qDownBtn = btn; };
   const qpu=(e)=>{
     const btn=e.target.closest('[data-action]');
     if(!btn) return;
@@ -1539,16 +1540,19 @@ function attachCartControlHandlers(controls, product) {
     
     const moved=Math.abs(e.clientX-qx)>MOVEQ||Math.abs(e.clientY-qy)>MOVEQ||Math.abs(window.scrollY-qsy)>0||Math.abs(window.scrollX-qsx)>0;
     const now=performance.now();
-    const dur=now-(qt||now);
     qt=0;
-    if(moved||dur>HOLDQ) return;
+    // Кнопка должна быть той же, что была под пальцем на pointerdown
+    if (btn !== qDownBtn) { qDownBtn = null; return; }
+    if(moved) { qDownBtn = null; return; }
     // Дедупликация возможных двойных событий, но без задержки быстрых последовательных тапов
     if(lastTapEl===btn && (now-lastTapAt)<80) return;
     lastTapEl=btn; lastTapAt=now;
+    qDownBtn = null;
     clickHandler(e);
   };
   controls.addEventListener('pointerdown', qpd, { passive: true });
   controls.addEventListener('pointerup', qpu, { passive: true });
+  controls.addEventListener('pointercancel', ()=>{ qt=0; qDownBtn=null; }, { passive: true });
 }
 
 function handleAddToCartFromProduct() {
