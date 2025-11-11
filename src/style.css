@@ -54,18 +54,24 @@ html, body {
   --page-fade-out: 120ms;  /* короткий уход при навигации */
 }
 
-/* Плавное появление/исчезновение страницы */
-body {
+/* Плавное появление/исчезновение контента (не затрагивает нижнюю навигацию) */
+.catalog,
+.product,
+body.info-page main {
   opacity: 0;
 }
 
-body.loaded {
+body.loaded .catalog,
+body.loaded .product,
+body.info-page.loaded main {
   opacity: 1;
   transition: opacity var(--page-fade-in) ease;
 }
 
-/* Короткий уход при навигации */
-body.leaving {
+/* Короткий уход при навигации (только для контента) */
+body.leaving .catalog,
+body.leaving .product,
+body.info-page.leaving main {
   opacity: 0;
   transition: opacity var(--page-fade-out) ease;
 }

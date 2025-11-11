@@ -9,15 +9,16 @@ function playPageExit() {
   const dur = Math.max(0, parseInt(computed || '120', 10)) || 120;
   body.classList.add('leaving');
   return new Promise((resolve) => {
+    const fadeTarget = document.querySelector('.catalog, .product, body.info-page main') || body;
     const onEnd = (e) => {
-      if (e.target === body && e.propertyName === 'opacity') {
-        body.removeEventListener('transitionend', onEnd);
+      if (e.target === fadeTarget && e.propertyName === 'opacity') {
+        fadeTarget.removeEventListener('transitionend', onEnd);
         resolve();
       }
     };
-    body.addEventListener('transitionend', onEnd);
+    fadeTarget.addEventListener('transitionend', onEnd);
     setTimeout(() => {
-      body.removeEventListener('transitionend', onEnd);
+      fadeTarget.removeEventListener('transitionend', onEnd);
       resolve();
     }, dur + 80);
   });
