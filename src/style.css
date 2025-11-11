@@ -3647,6 +3647,11 @@ body.modal-open {
   transition: all 0.2s ease;
   min-width: 100px;
   flex: 1;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+  box-shadow: none;
 }
 
 .modal-button-secondary {
