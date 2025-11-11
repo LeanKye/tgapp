@@ -3664,6 +3664,12 @@ body.modal-open {
   background: #3a3a3a;
 }
 
+@media (hover: none) {
+  .modal-button-secondary:hover {
+    background: #2a2a2a; /* без осветления на touch-устройствах */
+  }
+}
+
 .modal-button-secondary:active {
   transform: scale(0.98);
 }
@@ -3676,6 +3682,12 @@ body.modal-open {
 
 .modal-button-danger:hover {
   background: #ff5c5c;
+}
+
+@media (hover: none) {
+  .modal-button-danger:hover {
+    background: #ff3b30; /* без осветления на touch-устройствах */
+  }
 }
 
 .modal-button-danger:active {
