@@ -5,6 +5,39 @@ import ModalManager from './modal-manager.js'
 // Простое хранение корзины в localStorage
 const STORAGE_KEY = 'hooli_cart';
 
+// Хранение выбранных позиций корзины (галочек) между переходами
+const SELECTED_KEY = 'hooli_cart_selected';
+
+function readSelected() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SELECTED_KEY) || '[]');
+    if (Array.isArray(raw)) {
+      return new Set(raw.map(String));
+    }
+    return new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function writeSelected(idsSet) {
+  const arr = Array.from(idsSet || []);
+  localStorage.setItem(SELECTED_KEY, JSON.stringify(arr));
+}
+
+function initializeSelection(items) {
+  const validIds = new Set(items.map(i => String(i.id)));
+  const saved = readSelected();
+  // Пересекаем сохранённые id с актуальными товарами
+  const intersect = new Set([...saved].filter(id => validIds.has(id)));
+  // Если сохранённого выбора нет — по умолчанию выбираем все
+  if (intersect.size === 0 && items.length > 0) {
+    items.forEach(i => intersect.add(String(i.id)));
+  }
+  writeSelected(intersect);
+  return intersect;
+}
+
 function readCart() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -90,8 +123,6 @@ function renderCart() {
   const empty = document.getElementById('cart-empty');
   const checkout = document.getElementById('cart-checkout');
   const items = readCart();
-  // Сохраняем выбранные элементы до перерендера
-  const prevSelected = new Set(Array.from(document.querySelectorAll('.cart-select:checked')).map(cb => cb.getAttribute('data-id')));
 
   if (!items.length) {
     list.innerHTML = '';
@@ -101,6 +132,8 @@ function renderCart() {
     document.body.classList.remove('has-checkout-bar');
     const selectAllCheckbox = document.getElementById('bulk-select-all');
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
+    // Корзина пуста — очищаем сохранённый выбор
+    localStorage.removeItem(SELECTED_KEY);
     return;
   }
 
@@ -111,16 +144,13 @@ function renderCart() {
 
   list.innerHTML = items.map(createCartItemHTML).join('');
 
-  // Восстанавливаем/устанавливаем выбор чекбоксов: по умолчанию выделяем все
+  // Восстанавливаем выбор чекбоксов из сохранённого состояния
+  const savedSelected = initializeSelection(items);
   const checkboxes = list.querySelectorAll('.cart-select');
-  if (prevSelected.size > 0) {
-    checkboxes.forEach(cb => {
-      const id = cb.getAttribute('data-id');
-      cb.checked = prevSelected.has(id);
-    });
-  } else {
-    checkboxes.forEach(cb => { cb.checked = true; });
-  }
+  checkboxes.forEach(cb => {
+    const id = cb.getAttribute('data-id');
+    cb.checked = savedSelected.has(id);
+  });
 
   // Синхронизируем чекбокс "выбрать все"
   const selectAllCheckbox = document.getElementById('bulk-select-all');
@@ -173,6 +203,10 @@ function attachEvents() {
         productName: item.title || 'товар',
         onConfirm: () => {
           removeItem(id);
+          // Удаляем id из сохранённого выбора
+          const sel = readSelected();
+          sel.delete(String(id));
+          writeSelected(sel);
           renderCart();
         },
         onCancel: () => {
@@ -252,6 +286,12 @@ function attachEvents() {
   document.getElementById('cart-list')?.addEventListener('change', (e) => {
     const target = e.target;
     if (!target || !target.classList || !target.classList.contains('cart-select')) return;
+    // Сохраняем изменение выбора в хранилище
+    const id = target.getAttribute('data-id');
+    const selected = readSelected();
+    if (target.checked) selected.add(String(id)); else selected.delete(String(id));
+    writeSelected(selected);
+
     const items = readCart();
     const { total, count } = calculateTotals(items);
     const countEl = document.getElementById('checkout-count');
@@ -310,6 +350,10 @@ function attachEvents() {
     const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
     checkboxes.forEach(cb => { cb.checked = !allChecked; });
     if (selectAllCheckbox) selectAllCheckbox.checked = !allChecked;
+    // Сохраняем текущее состояние выбранных
+    const selected = new Set();
+    document.querySelectorAll('.cart-select:checked').forEach(cb => selected.add(cb.getAttribute('data-id')));
+    writeSelected(selected);
     const items = readCart();
     const { total, count } = calculateTotals(items);
     const countEl = document.getElementById('checkout-count');
@@ -321,6 +365,10 @@ function attachEvents() {
   selectAllCheckbox?.addEventListener('change', (e) => {
     const checkboxes = document.querySelectorAll('.cart-select');
     checkboxes.forEach(cb => { cb.checked = !!e.target.checked; });
+    // Сохраняем текущее состояние выбранных
+    const selected = new Set();
+    document.querySelectorAll('.cart-select:checked').forEach(cb => selected.add(cb.getAttribute('data-id')));
+    writeSelected(selected);
     const items = readCart();
     const { total, count } = calculateTotals(items);
     const countEl = document.getElementById('checkout-count');
@@ -346,6 +394,10 @@ function attachEvents() {
       onConfirm: () => {
         const items = readCart().filter(i => !selectedIds.has(String(i.id)));
         writeCart(items);
+        // Удаляем выбранные id из сохранённого набора
+        const sel = readSelected();
+        selectedIds.forEach(id => sel.delete(String(id)));
+        writeSelected(sel);
         renderCart();
         window.dispatchEvent(new Event('cart:updated'));
       },
