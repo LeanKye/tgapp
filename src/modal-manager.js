@@ -397,14 +397,26 @@ class ModalManager {
     if (modalId === 'label-modal') {
       const closeBtn = modal.querySelector('#modal-close');
       if (closeBtn) {
-        let active=false;
-        const onPD=()=>{ active=true; };
-        const onPL=()=>{ active=false; };
-        const onPU=()=>{ if(!active) return; active=false; this.closeModal(modalId); };
+        let isDown=false;
+        let startInside=false;
+        const onPD=(e)=>{ 
+          isDown=true; 
+          const r=closeBtn.getBoundingClientRect();
+          const x=e.clientX, y=e.clientY;
+          startInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+        };
+        const onPU=(e)=>{ 
+          if(!isDown) return; 
+          isDown=false; 
+          const r=closeBtn.getBoundingClientRect();
+          const x=e.clientX, y=e.clientY;
+          const endInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+          if (startInside && endInside) { this.closeModal(modalId); }
+        };
+        const onPC=()=>{ isDown=false; };
         closeBtn.addEventListener('pointerdown', onPD, { passive: true });
-        closeBtn.addEventListener('pointerleave', onPL, { passive: true });
-        closeBtn.addEventListener('pointercancel', onPL, { passive: true });
         closeBtn.addEventListener('pointerup', onPU, { passive: true });
+        closeBtn.addEventListener('pointercancel', onPC, { passive: true });
       }
     }
   }
@@ -414,27 +426,55 @@ class ModalManager {
     // Кнопка отмены
     const cancelBtn = modal.querySelector('#modal-cancel-delete');
     if (cancelBtn) {
-      let activeC=false;
-      const cPD=()=>{ activeC=true; };
-      const cPL=()=>{ activeC=false; };
-      const cPU=()=>{ if(!activeC) return; activeC=false; this.closeModal('delete-confirm-modal'); if (this.onDeleteCancel) { this.onDeleteCancel(); this.onDeleteCancel = null; } };
+      let cDown=false, cStartInside=false;
+      const cPD=(e)=>{ 
+        cDown=true; 
+        const r=cancelBtn.getBoundingClientRect();
+        const x=e.clientX, y=e.clientY;
+        cStartInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+      };
+      const cPU=(e)=>{ 
+        if(!cDown) return; 
+        cDown=false; 
+        const r=cancelBtn.getBoundingClientRect();
+        const x=e.clientX, y=e.clientY;
+        const cEndInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+        if (cStartInside && cEndInside) {
+          this.closeModal('delete-confirm-modal'); 
+          if (this.onDeleteCancel) { this.onDeleteCancel(); this.onDeleteCancel = null; }
+        }
+      };
+      const cPC=()=>{ cDown=false; };
       cancelBtn.addEventListener('pointerdown', cPD, { passive: true });
-      cancelBtn.addEventListener('pointerleave', cPL, { passive: true });
-      cancelBtn.addEventListener('pointercancel', cPL, { passive: true });
       cancelBtn.addEventListener('pointerup', cPU, { passive: true });
+      cancelBtn.addEventListener('pointercancel', cPC, { passive: true });
     }
 
     // Кнопка подтверждения удаления
     const confirmBtn = modal.querySelector('#modal-confirm-delete');
     if (confirmBtn) {
-      let activeD=false;
-      const dPD=()=>{ activeD=true; };
-      const dPL=()=>{ activeD=false; };
-      const dPU=()=>{ if(!activeD) return; activeD=false; this.closeModal('delete-confirm-modal'); if (this.onDeleteConfirm) { this.onDeleteConfirm(); this.onDeleteConfirm = null; } };
+      let dDown=false, dStartInside=false;
+      const dPD=(e)=>{ 
+        dDown=true; 
+        const r=confirmBtn.getBoundingClientRect();
+        const x=e.clientX, y=e.clientY;
+        dStartInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+      };
+      const dPU=(e)=>{ 
+        if(!dDown) return; 
+        dDown=false; 
+        const r=confirmBtn.getBoundingClientRect();
+        const x=e.clientX, y=e.clientY;
+        const dEndInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+        if (dStartInside && dEndInside) {
+          this.closeModal('delete-confirm-modal'); 
+          if (this.onDeleteConfirm) { this.onDeleteConfirm(); this.onDeleteConfirm = null; }
+        }
+      };
+      const dPC=()=>{ dDown=false; };
       confirmBtn.addEventListener('pointerdown', dPD, { passive: true });
-      confirmBtn.addEventListener('pointerleave', dPL, { passive: true });
-      confirmBtn.addEventListener('pointercancel', dPL, { passive: true });
       confirmBtn.addEventListener('pointerup', dPU, { passive: true });
+      confirmBtn.addEventListener('pointercancel', dPC, { passive: true });
     }
   }
   
