@@ -55,12 +55,13 @@ function buildBottomNav() {
     </button>
     <button class="nav-item" data-key="cart" aria-label="Корзина">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="nav-icon">
-        <path class="icon-outline" d="M6 6h.6a1 1 0 0 1 .97.75L8.7 10h8.9a1 1 0 0 1 .98 1.2l-1 5a1 1 0 0 1-.98.8H9.2a1 1 0 0 1-.97-.76L6.3 5.4A1 1 0 0 0 5.34 4.6H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path class="icon-solid" d="M3 3.25c.414 0 .75.336.75.75S3.414 4.75 3 4.75 2.25 4.414 2.25 4 2.586 3.25 3 3.25Zm3.3 1.35c.47 0 .88.32.99.77l.95 3.73h9.36c.73 0 1.27.67 1.12 1.38l-1.02 5a1.25 1.25 0 0 1-1.22 1H9.21c-.57 0-1.06-.4-1.2-.96L5.36 5.73a.75.75 0 0 1 .94-.13Z" fill="currentColor"/>
-        <circle class="icon-outline" cx="10" cy="20" r="1.5" stroke="currentColor" stroke-width="2"/>
-        <circle class="icon-outline" cx="17" cy="20" r="1.5" stroke="currentColor" stroke-width="2"/>
-        <circle class="icon-solid" cx="10" cy="20" r="1.5" fill="currentColor"/>
-        <circle class="icon-solid" cx="17" cy="20" r="1.5" fill="currentColor"/>
+        <!-- Корзина-вкладыш: корпус + наклоненная крышка -->
+        <!-- Outline -->
+        <path class="icon-outline" d="M4 9h16l-2.2 9.2a2 2 0 0 1-1.94 1.5H8.14a2 2 0 0 1-1.94-1.5L4 9Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+        <path class="icon-outline" d="M8.5 4.5H16.5L18 9H7z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+        <!-- Solid (active) -->
+        <path class="icon-solid" d="M4 9h16l-2.2 9.2a2 2 0 0 1-1.94 1.5H8.14a2 2 0 0 1-1.94-1.5L4 9Z" fill="currentColor"/>
+        <path class="icon-solid" d="M8.5 4.5H16.5L18 9H7z" fill="currentColor"/>
       </svg>
       <span class="cart-badge" id="cart-badge" hidden>0</span>
       <span>Корзина</span>
