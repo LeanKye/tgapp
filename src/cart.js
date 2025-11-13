@@ -260,9 +260,9 @@ function attachEvents() {
 
   // Fast-tap: делегированный с защитой от скролла/удержания
   let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=3,HOLD=300;
-  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); if(!t) return; const pt=(e.touches&&e.touches[0])||e; dSX=pt.clientX||0; dSY=pt.clientY||0; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; };
+  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); if(!t) return; const pt=(e.touches&&e.touches[0])||e; dSX=pt.clientX||0; dSY=pt.clientY||0; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; };
   const onPM=(e)=>{ if(!dST) return; const pt=(e.touches&&e.touches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE; if(moved){ window.__cartFastTapBlockClickUntil = performance.now() + 400; } };
-  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn, #proceed-checkout-btn'); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
+  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
   document.body.addEventListener('pointerdown', onPD, { passive: true });
   document.body.addEventListener('pointermove', onPM, { passive: true });
   document.body.addEventListener('pointerup', onPU, { passive: true });
@@ -307,29 +307,44 @@ function attachEvents() {
     }
   });
 
-  document.getElementById('proceed-checkout-btn')?.addEventListener('click', () => {
-    const items = readCart();
-    if (!items.length) return;
-    const { total, count } = calculateTotals(items);
-
-    // Инициализируем модалку при необходимости
-    if (!window.cartModalManager) {
-      window.cartModalManager = new ModalManager();
-    }
-
-    // Берём первую позицию как основную для описания; модалка поддерживает один набор полей
-    const first = items[0] || {};
-    const paymentData = {
-      productTitle: first.title ? `${first.title}${items.length > 1 ? ` и ещё ${items.length - 1}` : ''}` : `Корзина — ${count} шт.`,
-      variant: first.variantName || '-',
-      period: first.periodName || '-',
-      edition: first.editionName || '-',
-      price: formatPrice(total),
-      amount: total
+  // К оформлению: удержание с требованием отпускания внутри кнопки
+  const proceedBtn = document.getElementById('proceed-checkout-btn');
+  if (proceedBtn) {
+    const openCheckout = () => {
+      const items = readCart();
+      if (!items.length) return;
+      const { total, count } = calculateTotals(items);
+      if (!window.cartModalManager) {
+        window.cartModalManager = new ModalManager();
+      }
+      const first = items[0] || {};
+      const paymentData = {
+        productTitle: first.title ? `${first.title}${items.length > 1 ? ` и ещё ${items.length - 1}` : ''}` : `Корзина — ${count} шт.`,
+        variant: first.variantName || '-',
+        period: first.periodName || '-',
+        edition: first.editionName || '-',
+        price: formatPrice(total),
+        amount: total
+      };
+      window.cartModalManager.openModal('checkout-modal', { paymentData });
     };
-
-    window.cartModalManager.openModal('checkout-modal', { paymentData });
-  });
+    let down=false, startInside=false;
+    proceedBtn.addEventListener('pointerdown', (e) => {
+      down=true;
+      const r=proceedBtn.getBoundingClientRect();
+      const x=e.clientX, y=e.clientY;
+      startInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+    }, { passive: true });
+    proceedBtn.addEventListener('pointerup', (e) => {
+      if(!down) return;
+      down=false;
+      const r=proceedBtn.getBoundingClientRect();
+      const x=e.clientX, y=e.clientY;
+      const endInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+      if (startInside && endInside) openCheckout();
+    }, { passive: true });
+    proceedBtn.addEventListener('pointercancel', () => { down=false; }, { passive: true });
+  }
 
   // Массовые действия (визуальные)
   const selectAllBtn = document.getElementById('bulk-select-all-btn');

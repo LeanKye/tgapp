@@ -488,12 +488,28 @@ class ModalManager {
       });
     }
 
-    // Обработчик кнопки "Перейти к оформлению"
+    // Обработчик кнопки "Перейти к оплате" с удержанием и отпусканием внутри
     const checkoutBtn = modal.querySelector('#checkout-proceed-btn');
     if (checkoutBtn) {
-      checkoutBtn.addEventListener('click', () => {
-        this.handleCheckoutProceed();
-      });
+      let chDown=false, chStartInside=false;
+      const chPD=(e)=>{ 
+        chDown=true; 
+        const r=checkoutBtn.getBoundingClientRect();
+        const x=e.clientX, y=e.clientY;
+        chStartInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+      };
+      const chPU=(e)=>{ 
+        if(!chDown) return; 
+        chDown=false;
+        const r=checkoutBtn.getBoundingClientRect();
+        const x=e.clientX, y=e.clientY;
+        const chEndInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+        if (chStartInside && chEndInside) this.handleCheckoutProceed();
+      };
+      const chPC=()=>{ chDown=false; };
+      checkoutBtn.addEventListener('pointerdown', chPD, { passive: true });
+      checkoutBtn.addEventListener('pointerup', chPU, { passive: true });
+      checkoutBtn.addEventListener('pointercancel', chPC, { passive: true });
     }
   }
 
