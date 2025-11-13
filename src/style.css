@@ -2299,6 +2299,7 @@ body.has-bottom-nav .product-cart-controls {
   align-items: center;
   gap: 0px;
   transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
   /* Предотвращаем мигание при переключениях */
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -3670,6 +3671,26 @@ body.modal-open {
 }
 
 .modal-button-secondary:active {
+  transform: scale(0.98);
+}
+
+.modal-button-primary {
+  background: #29A5FF;
+  color: #ffffff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.modal-button-primary:hover {
+  background: #29A5FF;
+}
+
+@media (hover: none) {
+  .modal-button-primary:hover {
+    background: #29A5FF; /* без осветления на touch-устройствах */
+  }
+}
+
+.modal-button-primary:active {
   transform: scale(0.98);
 }
 

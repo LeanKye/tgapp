@@ -93,8 +93,8 @@ class ModalManager {
             <p class="modal-text">Вы уверены, что хотите удалить <strong id="delete-product-name"></strong> из корзины?</p>
           </div>
           <div class="modal-footer modal-footer-buttons">
-            <button id="modal-cancel-delete" class="modal-button modal-button-secondary">Отмена</button>
-            <button id="modal-confirm-delete" class="modal-button modal-button-danger">Удалить</button>
+            <button id="modal-cancel-delete" class="modal-button modal-button-secondary">Оставить</button>
+            <button id="modal-confirm-delete" class="modal-button modal-button-primary">Удалить</button>
           </div>
         </div>
       </div>

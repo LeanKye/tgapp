@@ -241,7 +241,7 @@ class BannerSlider {
       dot.className = 'banner-dot' + (i === this.currentIndex ? ' active' : '');
       dot.dataset.index = String(i);
       dot.addEventListener('click', () => {
-        this.setActive(i, true);
+        this.setActive(this.startIndex + i, true);
       });
       // Fast-tap для точек пагинации с защитой от скролла/удержания
       let dSX = 0, dSY = 0, dST = 0, dScrollY = 0, dScrollX = 0; const MOVE=8, HOLD=300;
@@ -414,7 +414,7 @@ class BannerSlider {
     const activeSlideOffset = index * (bannerWidth + this.gap);
     
     // Итоговое смещение
-    const finalOffset = baseCenterOffset - activeSlideOffset;
+    const finalOffset = Math.round(baseCenterOffset - activeSlideOffset);
     
     this.slider.style.transform = `translateX(${finalOffset}px)`;
     this.currentTranslateX = finalOffset;
@@ -426,7 +426,7 @@ class BannerSlider {
     const bannerWidth = this.getBannerWidth();
     const baseCenterOffset = (containerWidth - bannerWidth) / 2;
     const activeSlideOffset = index * (bannerWidth + this.gap);
-    return baseCenterOffset - activeSlideOffset;
+    return Math.round(baseCenterOffset - activeSlideOffset);
   }
 
   // Возвращает оригинальный индекс [0..totalBanners-1] для расширенного индекса
@@ -1715,6 +1715,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Обновляем позиционирование при изменении размера окна
   window.addEventListener('resize', () => {
+    setTimeout(() => {
+      slider.updateOnResize();
+    }, 100);
+  });
+  
+  // Пересчитываем позицию после полной загрузки страницы
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      slider.updateOnResize();
+    }, 0);
+  });
+  
+  // И после смены ориентации экрана (актуально для iOS/Android вебвью)
+  window.addEventListener('orientationchange', () => {
     setTimeout(() => {
       slider.updateOnResize();
     }, 100);
