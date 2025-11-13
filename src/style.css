@@ -485,6 +485,11 @@ body.has-bottom-nav .add-to-cart {
   bottom: calc(4px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
 }
 
+/* Фолбэк: если класс ещё не проставлен, но навбар уже в DOM */
+body:has(.bottom-nav) .add-to-cart {
+  bottom: calc(4px + var(--bottom-nav-height) + env(safe-area-inset-bottom));
+}
+
 /* Удалён пустой hover-блок для .add-to-cart */
 
 .add-to-cart:active {

@@ -337,7 +337,12 @@ function initNav() {
   } catch {}
 }
 
-document.addEventListener('DOMContentLoaded', initNav);
+// Инициализируем панель сразу, если DOM уже готов, иначе ждём DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initNav);
+} else {
+  initNav();
+}
 
 // Для SPA-навигации или динамических переходов можно вызывать повторно
 window.refreshBottomNavActive = setActiveItem;
