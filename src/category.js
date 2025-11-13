@@ -55,6 +55,8 @@ class CategoryPage {
     let searchTimeout;
     this.isSearchActive = false;
     this.isFirstTimeOpen = true; // Флаг для первого открытия
+    this.filteredProducts = [];
+    this.selectedIndex = -1;
 
     searchInput.addEventListener('input', (e) => {
       clearTimeout(searchTimeout);
@@ -80,6 +82,11 @@ class CategoryPage {
       } else {
         this.showNoSearchResults();
       }
+    });
+
+    // Навигация клавиатурой
+    searchInput.addEventListener('keydown', (e) => {
+      this.handleKeydown(e);
     });
 
     // Синхронно поднимаем страницу и фокусируем инпут в рамках жеста пользователя
@@ -234,9 +241,10 @@ class CategoryPage {
     );
 
     this.filteredProducts = searchResults;
+    this.selectedIndex = -1;
 
     if (searchResults.length > 0) {
-      this.showSearchDropdown(searchResults.slice(0, 5)); // Показываем до 5 результатов
+      this.showSearchDropdown(searchResults);
     } else {
       this.showNoSearchResults();
     }
@@ -249,12 +257,13 @@ class CategoryPage {
     // Анимируем изменение высоты при появлении результатов
     this.animateDropdownHeight(() => {
       dropdown.innerHTML = '';
-      products.forEach(product => {
-        const suggestion = this.createSearchSuggestion(product);
+      products.forEach((product, index) => {
+        const suggestion = this.createSearchSuggestion(product, index);
         dropdown.appendChild(suggestion);
       });
       dropdown.classList.add('show');
     });
+    this.selectedIndex = -1;
 
     // Поведение как у страницы: нативный bounce при наличии контента
     const isScrollable = dropdown.scrollHeight > dropdown.clientHeight + 1;
@@ -275,9 +284,10 @@ class CategoryPage {
     }
   }
 
-  createSearchSuggestion(product) {
+  createSearchSuggestion(product, index) {
     const suggestion = document.createElement('div');
     suggestion.className = 'search-suggestion';
+    suggestion.dataset.index = index;
     
     let priceHTML = `<span class="search-suggestion-price">${formatPriceCard(product.price)}</span>`;
     if (product.oldPrice) {
@@ -468,6 +478,52 @@ class CategoryPage {
         e.stopPropagation();
       }, { passive: false });
     }
+  }
+
+  // Навигация по результатам с клавиатуры
+  handleKeydown(e) {
+    if (!this.filteredProducts || this.filteredProducts.length === 0) return;
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredProducts.length - 1);
+        this.updateSelection();
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        this.selectedIndex = Math.max(this.selectedIndex - 1, -1);
+        this.updateSelection();
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (this.selectedIndex >= 0) {
+          const product = this.filteredProducts[this.selectedIndex];
+          // Мгновенно закрываем поиск и переходим
+          this.deactivateSearch();
+          navigate(`product.html?product=${product.id}`);
+        }
+        break;
+      case 'Escape':
+        this.deactivateSearch();
+        break;
+    }
+  }
+
+  updateSelection() {
+    const dropdown = document.getElementById('search-dropdown');
+    if (!dropdown) return;
+    const suggestions = dropdown.querySelectorAll('.search-suggestion');
+    suggestions.forEach((el, idx) => {
+      el.classList.toggle('selected', idx === this.selectedIndex);
+      if (idx === this.selectedIndex) {
+        try {
+          el.scrollIntoView({
+            block: 'nearest',
+            behavior: 'smooth'
+          });
+        } catch {}
+      }
+    });
   }
 
   // Универсальная анимация изменения высоты dropdown при смене контента
