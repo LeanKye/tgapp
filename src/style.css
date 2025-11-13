@@ -505,7 +505,7 @@ body:has(.product) .add-to-cart:active {
   transition: none;
   background-color: #13b64c;
   /* Ширина ограничена, чтобы справа гарантированно помещался степпер (3*45px + 2*4px = 143px) + поля 16px и зазор 8px */
-  width: clamp(0px, 55%, calc(100% - 183px));
+  width: clamp(0px, 60%, calc(100% - 183px));
   left: 16px;
   right: auto;
   opacity: 0.95;
@@ -535,13 +535,13 @@ body.cart-morph-active .add-to-cart.morphed {
   }
   60% {
     background-color: #13b64c;
-    width: clamp(0px, 55%, calc(100% - 183px));
+    width: clamp(0px, 60%, calc(100% - 183px));
     left: 16px;
     right: auto;
   }
   100% {
     background-color: #13b64c;
-    width: clamp(0px, 55%, calc(100% - 183px));
+    width: clamp(0px, 60%, calc(100% - 183px));
     left: 16px;
     right: auto;
     opacity: 0.95;
@@ -561,7 +561,7 @@ body.cart-morph-reverse .add-to-cart {
 @keyframes morphToBlue {
   0% {
     background-color: #13b64c;
-    width: clamp(0px, 55%, calc(100% - 183px));
+    width: clamp(0px, 60%, calc(100% - 183px));
     left: 16px;
     right: auto;
     opacity: 0.95;
@@ -585,7 +585,6 @@ body.cart-morph-reverse .add-to-cart {
 .product-cart-controls {
   position: fixed;
   /* Ставим слева отступ 16px + фактическая ширина кнопки (с тем же ограничением) + фиксированный зазор 8px */
-  left: calc(16px + clamp(0px, 55%, calc(100% - 183px)) + 8px);
   right: 16px;
   bottom: calc(10px + env(safe-area-inset-bottom));
   display: flex;
