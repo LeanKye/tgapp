@@ -621,8 +621,10 @@ class ModalManager {
       backdrop.style.transition = '';
       backdrop.style.opacity = '';
     }
-    const onEnd = (e) => {
-      if (e.target !== content || e.propertyName !== 'transform') return;
+    let ended = false;
+    const finish = () => {
+      if (ended) return;
+      ended = true;
       content.removeEventListener('transitionend', onEnd);
       modal.classList.remove('show');
       modal.classList.remove('closing');
@@ -633,7 +635,16 @@ class ModalManager {
       this.activeModal = null;
       this.unlockScroll();
     };
+    const onEnd = (e) => {
+      if (e.target !== content) return;
+      // принимаем 'transform' и '-webkit-transform'
+      if (e.propertyName && !/transform/i.test(e.propertyName)) return;
+      content.removeEventListener('transitionend', onEnd);
+      finish();
+    };
     content.addEventListener('transitionend', onEnd);
+    // Фоллбек, если transitionend не придёт (например, в старых WebView)
+    setTimeout(finish, 520);
   }
 
   // Для совместимости: открытие/закрытие через CSS (если кто-то вызывает старые методы)
