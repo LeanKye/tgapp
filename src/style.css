@@ -3439,7 +3439,7 @@ body.has-bottom-nav .product-cart-controls {
   left: 0;
   right: 0;
   bottom: 0;
-  background: transparent;
+  background: rgba(0, 0, 0, 0);
   /* Поверх нижней навигации (10002) и на уровне checkout-модалки */
   z-index: 20020;
   opacity: 0;
@@ -3452,21 +3452,6 @@ body.has-bottom-nav .product-cart-controls {
   overflow: hidden;
   /* Предотвращаем скролл фона */
   -webkit-overflow-scrolling: touch;
-  /* Изоляция перерисовок оверлея */
-  contain: paint;
-}
-
-/* Отдельный затемняющий фон — анимируем только opacity */
-.modal-overlay .modal-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 1);
-  opacity: 0;
-  pointer-events: none;
-  will-change: auto;
 }
 
 .modal-overlay.show {
@@ -3833,8 +3818,8 @@ body.modal-open {
   left: 0;
   right: 0;
   bottom: 0;
-  /* Прозрачный фон — затемнение отдельным элементом */
-  background: transparent;
+  /* Приводим затемнение к такому же, как у модалки лейблов */
+  background: rgba(0, 0, 0, 0);
   z-index: 20000;
   opacity: 0;
   visibility: hidden;
@@ -3849,21 +3834,6 @@ body.modal-open {
   /* Убираем flex для центрирования, теперь модальное окно будет внизу */
   display: block;
   padding: 0;
-  /* Изоляция перерисовок оверлея */
-  contain: paint;
-}
-
-/* Отдельный затемняющий фон — анимируем только opacity */
-.checkout-modal-overlay .modal-backdrop {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 1);
-  opacity: 0;
-  pointer-events: none;
-  will-change: auto;
 }
 
 .checkout-modal-overlay.show {
