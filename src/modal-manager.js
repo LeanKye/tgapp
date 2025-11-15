@@ -199,6 +199,7 @@ class ModalManager {
     let lastY = 0;
     let lastTime = 0;
     let startedInsideScrollable = false;
+    let dragContentHeight = 0;
     const baseAlpha = 0.5; // базовое затемнение оверлея
 
     // Touch события для мобильных устройств
@@ -217,11 +218,15 @@ class ModalManager {
       lastY = startY;
       lastTime = startTime;
       startedInsideScrollable = false;
+      // Кэшируем высоту контента один раз и включаем подсказки композитору
+      dragContentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
       
       content.style.transition = 'none';
       modal.style.transition = 'none';
       modal.style.opacity = '1';
       modal.classList.add('dragging');
+      content.style.willChange = 'transform';
+      modal.style.willChange = 'background-color';
 
       // Если при старте жеста целевой элемент прокручиваемый и он не на самом верху, не инициируем drag модалки
       const target = e.target.closest('.modal-content, .checkout-modal');
@@ -245,8 +250,7 @@ class ModalManager {
         const translateY = Math.min(deltaY, window.innerHeight * 0.5);
         content.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
         // Чем ниже модалка, тем прозрачнее фон
-        const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
-        const progressDown = Math.min(1, translateY / contentHeight);
+        const progressDown = Math.min(1, translateY / (dragContentHeight || 1));
         const overlayAlpha = baseAlpha * (1 - progressDown);
         modal.style.background = `rgba(0, 0, 0, ${overlayAlpha})`;
         
@@ -276,6 +280,8 @@ class ModalManager {
         // Не было drag модалки — просто ничего не делаем
         startedInsideScrollable = false;
         modal.classList.remove('dragging');
+        content.style.willChange = '';
+        modal.style.willChange = '';
         return;
       }
 
@@ -308,11 +314,15 @@ class ModalManager {
       lastY = startY;
       lastTime = startTime;
       startedInsideScrollable = false;
+      // Кэшируем высоту контента один раз и включаем подсказки композитору
+      dragContentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
       
       content.style.transition = 'none';
       modal.style.transition = 'none';
       modal.style.opacity = '1';
       modal.classList.add('dragging');
+      content.style.willChange = 'transform';
+      modal.style.willChange = 'background-color';
       
       document.addEventListener('mousemove', handleMouseMove);
       document.addEventListener('mouseup', handleMouseUp);
@@ -329,8 +339,7 @@ class ModalManager {
         const translateY = Math.min(deltaY, window.innerHeight * 0.5);
         content.style.setProperty('transform', `translateY(${translateY}px)`, 'important');
         // Обновляем затемнение для desktop drag
-        const contentHeight = content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
-        const progressDown = Math.min(1, translateY / contentHeight);
+        const progressDown = Math.min(1, translateY / (dragContentHeight || 1));
         const overlayAlpha = baseAlpha * (1 - progressDown);
         modal.style.background = `rgba(0, 0, 0, ${overlayAlpha})`;
         
@@ -362,6 +371,8 @@ class ModalManager {
       } else {
         // Возвращаем модальное окно в исходное положение с JavaScript анимацией
         modal.classList.remove('dragging');
+        content.style.willChange = '';
+        modal.style.willChange = '';
         this.animateModalReturn(modal, content, deltaY);
       }
       
@@ -624,6 +635,12 @@ class ModalManager {
     // Устанавливаем начальное состояние
     content.style.transform = 'translateY(100%)';
     content.style.transition = 'none';
+    // Оптимизация композитинга и отключение инерционного скролла на время анимации
+    const prevBoxShadow = content.style.boxShadow;
+    content.style.webkitOverflowScrolling = 'auto';
+    content.style.willChange = 'transform';
+    modal.style.willChange = 'background-color';
+    content.style.boxShadow = 'none';
     
     // Запускаем анимацию
     const duration = 200; // Ускоренная анимация
@@ -649,6 +666,11 @@ class ModalManager {
         content.style.transform = 'translateY(0)';
         content.style.transition = '';
         modal.style.background = `rgba(0, 0, 0, ${baseAlpha})`;
+        // Возвращаем настройки после анимации
+        content.style.webkitOverflowScrolling = 'touch';
+        content.style.willChange = '';
+        modal.style.willChange = '';
+        content.style.boxShadow = prevBoxShadow;
       }
     };
     
@@ -675,6 +697,12 @@ class ModalManager {
     const duration = 200; // Ускоренная анимация
     const startTime = Date.now();
     const baseAlpha = 0.5;
+    // Оптимизация на время анимации
+    const prevBoxShadow = content.style.boxShadow;
+    content.style.webkitOverflowScrolling = 'auto';
+    content.style.willChange = 'transform';
+    modal.style.willChange = 'background-color';
+    content.style.boxShadow = 'none';
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -702,6 +730,11 @@ class ModalManager {
         
         this.activeModal = null;
         this.unlockScroll();
+        // Снимаем временные оптимизации
+        content.style.webkitOverflowScrolling = '';
+        content.style.willChange = '';
+        modal.style.willChange = '';
+        content.style.boxShadow = prevBoxShadow;
       }
     };
     
@@ -724,6 +757,12 @@ class ModalManager {
     // Устанавливаем начальное состояние
     content.style.transform = 'translateY(100%)';
     content.style.transition = 'none';
+    // Оптимизация композитинга и отключение инерционного скролла на время анимации
+    const prevBoxShadow = content.style.boxShadow;
+    content.style.webkitOverflowScrolling = 'auto';
+    content.style.willChange = 'transform';
+    modal.style.willChange = 'background-color';
+    content.style.boxShadow = 'none';
     
     // Запускаем анимацию
     const duration = 200; // Ускоренная анимация, так же как для лейблов
@@ -749,6 +788,11 @@ class ModalManager {
         content.style.transform = 'translateY(0)';
         content.style.transition = '';
         modal.style.background = `rgba(0, 0, 0, ${baseAlpha})`;
+        // Возвращаем настройки после анимации
+        content.style.webkitOverflowScrolling = 'touch';
+        content.style.willChange = '';
+        modal.style.willChange = '';
+        content.style.boxShadow = prevBoxShadow;
       }
     };
     
@@ -775,6 +819,12 @@ class ModalManager {
     const duration = 200; // Ускоренная анимация, так же как для лейблов
     const startTime = Date.now();
     const baseAlpha = 0.5;
+    // Оптимизация на время анимации
+    const prevBoxShadow = content.style.boxShadow;
+    content.style.webkitOverflowScrolling = 'auto';
+    content.style.willChange = 'transform';
+    modal.style.willChange = 'background-color';
+    content.style.boxShadow = 'none';
     
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -807,6 +857,11 @@ class ModalManager {
         
         this.activeModal = null;
         this.unlockScroll();
+        // Снимаем временные оптимизации
+        content.style.webkitOverflowScrolling = '';
+        content.style.willChange = '';
+        modal.style.willChange = '';
+        content.style.boxShadow = prevBoxShadow;
       }
     };
     
@@ -821,6 +876,10 @@ class ModalManager {
     const duration = 200; // Ускоренная анимация
     const startTime = Date.now();
     const baseAlpha = 0.5;
+    // Оптимизация на время анимации возврата
+    content.style.webkitOverflowScrolling = 'auto';
+    content.style.willChange = 'transform';
+    modal.style.willChange = 'background-color';
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -841,6 +900,10 @@ class ModalManager {
         content.style.transform = 'translateY(0)';
         content.style.transition = '';
         modal.style.background = `rgba(0, 0, 0, ${baseAlpha})`;
+        // Включаем обратно инерционный скролл и снимаем will-change
+        content.style.webkitOverflowScrolling = 'touch';
+        content.style.willChange = '';
+        modal.style.willChange = '';
       }
     };
 
@@ -868,6 +931,12 @@ class ModalManager {
     const duration = Math.max(100, Math.round(200 * (remaining / 100))); // от 100мс до 200мс (ускоренная)
     const startTime = Date.now();
     const baseAlpha = 0.5;
+    // Оптимизация на время анимации
+    const prevBoxShadow = content.style.boxShadow;
+    content.style.webkitOverflowScrolling = 'auto';
+    content.style.willChange = 'transform';
+    modal.style.willChange = 'background-color';
+    content.style.boxShadow = 'none';
 
     const animate = () => {
       const elapsed = Date.now() - startTime;
@@ -903,6 +972,11 @@ class ModalManager {
         
         this.activeModal = null;
         this.unlockScroll();
+        // Снимаем временные оптимизации
+        content.style.webkitOverflowScrolling = '';
+        content.style.willChange = '';
+        modal.style.willChange = '';
+        content.style.boxShadow = prevBoxShadow;
       }
     };
 

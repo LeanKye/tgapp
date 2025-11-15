@@ -3452,6 +3452,8 @@ body.has-bottom-nav .product-cart-controls {
   overflow: hidden;
   /* Предотвращаем скролл фона */
   -webkit-overflow-scrolling: touch;
+  /* Изоляция перерисовок оверлея */
+  contain: paint;
 }
 
 .modal-overlay.show {
@@ -3834,6 +3836,8 @@ body.modal-open {
   /* Убираем flex для центрирования, теперь модальное окно будет внизу */
   display: block;
   padding: 0;
+  /* Изоляция перерисовок оверлея */
+  contain: paint;
 }
 
 .checkout-modal-overlay.show {
