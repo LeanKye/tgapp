@@ -3454,6 +3454,24 @@ body.has-bottom-nav .product-cart-controls {
   -webkit-overflow-scrolling: touch;
 }
 
+.modal-overlay,
+.checkout-modal-overlay {
+  contain: paint;
+  background: transparent;
+}
+
+.modal-backdrop {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
 .modal-overlay.show {
   opacity: 1;
   visibility: visible;
