@@ -639,41 +639,41 @@ class ModalManager {
       backdrop.style.opacity = '0';
       backdrop.style.willChange = 'opacity';
     }
-    
-    // Устанавливаем начальное состояние
-    content.style.transform = 'translate3d(0, 100%, 0)';
-    content.style.transition = 'none';
+    // Временно отключаем инерционный скролл внутри
+    content.style.webkitOverflowScrolling = 'auto';
+    // Устанавливаем начальное состояние по пикселям
+    const contentHeight = content.clientHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
+    const duration = 220;
+    const easing = 'cubic-bezier(0.22, 1, 0.36, 1)'; // easeOutCubic-подобная
+    const prevShadow = content.style.boxShadow;
+    content.style.boxShadow = 'none';
+    content.style.transform = `translate3d(0, ${contentHeight}px, 0)`;
     content.style.willChange = 'transform';
-    
-    // Запускаем анимацию
-    const duration = 200; // Ускоренная анимация
-    const startTime = performance.now();
-    
-    const animate = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease out cubic)
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      // Анимируем transform
-      const translateY = (1 - easeProgress) * 100;
-      content.style.transform = `translate3d(0, ${translateY}%, 0)`;
-      // Плавно увеличиваем затемнение
-      if (backdrop) backdrop.style.opacity = String(baseAlpha * easeProgress);
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Анимация завершена
-        content.style.transform = 'translate3d(0, 0, 0)';
+    // Запускаем CSS transition
+    // Делаем на следующий кадр, чтобы стартовое значение применилось
+    requestAnimationFrame(() => {
+      content.style.transition = `transform ${duration}ms ${easing}`;
+      if (backdrop) {
+        backdrop.style.transition = `opacity ${duration}ms ${easing}`;
+        backdrop.style.opacity = String(baseAlpha);
+      }
+      content.style.transform = 'translate3d(0, 0, 0)';
+      const onEnd = (e) => {
+        if (e && e.propertyName !== 'transform') return;
+        content.removeEventListener('transitionend', onEnd);
+        // Очистка
         content.style.transition = '';
         content.style.willChange = '';
-        if (backdrop) backdrop.style.willChange = '';
-      }
-    };
-    
-    requestAnimationFrame(animate);
+        content.style.boxShadow = prevShadow;
+        if (backdrop) {
+          backdrop.style.transition = '';
+          backdrop.style.willChange = '';
+        }
+        // Возвращаем инерционный скролл
+        content.style.webkitOverflowScrolling = 'touch';
+      };
+      content.addEventListener('transitionend', onEnd);
+    });
   }
 
   // JavaScript анимация закрытия модального окна лейблов - только transform, "уезжает вниз"
@@ -693,29 +693,29 @@ class ModalManager {
     
     // Разблокируем скролл после завершения анимации
     
-    // Запускаем анимацию закрытия
-    const duration = 200; // Ускоренная анимация
-    const startTime = performance.now();
+    // Запускаем анимацию закрытия через CSS transition
+    const duration = 220;
+    const easing = 'cubic-bezier(0.4, 0, 1, 1)'; // easeInCubic-подобная
     const baseAlpha = 0.5;
+    const contentHeight = content.clientHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     content.style.willChange = 'transform';
     if (backdrop) backdrop.style.willChange = 'opacity';
-    
-    const animate = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease in cubic)
-      const easeProgress = Math.pow(progress, 3);
-      
-      // Анимируем только transform - "уезжает вниз"
-      const translateY = easeProgress * 100;
-      content.style.transform = `translate3d(0, ${translateY}%, 0)`;
-      if (backdrop) backdrop.style.opacity = String(baseAlpha * (1 - easeProgress));
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Анимация завершена - полностью скрываем модальное окно
+    const prevShadow = content.style.boxShadow;
+    content.style.boxShadow = 'none';
+    // Отключаем инерционный скролл
+    content.style.webkitOverflowScrolling = 'auto';
+    // Запускаем переход
+    requestAnimationFrame(() => {
+      content.style.transition = `transform ${duration}ms ${easing}`;
+      if (backdrop) {
+        backdrop.style.transition = `opacity ${duration}ms ${easing}`;
+        backdrop.style.opacity = '0';
+      }
+      content.style.transform = `translate3d(0, ${contentHeight}px, 0)`;
+      const onEnd = (e) => {
+        if (e && e.propertyName !== 'transform') return;
+        content.removeEventListener('transitionend', onEnd);
+        // Скрываем модалку и чистим стили
         modal.classList.remove('show');
         modal.classList.remove('closing');
         modal.style.opacity = '';
@@ -723,17 +723,20 @@ class ModalManager {
         content.style.transform = '';
         content.style.transition = '';
         content.style.willChange = '';
+        content.style.boxShadow = prevShadow;
         if (backdrop) {
           backdrop.style.opacity = '';
+          backdrop.style.transition = '';
           backdrop.style.willChange = '';
         }
+        // Возвращаем скролл
+        content.style.webkitOverflowScrolling = 'touch';
         
         this.activeModal = null;
         this.unlockScroll();
-      }
-    };
-    
-    requestAnimationFrame(animate);
+      };
+      content.addEventListener('transitionend', onEnd);
+    });
   }
 
   // JavaScript анимация открытия модального окна оформления заказа - КОПИЯ анимации лейблов
@@ -751,40 +754,37 @@ class ModalManager {
       backdrop.style.opacity = '0';
       backdrop.style.willChange = 'opacity';
     }
-    
-    // Устанавливаем начальное состояние
-    content.style.transform = 'translate3d(0, 100%, 0)';
-    content.style.transition = 'none';
+    // Временно отключаем инерционный скролл внутри
+    content.style.webkitOverflowScrolling = 'auto';
+    // Пиксельная анимация
+    const contentHeight = content.clientHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
+    const duration = 220;
+    const easing = 'cubic-bezier(0.22, 1, 0.36, 1)';
+    const prevShadow = content.style.boxShadow;
+    content.style.boxShadow = 'none';
+    content.style.transform = `translate3d(0, ${contentHeight}px, 0)`;
     content.style.willChange = 'transform';
-    
-    // Запускаем анимацию
-    const duration = 200; // Ускоренная анимация, так же как для лейблов
-    const startTime = performance.now();
-    
-    const animate = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease out cubic)
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      // Анимируем transform
-      const translateY = (1 - easeProgress) * 100;
-      content.style.transform = `translate3d(0, ${translateY}%, 0)`;
-      if (backdrop) backdrop.style.opacity = String(baseAlpha * easeProgress);
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Анимация завершена
-        content.style.transform = 'translate3d(0, 0, 0)';
+    requestAnimationFrame(() => {
+      content.style.transition = `transform ${duration}ms ${easing}`;
+      if (backdrop) {
+        backdrop.style.transition = `opacity ${duration}ms ${easing}`;
+        backdrop.style.opacity = String(baseAlpha);
+      }
+      content.style.transform = 'translate3d(0, 0, 0)';
+      const onEnd = (e) => {
+        if (e && e.propertyName !== 'transform') return;
+        content.removeEventListener('transitionend', onEnd);
         content.style.transition = '';
         content.style.willChange = '';
-        if (backdrop) backdrop.style.willChange = '';
-      }
-    };
-    
-    requestAnimationFrame(animate);
+        content.style.boxShadow = prevShadow;
+        if (backdrop) {
+          backdrop.style.transition = '';
+          backdrop.style.willChange = '';
+        }
+        content.style.webkitOverflowScrolling = 'touch';
+      };
+      content.addEventListener('transitionend', onEnd);
+    });
   }
 
   // JavaScript анимация закрытия модального окна оформления заказа - КОПИЯ анимации лейблов
@@ -804,29 +804,28 @@ class ModalManager {
     
     // Разблокируем скролл после завершения анимации
     
-    // Запускаем анимацию закрытия
-    const duration = 200; // Ускоренная анимация, так же как для лейблов
-    const startTime = performance.now();
+    // Запускаем анимацию закрытия через CSS transition
+    const duration = 220;
+    const easing = 'cubic-bezier(0.4, 0, 1, 1)';
     const baseAlpha = 0.5;
+    const contentHeight = content.clientHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     content.style.willChange = 'transform';
     if (backdrop) backdrop.style.willChange = 'opacity';
-    
-    const animate = (now) => {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Easing function (ease in cubic)
-      const easeProgress = Math.pow(progress, 3);
-      
-      // Анимируем только transform - "уезжает вниз"
-      const translateY = easeProgress * 100;
-      content.style.transform = `translate3d(0, ${translateY}%, 0)`;
-      if (backdrop) backdrop.style.opacity = String(baseAlpha * (1 - easeProgress));
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      } else {
-        // Анимация завершена - полностью скрываем модальное окно
+    const prevShadow = content.style.boxShadow;
+    content.style.boxShadow = 'none';
+    // Отключаем инерционный скролл
+    content.style.webkitOverflowScrolling = 'auto';
+    requestAnimationFrame(() => {
+      content.style.transition = `transform ${duration}ms ${easing}`;
+      if (backdrop) {
+        backdrop.style.transition = `opacity ${duration}ms ${easing}`;
+        backdrop.style.opacity = '0';
+      }
+      content.style.transform = `translate3d(0, ${contentHeight}px, 0)`;
+      const onEnd = (e) => {
+        if (e && e.propertyName !== 'transform') return;
+        content.removeEventListener('transitionend', onEnd);
+        // Скрываем модалку и чистим стили
         modal.classList.remove('show');
         modal.classList.remove('closing');
         modal.style.opacity = '';
@@ -834,8 +833,10 @@ class ModalManager {
         content.style.transform = '';
         content.style.transition = '';
         content.style.willChange = '';
+        content.style.boxShadow = prevShadow;
         if (backdrop) {
           backdrop.style.opacity = '';
+          backdrop.style.transition = '';
           backdrop.style.willChange = '';
         }
         
@@ -846,10 +847,11 @@ class ModalManager {
         
         this.activeModal = null;
         this.unlockScroll();
-      }
-    };
-    
-    requestAnimationFrame(animate);
+        // Возвращаем скролл
+        content.style.webkitOverflowScrolling = 'touch';
+      };
+      content.addEventListener('transitionend', onEnd);
+    });
   }
 
   // Анимация возврата модального окна в исходное положение
