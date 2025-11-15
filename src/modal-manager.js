@@ -594,9 +594,6 @@ class ModalManager {
       this.currentPaymentData = data.paymentData;
     }
 
-    // Блокируем прокрутку страницы с сохранением позиции
-    this.lockScroll();
-
     // Убеждаемся, что обработчики событий подключены
     this.setupModalEvents(modalId);
 
@@ -702,8 +699,11 @@ class ModalManager {
       }
     };
     
-    // double-rAF для стабильной композиции
-    requestAnimationFrame(() => requestAnimationFrame(animate));
+    // В первом rAF блокируем скролл (дорогая операция), во втором — запускаем анимацию
+    requestAnimationFrame(() => {
+      this.lockScroll();
+      requestAnimationFrame(animate);
+    });
   }
 
   // JavaScript анимация закрытия модального окна лейблов - только transform, "уезжает вниз"
@@ -776,7 +776,11 @@ class ModalManager {
       }
     };
     
-    requestAnimationFrame(() => requestAnimationFrame(animate));
+    // В первом rAF блокируем скролл (дорогая операция), во втором — запускаем анимацию
+    requestAnimationFrame(() => {
+      this.lockScroll();
+      requestAnimationFrame(animate);
+    });
   }
 
   // JavaScript анимация открытия модального окна оформления заказа - КОПИЯ анимации лейблов
