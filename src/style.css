@@ -3643,8 +3643,9 @@ body.modal-open {
 }
 
 .modal-button {
-  padding: 12px 24px;
-  border-radius: 12px;
+  padding: 0 16px;
+  height: 46px;
+  border-radius: 8px;
   font-size: 15px;
   font-weight: 600;
   border: none;
