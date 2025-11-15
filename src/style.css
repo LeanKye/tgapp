@@ -3439,10 +3439,10 @@ body.has-bottom-nav .product-cart-controls {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0);
+  background: transparent;
   /* Поверх нижней навигации (10002) и на уровне checkout-модалки */
   z-index: 20020;
-  opacity: 0;
+  opacity: 1;
   visibility: hidden;
   transition: none;
   /* Обеспечиваем правильное позиционирование в WebView */
@@ -3452,28 +3452,10 @@ body.has-bottom-nav .product-cart-controls {
   overflow: hidden;
   /* Предотвращаем скролл фона */
   -webkit-overflow-scrolling: touch;
-}
-
-.modal-overlay,
-.checkout-modal-overlay {
   contain: paint;
-  background: transparent;
-}
-
-.modal-backdrop {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: #000;
-  opacity: 0;
-  pointer-events: none;
-  will-change: opacity;
 }
 
 .modal-overlay.show {
-  opacity: 1;
   visibility: visible;
 }
 
@@ -3484,6 +3466,25 @@ body.modal-open {
   position: fixed;
   width: 100%;
   left: 0;
+}
+
+/* Отдельный фон для плавной анимации затемнения */
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 1);
+  opacity: 0;
+  transition: opacity 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.modal-overlay.dragging .modal-backdrop,
+.modal-overlay.closing .modal-backdrop {
+  transition: none !important;
+}
+
+.modal-overlay.show .modal-backdrop {
+  opacity: 0.5;
 }
 
 .modal-content {
@@ -3498,7 +3499,7 @@ body.modal-open {
   max-height: 70dvh; /* Динамическая высота viewport для мобильных */
   overflow-y: auto;
   transform: translateY(100%);
-  /* transition убран - анимация теперь контролируется JavaScript */
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   /* Обеспечиваем правильное позиционирование внизу экрана */
   margin-bottom: 0;
@@ -3520,7 +3521,9 @@ body.modal-open {
   -webkit-backface-visibility: hidden;
 }
 
-/* .modal-overlay.show .modal-content анимация теперь в JavaScript */
+.modal-overlay.show .modal-content {
+  transform: translateY(0);
+}
 
 /* Состояние перетаскивания */
 .modal-overlay.dragging .modal-content {
@@ -3534,8 +3537,9 @@ body.modal-open {
 }
 
 .modal-overlay.closing .modal-content {
-  transition: none !important;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
   will-change: transform;
+  transform: translateY(100%);
 }
 
 /* Индикатор перетаскивания */
@@ -3836,10 +3840,9 @@ body.modal-open {
   left: 0;
   right: 0;
   bottom: 0;
-  /* Приводим затемнение к такому же, как у модалки лейблов */
-  background: rgba(0, 0, 0, 0);
+  background: transparent;
   z-index: 20000;
-  opacity: 0;
+  opacity: 1;
   visibility: hidden;
   transition: none;
   height: 100vh;
@@ -3852,11 +3855,29 @@ body.modal-open {
   /* Убираем flex для центрирования, теперь модальное окно будет внизу */
   display: block;
   padding: 0;
+  contain: paint;
 }
 
 .checkout-modal-overlay.show {
-  opacity: 1;
   visibility: visible;
+}
+
+.checkout-modal-overlay .modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 1);
+  opacity: 0;
+  transition: opacity 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  pointer-events: none;
+}
+
+.checkout-modal-overlay.dragging .modal-backdrop,
+.checkout-modal-overlay.closing .modal-backdrop {
+  transition: none !important;
+}
+
+.checkout-modal-overlay.show .modal-backdrop {
+  opacity: 0.5;
 }
 
 .checkout-modal {
@@ -3874,7 +3895,7 @@ body.modal-open {
   max-height: 70dvh;
   overflow: hidden;
   transform: translateY(100%);
-  /* transition убран - анимация теперь контролируется JavaScript */
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   margin: 0;
@@ -3891,7 +3912,9 @@ body.modal-open {
   -webkit-backface-visibility: hidden;
 }
 
-/* .checkout-modal-overlay.show .checkout-modal анимация теперь в JavaScript */
+.checkout-modal-overlay.show .checkout-modal {
+  transform: translateY(0);
+}
 
 /* Состояние перетаскивания для модального окна оформления */
 .checkout-modal-overlay.dragging .checkout-modal {
@@ -3905,8 +3928,9 @@ body.modal-open {
 }
 
 .checkout-modal-overlay.closing .checkout-modal {
-  transition: none !important;
+  transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
   will-change: transform;
+  transform: translateY(100%);
 }
 
 /* Дополнительные стили для улучшения перетаскивания */
