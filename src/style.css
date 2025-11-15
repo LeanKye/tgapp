@@ -3542,7 +3542,7 @@ body.modal-open {
 .modal-overlay.closing .modal-content {
   transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
   will-change: transform;
-  transform: translateY(100%);
+  transform: translateY(105%);
 }
 
 /* Индикатор перетаскивания */
@@ -3563,6 +3563,8 @@ body.modal-open {
 .modal-overlay.show .modal-content::before { opacity: 0.3; }
 
 .modal-overlay.dragging .modal-content::before { opacity: 0.3; }
+
+.modal-overlay.closing .modal-content::before { opacity: 0; }
 
 .modal-header {
   display: flex;
@@ -3936,8 +3938,10 @@ body.modal-open {
 .checkout-modal-overlay.closing .checkout-modal {
   transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
   will-change: transform;
-  transform: translateY(100%);
+  transform: translateY(105%);
 }
+
+.checkout-modal-overlay.closing .checkout-modal::before { opacity: 0; }
 
 /* Дополнительные стили для улучшения перетаскивания */
 .checkout-modal-overlay.dragging {

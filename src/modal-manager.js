@@ -704,7 +704,8 @@ class ModalManager {
     const contentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
     // Длительность пропорциональна оставшемуся пути, чтобы оверлей не зависал
-    const remaining = 100 - startPercent;
+    const endPercent = 105; // уводим чуть ниже экрана, чтобы не было хвоста
+    const remaining = endPercent - startPercent;
     const duration = Math.max(100, Math.round(200 * (remaining / 100))); // от 100мс до 200мс (ускоренная)
     const startTime = Date.now();
     const baseAlpha = 0.5;
@@ -717,12 +718,12 @@ class ModalManager {
       // Easing function (ease out)
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       
-      const currentPercent = startPercent + (100 - startPercent) * easeProgress;
+      const currentPercent = startPercent + (endPercent - startPercent) * easeProgress;
       
       // Анимируем transform в процентах, как в обычном закрытии
       content.style.setProperty('transform', `translateY(${currentPercent}%)`, 'important');
       // Параллельно гасим затемнение оверлея до нуля
-      const overlayAlpha = baseAlpha * (1 - currentPercent / 100);
+      const overlayAlpha = Math.max(0, baseAlpha * (1 - currentPercent / 100));
       if (backdrop) backdrop.style.opacity = String(overlayAlpha);
       
       if (progress < 1) {
