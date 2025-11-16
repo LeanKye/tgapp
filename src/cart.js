@@ -2,6 +2,39 @@ import './style.css'
 import { formatPrice } from './products-data.js'
 import ModalManager from './modal-manager.js'
 
+function cartTemplate() {
+  return `
+    <div class="catalog">
+      <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px); font-size: 24px;">Корзина</div>
+      <div class="cart-bulk">
+        <div class="bulk-spacer"></div>
+        <div class="bulk-actions">
+          <button class="reset-Button bulk-btn" id="bulk-delete-btn">Удалить выбранные</button>
+          <button class="reset-Button bulk-btn" id="bulk-select-all-btn">Выбрать все</button>
+        </div>
+        <label class="bulk-checkbox" title="Выбрать все">
+          <input type="checkbox" id="bulk-select-all" />
+          <span></span>
+        </label>
+      </div>
+      <div id="cart-list"></div>
+      <div class="no-products" id="cart-empty" style="display:none;">
+        <h3>В вашей корзине пока пусто</h3>
+        <p>Добавьте товары из каталога</p>
+        <button class="back-to-main reset-Button" id="to-main-btn">Вернуться на главную</button>
+      </div>
+    </div>
+    <div class="checkout-button-container cart-checkout" id="cart-checkout" style="display:none;">
+      <button class="checkout-button" id="proceed-checkout-btn">
+        <span class="left" id="checkout-count">0 товаров</span>
+        <span class="center">К оформлению</span>
+        <span class="right" id="checkout-total">0</span>
+      </button>
+    </div>
+    <div class="bottom-actions-bg"></div>
+  `;
+}
+
 // Простое хранение корзины в localStorage
 const STORAGE_KEY = 'hooli_cart';
 
@@ -169,13 +202,25 @@ function renderCart() {
 // Map для отслеживания блокировки по товарам (предотвращение двойных нажатий)
 const qtyButtonLocks = new Map();
 
-function attachEvents() {
-  document.getElementById('to-main-btn')?.addEventListener('click', () => {
-    const basePath = window.location.pathname.replace(/[^/]*$/, '');
-    window.location.href = basePath + 'index.html';
-  });
+const CART_CLEANUPS = [];
 
-  document.getElementById('cart-list')?.addEventListener('click', (e) => {
+function attachEvents() {
+  const toMainBtn = document.getElementById('to-main-btn');
+  const toMainHandler = () => {
+    if (window.AppNav && typeof window.AppNav.go === 'function') {
+      window.AppNav.go('index.html');
+    } else {
+      const basePath = window.location.pathname.replace(/[^/]*$/, '');
+      window.location.href = basePath + 'index.html';
+    }
+  };
+  if (toMainBtn) {
+    toMainBtn.addEventListener('click', toMainHandler);
+    CART_CLEANUPS.push(() => { try { toMainBtn.removeEventListener('click', toMainHandler); } catch {} });
+  }
+
+  const cartList = document.getElementById('cart-list');
+  const onCartClick = (e) => {
     // Пропускаем обычные клики, если они заблокированы после fast-tap
     if (window.__cartFastTapBlockClickUntil && performance.now() < window.__cartFastTapBlockClickUntil && !e.__fastTapSynthetic) {
       return;
@@ -256,7 +301,9 @@ function attachEvents() {
         qtyButtonLocks.delete(id);
       }, 100);
     }
-  });
+  };
+  cartList?.addEventListener('click', onCartClick);
+  if (cartList) CART_CLEANUPS.push(() => { try { cartList.removeEventListener('click', onCartClick); } catch {} });
 
   // Fast-tap: делегированный с защитой от скролла/удержания
   let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=3,HOLD=300;
@@ -269,8 +316,20 @@ function attachEvents() {
   document.body.addEventListener('touchstart', onPD, { passive: true });
   document.body.addEventListener('touchmove', onPM, { passive: true });
   document.body.addEventListener('touchend', onPU, { passive: true });
-  document.body.addEventListener('pointercancel', ()=>{ dST=0; }, { passive: true });
-  document.body.addEventListener('touchcancel', ()=>{ dST=0; }, { passive: true });
+  const onPCancel = ()=>{ dST=0; };
+  const onTCancel = ()=>{ dST=0; };
+  document.body.addEventListener('pointercancel', onPCancel, { passive: true });
+  document.body.addEventListener('touchcancel', onTCancel, { passive: true });
+  CART_CLEANUPS.push(() => {
+    try { document.body.removeEventListener('pointerdown', onPD); } catch {}
+    try { document.body.removeEventListener('pointermove', onPM); } catch {}
+    try { document.body.removeEventListener('pointerup', onPU); } catch {}
+    try { document.body.removeEventListener('touchstart', onPD); } catch {}
+    try { document.body.removeEventListener('touchmove', onPM); } catch {}
+    try { document.body.removeEventListener('touchend', onPU); } catch {}
+    try { document.body.removeEventListener('pointercancel', onPCancel); } catch {}
+    try { document.body.removeEventListener('touchcancel', onTCancel); } catch {}
+  });
 
   // Глобальный клик-блокер после свайпа/перемещения
   const clickBlocker = (e) => {
@@ -281,9 +340,10 @@ function attachEvents() {
     }
   };
   document.addEventListener('click', clickBlocker, true);
+  CART_CLEANUPS.push(() => { try { document.removeEventListener('click', clickBlocker, true); } catch {} });
 
   // Обновление суммы/счётчика и состояния "выбрать все" при смене любого чекбокса товара
-  document.getElementById('cart-list')?.addEventListener('change', (e) => {
+  const onCartChange = (e) => {
     const target = e.target;
     if (!target || !target.classList || !target.classList.contains('cart-select')) return;
     // Сохраняем изменение выбора в хранилище
@@ -305,7 +365,9 @@ function attachEvents() {
       const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
       selectAllCheckbox.checked = allChecked;
     }
-  });
+  };
+  cartList?.addEventListener('change', onCartChange);
+  if (cartList) CART_CLEANUPS.push(() => { try { cartList.removeEventListener('change', onCartChange); } catch {} });
 
   // К оформлению: удержание с требованием отпускания внутри кнопки
   const proceedBtn = document.getElementById('proceed-checkout-btn');
@@ -329,21 +391,29 @@ function attachEvents() {
       window.cartModalManager.openModal('checkout-modal', { paymentData });
     };
     let down=false, startInside=false;
-    proceedBtn.addEventListener('pointerdown', (e) => {
+    const pd = (e) => {
       down=true;
       const r=proceedBtn.getBoundingClientRect();
       const x=e.clientX, y=e.clientY;
       startInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
-    }, { passive: true });
-    proceedBtn.addEventListener('pointerup', (e) => {
+    };
+    const pu = (e) => {
       if(!down) return;
       down=false;
       const r=proceedBtn.getBoundingClientRect();
       const x=e.clientX, y=e.clientY;
       const endInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
       if (startInside && endInside) openCheckout();
-    }, { passive: true });
-    proceedBtn.addEventListener('pointercancel', () => { down=false; }, { passive: true });
+    };
+    const pc = () => { down=false; };
+    proceedBtn.addEventListener('pointerdown', pd, { passive: true });
+    proceedBtn.addEventListener('pointerup', pu, { passive: true });
+    proceedBtn.addEventListener('pointercancel', pc, { passive: true });
+    CART_CLEANUPS.push(() => {
+      try { proceedBtn.removeEventListener('pointerdown', pd); } catch {}
+      try { proceedBtn.removeEventListener('pointerup', pu); } catch {}
+      try { proceedBtn.removeEventListener('pointercancel', pc); } catch {}
+    });
   }
 
   // Массовые действия (визуальные)
@@ -360,7 +430,7 @@ function attachEvents() {
     if (selectAllCheckbox) selectAllCheckbox.checked = !!state;
   }
 
-  selectAllBtn?.addEventListener('click', () => {
+  const onSelectAllBtn = () => {
     const checkboxes = document.querySelectorAll('.cart-select');
     const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
     checkboxes.forEach(cb => { cb.checked = !allChecked; });
@@ -375,9 +445,11 @@ function attachEvents() {
     const totalEl = document.getElementById('checkout-total');
     if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
     if (totalEl) totalEl.innerHTML = formatPrice(total);
-  });
+  };
+  selectAllBtn?.addEventListener('click', onSelectAllBtn);
+  if (selectAllBtn) CART_CLEANUPS.push(() => { try { selectAllBtn.removeEventListener('click', onSelectAllBtn); } catch {} });
 
-  selectAllCheckbox?.addEventListener('change', (e) => {
+  const onSelectAllChange = (e) => {
     const checkboxes = document.querySelectorAll('.cart-select');
     checkboxes.forEach(cb => { cb.checked = !!e.target.checked; });
     // Сохраняем текущее состояние выбранных
@@ -390,9 +462,11 @@ function attachEvents() {
     const totalEl = document.getElementById('checkout-total');
     if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
     if (totalEl) totalEl.innerHTML = formatPrice(total);
-  });
+  };
+  selectAllCheckbox?.addEventListener('change', onSelectAllChange);
+  if (selectAllCheckbox) CART_CLEANUPS.push(() => { try { selectAllCheckbox.removeEventListener('change', onSelectAllChange); } catch {} });
 
-  deleteBtn?.addEventListener('click', () => {
+  const onDeleteBtn = () => {
     const selectedIds = new Set(getSelectedIds());
     if (selectedIds.size === 0) return;
     
@@ -420,10 +494,20 @@ function attachEvents() {
         // Ничего не делаем
       }
     });
-  });
+  };
+  deleteBtn?.addEventListener('click', onDeleteBtn);
+  if (deleteBtn) CART_CLEANUPS.push(() => { try { deleteBtn.removeEventListener('click', onDeleteBtn); } catch {} });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+export async function mountCart(appContainer) {
+  appContainer.innerHTML = cartTemplate();
   attachEvents();
   renderCart();
-});
+  try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
+}
+
+export function unmountCart() {
+  CART_CLEANUPS.splice(0).forEach(fn => { try { fn(); } catch {} });
+  const app = document.querySelector('#app');
+  if (app) app.innerHTML = '';
+}

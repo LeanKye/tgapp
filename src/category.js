@@ -12,19 +12,54 @@ function navigate(path) {
 }
  
 
+function categoryTemplate() {
+  return `
+    <div class="catalog">
+      <div class="header-container">
+        <div class="search">
+          <div class="search-container">
+            <div class="input-container">
+              <div class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <input id="search-input" placeholder="Поиск по категории">
+            </div>
+            <div class="search-dropdown" id="search-dropdown"></div>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="category-title" id="category-title">Категория</div>
+        <div class="category-products-grid" id="category-products"></div>
+        <div class="no-products" id="no-products" style="display: none;">
+          <h3>В этой категории пока пусто</h3>
+          <p>Но скоро что-то появится!</p>
+          <button class="back-to-main reset-Button" id="back-to-main-btn">Вернуться на главную</button>
+        </div>
+      </div>
+      <div class="search-overlay" id="search-overlay"></div>
+    </div>
+  `;
+}
+
 class CategoryPage {
-  constructor() {
-    this.currentCategory = null;
+  constructor(categoryFromParams) {
+    this.currentCategory = categoryFromParams || null;
     this.currentProducts = [];
     this.filteredProducts = [];
     this._edgeLockCleanup = null;
+    this._docHandlers = [];
     this.init();
   }
 
   init() {
-    // Получаем категорию из URL
-    const urlParams = new URLSearchParams(window.location.search);
-    this.currentCategory = urlParams.get('category');
+    // Если категорию не передали — читаем из URL (fallback)
+    if (!this.currentCategory) {
+      const urlParams = new URLSearchParams(window.location.search);
+      this.currentCategory = urlParams.get('category');
+    }
 
     if (!this.currentCategory) {
       // Если категория не указана, перенаправляем на главную
@@ -40,6 +75,11 @@ class CategoryPage {
   // initMenu удалён — меню больше нет
 
 
+
+  onDocument(type, handler, options) {
+    document.addEventListener(type, handler, options);
+    this._docHandlers.push({ type, handler, options });
+  }
 
   initSearch() {
     const searchInput = document.getElementById('search-input');
@@ -120,14 +160,15 @@ class CategoryPage {
     searchInput.addEventListener('touchend', onTapPU, { passive: false });
 
     // Скрываем dropdown при клике вне поиска
-    document.addEventListener('click', (e) => {
+    const onDocClick = (e) => {
       if (!e.target.closest('.search-container') && !e.target.closest('.header-container')) {
         this.hideSearchDropdown();
         if (this.isSearchActive) {
           this.deactivateSearch();
         }
       }
-    });
+    };
+    this.onDocument('click', onDocClick);
     
     // Обработчик для закрытия поиска при клике на оверлей
     const searchOverlay = document.getElementById('search-overlay');
@@ -149,7 +190,7 @@ class CategoryPage {
     }
     
     // Обработчик для скролла - если пользователь пытается скроллить, закрываем поиск
-    document.addEventListener('wheel', (e) => {
+    const onWheel = (e) => {
       if (this.isSearchActive) {
         // Разрешаем скролл внутри search-dropdown
         if (e.target.closest('.search-dropdown')) {
@@ -158,10 +199,11 @@ class CategoryPage {
         e.preventDefault();
         this.deactivateSearch();
       }
-    }, { passive: false });
+    };
+    this.onDocument('wheel', onWheel, { passive: false });
     
     // Обработчик для touch событий на мобильных устройствах
-    document.addEventListener('touchmove', (e) => {
+    const onTouchMove = (e) => {
       if (this.isSearchActive) {
         // Разрешаем скролл внутри search-dropdown
         if (e.target.closest('.search-dropdown')) {
@@ -170,10 +212,11 @@ class CategoryPage {
         e.preventDefault();
         this.deactivateSearch();
       }
-    }, { passive: false });
+    };
+    this.onDocument('touchmove', onTouchMove, { passive: false });
   
   // Обработчик для блокировки всех кликов при активном поиске
-  document.addEventListener('click', (e) => {
+  const onDocCaptureClick = (e) => {
     if (this.isSearchActive) {
       // Разрешаем клики только в зоне поиска и в меню (если оно есть)
       if (e.target.closest('.search-container') || e.target.closest('#menu')) {
@@ -183,7 +226,8 @@ class CategoryPage {
       e.stopPropagation();
       this.deactivateSearch();
     }
-  }, { capture: true });
+  };
+  this.onDocument('click', onDocCaptureClick, { capture: true });
 
   // Предотвращаем "проклик" при скролле внутри dropdown (iOS/Android ghost click)
   try {
@@ -750,77 +794,35 @@ class CategoryPage {
   }
 }
 
-// Класс для управления блокировкой кликов при открытом меню или поиске
-class ClickBlocker {
-  constructor() {
-    this.isMenuOpen = false;
-    this.isSearchOpen = false;
-    this.blockedElements = new Set();
-    this.init();
-  }
+let currentInstance = null;
 
-  init() {
-    // Отслеживаем изменения в меню
-    const menu = document.getElementById('menu');
-    if (menu) {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-            this.isMenuOpen = !menu.classList.contains('menu-closed');
-            this.updateBlockState();
-          }
-        });
-      });
-      observer.observe(menu, { attributes: true });
-    }
-
-    // Отслеживаем изменения в поиске
-    const searchDropdown = document.getElementById('search-dropdown');
-    if (searchDropdown) {
-      const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-            this.isSearchOpen = searchDropdown.classList.contains('show');
-            this.updateBlockState();
-          }
-        });
-      });
-      observer.observe(searchDropdown, { attributes: true });
-    }
-  }
-
-  updateBlockState() {
-    const shouldBlock = this.isMenuOpen || this.isSearchOpen;
-    
-    if (shouldBlock) {
-      this.blockClicks();
-    } else {
-      this.unblockClicks();
-    }
-  }
-
-  blockClicks() {
-    // Блокируем клики по карточкам товаров
-    const productCards = document.querySelectorAll('.category-product-card, .category-card');
-    productCards.forEach(card => {
-      if (!this.blockedElements.has(card)) {
-        card.style.pointerEvents = 'none';
-        this.blockedElements.add(card);
-      }
+export async function mountCategory(appContainer, params = {}) {
+  // Вставляем разметку категории
+  appContainer.innerHTML = categoryTemplate();
+  // Кнопка "Вернуться на главную"
+  const backBtn = document.getElementById('back-to-main-btn');
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      navigate('index.html');
     });
   }
-
-  unblockClicks() {
-    // Разблокируем клики по карточкам товаров
-    this.blockedElements.forEach(card => {
-      card.style.pointerEvents = '';
-    });
-    this.blockedElements.clear();
-  }
+  // Инициализируем страницу с категорией из params
+  currentInstance = new CategoryPage(params?.category);
 }
 
-// Инициализируем страницу категории
-document.addEventListener('DOMContentLoaded', () => {
-  new CategoryPage();
-  const clickBlocker = new ClickBlocker();
-});
+export function unmountCategory() {
+  if (currentInstance) {
+    try {
+      // Снять edge-lock
+      currentInstance.disableEdgeScrollLock?.();
+      // Снять все document-события
+      (currentInstance._docHandlers || []).forEach(({ type, handler, options }) => {
+        try { document.removeEventListener(type, handler, options); } catch {}
+      });
+      currentInstance._docHandlers = [];
+    } catch {}
+    currentInstance = null;
+  }
+  const app = document.querySelector('#app');
+  if (app) app.innerHTML = '';
+}

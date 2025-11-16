@@ -1,6 +1,66 @@
 import './style.css'
 import { getProductById, formatPrice, formatPriceSimple, formatPriceCard } from './products-data.js'
 import ModalManager from './modal-manager.js'
+
+function productTemplate() {
+  return `
+    <div class="product">
+      <div class="product-cover">
+        <div class="swiper">
+          <div class="swiper-wrapper"></div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="labels"></div>
+        <h1 class="title">Загрузка...</h1>
+        <div class="category text-gray">Загрузка...</div>
+        <div class="price">
+          <span class="price-value">Загрузка...</span>
+          <span class="price-old text-gray" style="display: none;">0</span>
+          <span class="price-discount" style="display: none;">0%</span>
+          <div class="price-usdt text-gray">от 0.00 USDT</div>
+          <div class="payment-methods">
+            <img src="img/sbp.svg" alt="СБП" class="pm-icon pm-sbp" />
+            <img src="img/mir.svg" alt="МИР" class="pm-icon pm-mir" />
+          </div>
+        </div>
+      </div>
+      <div class="container" id="checkout">
+        <div class="checkout-header" id="checkout-toggle">
+          <span id="checkout-header-text">Активация</span>
+          <div class="checkout-arrow">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 9L12 16L5 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <button id="more-info-btn" class="checkout-more reset-Button" aria-label="Подробнее">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M11 11h2v5h-2z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
+        <div class="button-group variant-group" id="variant-group"></div>
+        <div class="button-group period-group" id="period-group"></div>
+        <div class="button-group edition-group" id="edition-group"></div>
+      </div>
+      <div class="container instruction">
+        <div class="instruction-title">Перейти к просмотру</div>
+        <div class="instruction-subtitle">Инструкция по установке</div>
+      </div>
+      <div class="container">
+        <div class="tabs">
+          <div class="tab tab-selected">Описание</div>
+          <div class="tab">Системные требования</div>
+        </div>
+        <div class="tabs-content">Загрузка описания товара...</div>
+      </div>
+    </div>
+    <button class="add-to-cart reset-Button">Добавить в корзину</button>
+    <div class="bottom-actions-bg"></div>
+  `;
+}
  
 // Универсальная навигация: используем стек AppNav при наличии
 function navigate(path) {
@@ -14,7 +74,7 @@ function navigate(path) {
 
 
 
-// Функция для получения параметров URL
+// Функция для получения параметров URL (fallback)
 function getUrlParameter(name) {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get(name);
@@ -688,66 +748,72 @@ function updateTabs(product) {
   });
   
   // Обновляем позицию полосочки при изменении размера окна
-  window.addEventListener('resize', () => {
+  if (!window.__product_tabs_resize_attached) {
+    window.__product_tabs_resize_attached = true;
+    window.addEventListener('resize', () => {
     const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
     updateTabIndicator(activeIndex);
-  });
+    });
+  }
   
   // Обновляем позицию полосочки при изменении ориентации устройства
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-      const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
-      updateTabIndicator(activeIndex);
-    }, 100);
-  });
+  if (!window.__product_tabs_orient_attached) {
+    window.__product_tabs_orient_attached = true;
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
+        updateTabIndicator(activeIndex);
+      }, 100);
+    });
+  }
   
   // Обновляем позицию скролла в кнопках при изменении размера окна
-  window.addEventListener('resize', () => {
-    // Находим все активные кнопки в скроллируемых контейнерах
-    const scrollableContainers = [
-      document.querySelector('#variant-group'),
-      document.querySelector('#period-group'),
-      document.querySelector('#edition-group')
-    ];
-    
-    scrollableContainers.forEach(container => {
-      if (container) {
-        const checkedInput = container.querySelector('input:checked');
-        if (checkedInput) {
-          const label = container.querySelector(`label[for="${checkedInput.id}"]`);
-          if (label) {
-            // Небольшая задержка для корректного расчета размеров
-            setTimeout(() => {
-              scrollToSelectedButton(container, label);
-            }, 50);
-          }
-        }
-      }
-    });
-  });
-  
-  // Обновляем позицию скролла в кнопках при изменении ориентации устройства
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
+  if (!window.__product_buttons_resize_attached) {
+    window.__product_buttons_resize_attached = true;
+    window.addEventListener('resize', () => {
       const scrollableContainers = [
         document.querySelector('#variant-group'),
         document.querySelector('#period-group'),
         document.querySelector('#edition-group')
       ];
-      
       scrollableContainers.forEach(container => {
         if (container) {
           const checkedInput = container.querySelector('input:checked');
           if (checkedInput) {
             const label = container.querySelector(`label[for="${checkedInput.id}"]`);
             if (label) {
-              scrollToSelectedButton(container, label);
+              setTimeout(() => { scrollToSelectedButton(container, label); }, 50);
             }
           }
         }
       });
-    }, 100);
-  });
+    });
+  }
+  
+  // Обновляем позицию скролла в кнопках при изменении ориентации устройства
+  if (!window.__product_buttons_orient_attached) {
+    window.__product_buttons_orient_attached = true;
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        const scrollableContainers = [
+          document.querySelector('#variant-group'),
+          document.querySelector('#period-group'),
+          document.querySelector('#edition-group')
+        ];
+        scrollableContainers.forEach(container => {
+          if (container) {
+            const checkedInput = container.querySelector('input:checked');
+            if (checkedInput) {
+              const label = container.querySelector(`label[for="${checkedInput.id}"]`);
+              if (label) {
+                scrollToSelectedButton(container, label);
+              }
+            }
+          }
+        });
+      }, 100);
+    });
+  }
 }
 
 // Функция для плавного обновления контента табов с анимацией
@@ -1744,33 +1810,24 @@ function openCheckoutModal(product, selectedOptions, finalPrice) {
 
 
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-  // Инициализируем ModalManager
+// SPA mount/unmount
+let __product_cleanup = [];
+
+export async function mountProduct(appContainer, params = {}) {
+  appContainer.innerHTML = productTemplate();
+  // Инициализация ModalManager
   modalManager = new ModalManager();
-  
-  const productId = getUrlParameter('product');
-  
-  
+  const productId = params?.product || getUrlParameter('product');
   const product = getProductById(productId);
-  
-  
   renderProduct(product);
-  // На странице товара всегда есть нижние действия — показываем подложку
   document.body.classList.add('has-checkout-bar');
-  
-  // Инициализируем компоненты после отрисовки продукта
   if (product) {
-    // Небольшая задержка чтобы DOM успел обновиться
     setTimeout(() => {
       initCheckoutPanel();
-      initPayment(); // Добавляем инициализацию оплаты
-      // Синхронизируем состояние кнопок в соответствии с выбранными опциями
+      initPayment();
       refreshBuyControls(product);
-      // Кнопка "Подробнее" — открывает модалку с описанием услуги
       const moreBtn = document.getElementById('more-info-btn');
       if (moreBtn) {
-        // Fast-tap для кнопки "i" (Подробнее) с защитой от скролла/удержания во время bounce
         let ix=0,iy=0,it=0,isy=0,isx=0; const MOVEI=8,HOLDI=300;
         const openInfo=()=>{
           if (!modalManager) return;
@@ -1789,14 +1846,31 @@ document.addEventListener('DOMContentLoaded', () => {
         moreBtn.addEventListener('pointermove', ipm, { passive: true });
         moreBtn.addEventListener('pointerup', ipu, { passive: true });
         moreBtn.addEventListener('touchend', ipu, { passive: true });
+        __product_cleanup.push(() => {
+          try { moreBtn.removeEventListener('pointerdown', ipd); } catch {}
+          try { moreBtn.removeEventListener('pointermove', ipm); } catch {}
+          try { moreBtn.removeEventListener('pointerup', ipu); } catch {}
+          try { moreBtn.removeEventListener('touchend', ipu); } catch {}
+        });
       }
     }, 100);
+  } else {
+    setTimeout(() => navigate('index.html'), 2000);
   }
-  
-  // Если продукт не найден, перенаправляем на главную
-  if (!product) {
-    setTimeout(() => {
-      navigate('index.html');
-    }, 2000);
-  }
-});
+}
+
+export function unmountProduct() {
+  try {
+    document.body.classList.remove('has-checkout-bar');
+    document.body.classList.remove('cart-morph-active');
+    document.body.classList.remove('cart-morph-reverse');
+  } catch {}
+  try {
+    const ctr = document.querySelector('.product-cart-controls');
+    if (ctr && ctr.parentNode) ctr.parentNode.removeChild(ctr);
+  } catch {}
+  __product_cleanup.forEach((fn) => { try { fn(); } catch {} });
+  __product_cleanup = [];
+  const app = document.querySelector('#app');
+  if (app) app.innerHTML = '';
+}

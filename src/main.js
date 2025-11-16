@@ -1,5 +1,45 @@
 import './style.css'
 import { getAllProducts, categoryData, formatPrice, formatPriceCard, bannerData } from './products-data.js'
+
+function homeTemplate() {
+  return `
+    <div class="catalog">
+      <div class="header-container">
+        <div class="logo">
+          <h1>Hooli</h1>
+          <span class="version-badge">0.1 BETA</span>
+        </div>
+        <div class="search">
+          <div class="search-container">
+            <div class="input-container">
+              <div class="search-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M21 21L16.514 16.506L21 21ZM19 10.5C19 15.194 15.194 19 10.5 19C5.806 19 2 15.194 2 10.5C2 5.806 5.806 2 10.5 2C15.194 2 19 5.806 19 10.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <input id="search-input" placeholder="Поиск">
+            </div>
+            <div class="search-dropdown" id="search-dropdown"></div>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="banner-slider-container">
+          <div class="banner-slider" id="bannerSlider"></div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="category-title">Категории</div>
+        <div class="categories-grid" id="categories-grid"></div>
+      </div>
+      <div class="container">
+        <div class="category-title">Новинки</div>
+        <div class="category-products-slider"></div>
+      </div>
+      <div class="search-overlay" id="search-overlay"></div>
+    </div>
+  `;
+}
  
 // Универсальная навигация: используем стек AppNav при наличии
 function navigate(path) {
@@ -786,8 +826,25 @@ class SearchManager {
     this.isSearchActive = false;
     this._edgeLockCleanup = null;
     this.isFirstTimeOpen = true; // Флаг для первого открытия
+    this._listeners = [];
     
     this.init();
+  }
+
+  addListener(target, type, handler, options) {
+    if (!target || !type || !handler) return;
+    target.addEventListener(type, handler, options);
+    this._listeners.push(() => {
+      try { target.removeEventListener(type, handler, options); } catch {}
+    });
+  }
+
+  destroy() {
+    try { this.disableEdgeScrollLock(); } catch {}
+    this._listeners.splice(0).forEach((off) => { try { off(); } catch {} });
+    this._listeners = [];
+    try { this.hideDropdown(); } catch {}
+    this.isSearchActive = false;
   }
 
   // Поглощает следующий click на документе (capture), чтобы iOS/Android не "прокликивали" нижний слой
@@ -813,14 +870,15 @@ class SearchManager {
     });
 
     // Скрываем dropdown при клике вне его
-    document.addEventListener('click', (e) => {
+    const onDocClick = (e) => {
       if (!e.target.closest('.search-container') && !e.target.closest('.header-container')) {
         this.hideDropdown();
         if (this.isSearchActive) {
           this.deactivateSearch();
         }
       }
-    });
+    };
+    this.addListener(document, 'click', onDocClick);
 
     // Показываем dropdown при фокусе всегда
     this.searchInput.addEventListener('focus', () => {
@@ -882,48 +940,49 @@ class SearchManager {
     // Обработчик для закрытия поиска при клике на оверлей
     const searchOverlay = document.getElementById('search-overlay');
     if (searchOverlay) {
-      searchOverlay.addEventListener('click', () => {
-        this.deactivateSearch();
-      });
+      const onOverlay = () => this.deactivateSearch();
+      searchOverlay.addEventListener('click', onOverlay);
+      this._listeners.push(() => { try { searchOverlay.removeEventListener('click', onOverlay); } catch {} });
     }
     
     // Обработчик для закрытия поиска при клике на хедер (кроме самого поисковика)
     const headerContainer = document.querySelector('.header-container');
     if (headerContainer) {
-      headerContainer.addEventListener('click', (e) => {
-        // Если клик не на сам поисковик и поиск активен
+      const onHeaderClick = (e) => {
         if (!e.target.closest('.search-container') && this.isSearchActive) {
           this.deactivateSearch();
         }
-      });
+      };
+      headerContainer.addEventListener('click', onHeaderClick);
+      this._listeners.push(() => { try { headerContainer.removeEventListener('click', onHeaderClick); } catch {} });
     }
     
       // Обработчик для скролла - если пользователь пытается скроллить, закрываем поиск
-  document.addEventListener('wheel', (e) => {
+  const onWheel = (e) => {
     if (this.isSearchActive) {
-      // Разрешаем скролл внутри search-dropdown
       if (e.target.closest('.search-dropdown')) {
         return;
       }
       e.preventDefault();
       this.deactivateSearch();
     }
-  }, { passive: false });
+  };
+  this.addListener(document, 'wheel', onWheel, { passive: false });
   
   // Обработчик для touch событий на мобильных устройствах
-  document.addEventListener('touchmove', (e) => {
+  const onTouchMoveDoc = (e) => {
     if (this.isSearchActive) {
-      // Разрешаем скролл внутри search-dropdown
       if (e.target.closest('.search-dropdown')) {
         return;
       }
       e.preventDefault();
       this.deactivateSearch();
     }
-  }, { passive: false });
+  };
+  this.addListener(document, 'touchmove', onTouchMoveDoc, { passive: false });
   
   // Обработчик для блокировки всех кликов при активном поиске
-  document.addEventListener('click', (e) => {
+  const onDocCapture = (e) => {
     if (this.isSearchActive) {
       // Разрешаем клики только в зоне поиска
       if (e.target.closest('.search-container')) {
@@ -933,7 +992,9 @@ class SearchManager {
       e.stopPropagation();
       this.deactivateSearch();
     }
-  }, { capture: true });
+  };
+  document.addEventListener('click', onDocCapture, { capture: true });
+  this._listeners.push(() => { try { document.removeEventListener('click', onDocCapture, { capture: true }); } catch {} });
 
   // Предотвращаем "проклик" при скролле внутри dropdown (iOS/Android ghost click)
   try {
@@ -1684,54 +1745,66 @@ class ToggleSwitches {
   }
 }
 
-// Инициализация слайдера после загрузки DOM
+// Инициализация при загрузке (SSR/первый заход по index.html)
 document.addEventListener('DOMContentLoaded', () => {
+  try {
+    const exists = document.getElementById('bannerSlider');
+    if (!exists) return;
+    const slider = new BannerSlider();
+    const searchManager = new SearchManager();
+    window.searchManager = searchManager;
+    const psPlusManager = new PSPlusManager();
+    const clickBlocker = new ClickBlocker();
+    renderNewProducts();
+    renderCategories();
+    setTimeout(() => {
+      const productsSlider = document.querySelector('.category-products-slider');
+      if (productsSlider) productsSlider.scrollLeft = 0;
+    }, 100);
+    window.addEventListener('resize', () => { setTimeout(() => slider.updateOnResize(), 100); });
+    window.addEventListener('load', () => { setTimeout(() => slider.updateOnResize(), 0); });
+    window.addEventListener('orientationchange', () => { setTimeout(() => slider.updateOnResize(), 100); });
+  } catch {}
+});
+
+// SPA: mount/unmount
+let __home_cleanup = [];
+let __home_slider = null;
+
+export async function mountHome(appContainer) {
+  appContainer.innerHTML = homeTemplate();
+  // Инициализация модулей
   const slider = new BannerSlider();
+  __home_slider = slider;
   const searchManager = new SearchManager();
-  // Сохраняем экземпляр SearchManager в глобальной переменной для доступа из других функций
   window.searchManager = searchManager;
   const psPlusManager = new PSPlusManager();
   const clickBlocker = new ClickBlocker();
-  
-  // Рендерим товары
   renderNewProducts();
-  
-  // Рендерим категории на главной странице
   renderCategories();
-  
-  // Меню удалено
-
-  
-
-  // Обработчик для кнопки поддержки проекта удалён
-
-  // Дополнительная проверка позиции слайдера товаров после полной загрузки
+  // Сброс скролла слайдера товаров
   setTimeout(() => {
     const productsSlider = document.querySelector('.category-products-slider');
-    if (productsSlider) {
-      productsSlider.scrollLeft = 0;
-    }
+    if (productsSlider) productsSlider.scrollLeft = 0;
   }, 100);
+  // Обновления размеров
+  const onResize = () => { setTimeout(() => slider.updateOnResize(), 100); };
+  const onLoad = () => { setTimeout(() => slider.updateOnResize(), 0); };
+  const onOrient = () => { setTimeout(() => slider.updateOnResize(), 100); };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('load', onLoad);
+  window.addEventListener('orientationchange', onOrient);
+  __home_cleanup.push(() => { try { window.removeEventListener('resize', onResize); } catch {} });
+  __home_cleanup.push(() => { try { window.removeEventListener('load', onLoad); } catch {} });
+  __home_cleanup.push(() => { try { window.removeEventListener('orientationchange', onOrient); } catch {} });
+}
 
-  // Обновляем позиционирование при изменении размера окна
-  window.addEventListener('resize', () => {
-    setTimeout(() => {
-      slider.updateOnResize();
-    }, 100);
-  });
-  
-  // Пересчитываем позицию после полной загрузки страницы
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      slider.updateOnResize();
-    }, 0);
-  });
-  
-  // И после смены ориентации экрана (актуально для iOS/Android вебвью)
-  window.addEventListener('orientationchange', () => {
-    setTimeout(() => {
-      slider.updateOnResize();
-    }, 100);
-  });
-
-});
+export function unmountHome() {
+  try { __home_slider && __home_slider.destroy && __home_slider.destroy(); } catch {}
+  __home_slider = null;
+  try { window.searchManager && window.searchManager.destroy && window.searchManager.destroy(); } catch {}
+  try { delete window.searchManager; } catch {}
+  __home_cleanup.splice(0).forEach(fn => { try { fn(); } catch {} });
+  const app = document.querySelector('#app');
+  if (app) app.innerHTML = '';
+}
