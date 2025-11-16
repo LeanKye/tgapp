@@ -25,14 +25,9 @@ class CategoryPage {
     // Получаем категорию из URL
     const urlParams = new URLSearchParams(window.location.search);
     this.currentCategory = urlParams.get('category');
-    
-    console.log('DEBUG CATEGORY: window.location.search:', window.location.search);
-    console.log('DEBUG CATEGORY: currentCategory:', this.currentCategory);
-    console.log('DEBUG CATEGORY: window.location.href:', window.location.href);
-    
+
     if (!this.currentCategory) {
       // Если категория не указана, перенаправляем на главную
-      console.log('DEBUG CATEGORY: No category found, redirecting to main');
       navigate('index.html');
       return;
     }

@@ -187,7 +187,7 @@ export const products = {
     labels: ['Гарантия', 'Лицензия'],
     labelColors: ['orange', 'violet'],
     images: [
-      'img/сanva.webp'
+      'img/canva.webp'
     ],
     variants: [
       { id: 'variant-1', name: 'Подписка' },
@@ -904,9 +904,9 @@ export const bannerData = [
     id: 'banner-4',
     title: 'Специальное предложение',
     subtitle: 'Ограниченное время',
-    category: 'Adobe',
+    category: 'Дизайн',
     action: 'category',
-    actionParams: { category: 'Adobe' },
+    actionParams: { category: 'Дизайн' },
     backgroundColor: '#f59e0b',
     active: false
   }

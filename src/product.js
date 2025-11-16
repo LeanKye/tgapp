@@ -1754,12 +1754,10 @@ document.addEventListener('DOMContentLoaded', () => {
   modalManager = new ModalManager();
   
   const productId = getUrlParameter('product');
-  console.log('DEBUG: productId from URL:', productId);
-  console.log('DEBUG: window.location.search:', window.location.search);
-  console.log('DEBUG: window.location.href:', window.location.href);
+  
   
   const product = getProductById(productId);
-  console.log('DEBUG: product found:', !!product, product?.title);
+  
   
   renderProduct(product);
   // На странице товара всегда есть нижние действия — показываем подложку
