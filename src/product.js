@@ -1667,11 +1667,7 @@ function handlePaymentSuccess(result, product, selectedOptions) {
   // - Отправки уведомления пользователю
   // - Отправки данных в Telegram Bot API
   
-  console.log('Платеж успешен:', {
-    result,
-    product,
-    selectedOptions
-  });
+  
   
   // НЕ перенаправляем на главную - пользователь остается на странице товара
   // Если нужно перенаправление, раскомментируйте код ниже:

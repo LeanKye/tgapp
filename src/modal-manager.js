@@ -777,11 +777,7 @@ class ModalManager {
     // - Отправки данных в Telegram Bot API  
     // - Сохранения заказа в базе данных
     
-    console.log('Переход к оформлению заказа:', {
-      orderId,
-      description,
-      paymentData: this.currentPaymentData
-    });
+    
   }
 
 

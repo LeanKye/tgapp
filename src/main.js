@@ -323,7 +323,7 @@ class BannerSlider {
         window.location.href = banner.actionParams.url;
         break;
       default:
-        console.log('Неизвестное действие баннера:', banner.action);
+        
     }
   }
 
