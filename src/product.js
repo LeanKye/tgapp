@@ -80,6 +80,32 @@ function getUrlParameter(name) {
   return urlParams.get(name);
 }
 
+// Последняя выбранная конфигурация пользователя (per product) — для восстановления состояния без морфинга
+function getLastConfigFromSession(productId) {
+  try {
+    const raw = sessionStorage.getItem('hooli_last_config_' + String(productId));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== 'object') return null;
+    return {
+      variantId: obj.variantId || null,
+      periodId: obj.periodId || null,
+      editionId: obj.editionId || null,
+    };
+  } catch { return null; }
+}
+function saveLastConfigToSession(productId, opts) {
+  try {
+    if (!opts) return;
+    const payload = {
+      variantId: opts.variantId || null,
+      periodId: opts.periodId || null,
+      editionId: opts.editionId || null,
+    };
+    sessionStorage.setItem('hooli_last_config_' + String(productId), JSON.stringify(payload));
+  } catch {}
+}
+
 // Функция для отображения товара
 function renderProduct(product) {
   if (!product) {
@@ -1642,6 +1668,8 @@ function refreshBuyControls(product) {
   const controls = document.querySelector('.product-cart-controls');
   const options = getSelectedOptions();
   const exists = options ? getCartItem(product, options) : null;
+  // Сохраняем последнюю конфигурацию для восстановления при будущих переходах
+  try { if (options) saveLastConfigToSession(product.id, options); } catch {}
   if (exists) {
     // Обеспечиваем наличие контролов и morphed-состояние кнопки (не скрываем её)
     if (!controls) renderBuyOrControls(product, false);
@@ -1831,30 +1859,72 @@ export async function mountProduct(appContainer, params = {}) {
     if (buyBtn) {
       try { buyBtn.style.display = 'none'; } catch {}
     }
-    // Если товар уже в корзине — выбираем соответствующие опции до инициализации панелей
-    const preItem = (() => {
+    // 1) Параметры из URL имеют наивысший приоритет
+    const urlVariant = getUrlParameter('variant');
+    const urlPeriod = getUrlParameter('period');
+    const urlEdition = getUrlParameter('edition');
+    let appliedAny = false;
+    if (urlVariant || urlPeriod || urlEdition) {
       try {
-        const items = JSON.parse(localStorage.getItem('hooli_cart') || '[]');
-        const prefix = String(product.id) + '|';
-        return items.find(i => String(i.id) === String(product.id) || String(i.id).startsWith(prefix));
-      } catch { return null; }
-    })();
-    if (preItem) {
-      // Проставляем выбранные радио, если есть сохранённые ids
-      try {
-        if (preItem.variantId) {
-          const v = document.querySelector(`input[name="variant"]#${CSS.escape(preItem.variantId)}`);
-          if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); }
+        if (urlVariant) {
+          const v = document.querySelector(`input[name="variant"]#${CSS.escape(urlVariant)}`);
+          if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
         }
-        if (preItem.periodId) {
-          const p = document.querySelector(`input[name="period"]#${CSS.escape(preItem.periodId)}`);
-          if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); }
+        if (urlPeriod) {
+          const p = document.querySelector(`input[name="period"]#${CSS.escape(urlPeriod)}`);
+          if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
         }
-        if (preItem.editionId) {
-          const e = document.querySelector(`input[name="edition"]#${CSS.escape(preItem.editionId)}`);
-          if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); }
+        if (urlEdition) {
+          const e = document.querySelector(`input[name="edition"]#${CSS.escape(urlEdition)}`);
+          if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
         }
       } catch {}
+    }
+    // 2) Если из URL ничего не применили — берём последнюю конфигурацию из сессии
+    if (!appliedAny) {
+      const lastCfg = getLastConfigFromSession(product.id);
+      if (lastCfg) {
+        try {
+          if (lastCfg.variantId) {
+            const v = document.querySelector(`input[name="variant"]#${CSS.escape(lastCfg.variantId)}`);
+            if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
+          }
+          if (lastCfg.periodId) {
+            const p = document.querySelector(`input[name="period"]#${CSS.escape(lastCfg.periodId)}`);
+            if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
+          }
+          if (lastCfg.editionId) {
+            const e = document.querySelector(`input[name="edition"]#${CSS.escape(lastCfg.editionId)}`);
+            if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
+          }
+        } catch {}
+      }
+    }
+    // 3) Если нет ни URL, ни сессии — пробуем восстановить из корзины (первая подходящая позиция)
+    if (!appliedAny) {
+      const preItem = (() => {
+        try {
+          const items = JSON.parse(localStorage.getItem('hooli_cart') || '[]');
+          const prefix = String(product.id) + '|';
+          return items.find(i => String(i.id) === String(product.id) || String(i.id).startsWith(prefix));
+        } catch { return null; }
+      })();
+      if (preItem) {
+        try {
+          if (preItem.variantId) {
+            const v = document.querySelector(`input[name="variant"]#${CSS.escape(preItem.variantId)}`);
+            if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); }
+          }
+          if (preItem.periodId) {
+            const p = document.querySelector(`input[name="period"]#${CSS.escape(preItem.periodId)}`);
+            if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); }
+          }
+          if (preItem.editionId) {
+            const e = document.querySelector(`input[name="edition"]#${CSS.escape(preItem.editionId)}`);
+            if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); }
+          }
+        } catch {}
+      }
     }
     // Теперь инициализируем панели и применяем итоговое состояние низа
     setTimeout(() => {

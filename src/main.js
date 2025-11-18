@@ -51,6 +51,28 @@ function navigate(path) {
   window.location.href = basePath + normalized;
 }
  
+// Последняя выбранная конфигурация пользователя (per product) — для передачи в URL
+function getLastConfigForProduct(productId) {
+  try {
+    const raw = sessionStorage.getItem('hooli_last_config_' + String(productId));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== 'object') return null;
+    return {
+      variantId: obj.variantId || null,
+      periodId: obj.periodId || null,
+      editionId: obj.editionId || null,
+    };
+  } catch { return null; }
+}
+function buildProductUrlWithConfig(productId) {
+  const cfg = getLastConfigForProduct(productId);
+  const params = new URLSearchParams({ product: String(productId) });
+  if (cfg?.variantId) params.set('variant', cfg.variantId);
+  if (cfg?.periodId) params.set('period', cfg.periodId);
+  if (cfg?.editionId) params.set('edition', cfg.editionId);
+  return `product.html?${params.toString()}`;
+}
 
 // Функция для создания карточки товара
 function createProductCard(product) {
@@ -71,7 +93,7 @@ function createProductCard(product) {
   
   // Добавляем обработчик клика для перехода на страницу товара
   card.addEventListener('click', () => {
-    navigate(`product.html?product=${product.id}`);
+    navigate(buildProductUrlWithConfig(product.id));
   });
   
   return card;
@@ -357,7 +379,7 @@ class BannerSlider {
         navigate(`category.html?category=${encodeURIComponent(banner.actionParams.category)}`);
         break;
       case 'product':
-        navigate(`product.html?product=${banner.actionParams.productId}`);
+        navigate(buildProductUrlWithConfig(banner.actionParams.productId));
         break;
       case 'url':
         window.location.href = banner.actionParams.url;
@@ -1362,7 +1384,7 @@ class SearchManager {
     } catch {}
     
     // Переходим на страницу товара
-    navigate(`product.html?product=${product.id}`);
+  navigate(buildProductUrlWithConfig(product.id));
   }
 
   handleKeydown(e) {

@@ -1,3 +1,25 @@
+// Последняя выбранная конфигурация пользователя (per product) — для передачи в URL
+function getLastConfigForProduct(productId) {
+  try {
+    const raw = sessionStorage.getItem('hooli_last_config_' + String(productId));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj !== 'object') return null;
+    return {
+      variantId: obj.variantId || null,
+      periodId: obj.periodId || null,
+      editionId: obj.editionId || null,
+    };
+  } catch { return null; }
+}
+function buildProductUrlWithConfig(productId) {
+  const cfg = getLastConfigForProduct(productId);
+  const params = new URLSearchParams({ product: String(productId) });
+  if (cfg?.variantId) params.set('variant', cfg.variantId);
+  if (cfg?.periodId) params.set('period', cfg.periodId);
+  if (cfg?.editionId) params.set('edition', cfg.editionId);
+  return `product.html?${params.toString()}`;
+}
 import './style.css'
 import { getProductsByCategory, categoryData, getAllProducts, formatPrice, formatPriceCard } from './products-data.js'
  
@@ -431,7 +453,7 @@ class CategoryPage {
             }
           }
         } catch {}
-        navigate(`product.html?product=${product.id}`);
+        navigate(buildProductUrlWithConfig(product.id));
       }, 120);
     });
 
@@ -466,7 +488,7 @@ class CategoryPage {
         try { e && e.preventDefault && e.preventDefault(); } catch {} 
         try { e && e.stopPropagation && e.stopPropagation(); } catch {} 
         this.deactivateSearch(); 
-        navigate(`product.html?product=${product.id}`);  
+        navigate(buildProductUrlWithConfig(product.id));  
       } finally { 
         setTimeout(()=>{ suggestion.__fastTapLock=false; }, 250);
       } 
@@ -550,7 +572,7 @@ class CategoryPage {
           const product = this.filteredProducts[this.selectedIndex];
           // Мгновенно закрываем поиск и переходим
           this.deactivateSearch();
-          navigate(`product.html?product=${product.id}`);
+          navigate(buildProductUrlWithConfig(product.id));
         }
         break;
       case 'Escape':
@@ -789,13 +811,13 @@ class CategoryPage {
     
     // Добавляем обработчик клика для перехода на страницу товара
     card.addEventListener('click', () => {
-      navigate(`product.html?product=${product.id}`);
+      navigate(buildProductUrlWithConfig(product.id));
     });
     // Fast-tap с защитой от скролла/удержания
     let ftX=0, ftY=0, ftT=0, scY=0, scX=0; const MOVE=8, HOLD=300;
     const pd=(e)=>{ ftX=e.clientX; ftY=e.clientY; ftT=performance.now(); scY=window.scrollY; scX=window.scrollX; card.__moved=false; };
     const pm=(e)=>{ if(!ftT) return; if(Math.abs(e.clientX-ftX)>MOVE || Math.abs(e.clientY-ftY)>MOVE || Math.abs(window.scrollY-scY)>0 || Math.abs(window.scrollX-scX)>0) card.__moved=true; };
-    const pu=()=>{ const dur=performance.now()-(ftT||performance.now()); const ok=!card.__moved && dur<=HOLD; ftT=0; if(!ok) return; if(card.__fastTapLock) return; card.__fastTapLock=true; try{ navigate(`product.html?product=${product.id}`);} finally { setTimeout(()=>{ card.__fastTapLock=false; },300);} };
+    const pu=()=>{ const dur=performance.now()-(ftT||performance.now()); const ok=!card.__moved && dur<=HOLD; ftT=0; if(!ok) return; if(card.__fastTapLock) return; card.__fastTapLock=true; try{ navigate(buildProductUrlWithConfig(product.id));} finally { setTimeout(()=>{ card.__fastTapLock=false; },300);} };
     card.addEventListener('pointerdown', pd, { passive: true });
     card.addEventListener('pointermove', pm, { passive: true });
     card.addEventListener('pointerup', pu, { passive: true });
