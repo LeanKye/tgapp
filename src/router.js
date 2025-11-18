@@ -42,7 +42,11 @@ function fadeOut(targetSel = '#app') {
   const body = document.body;
   const dur = readMs(getComputedStyle(body).getPropertyValue('--page-fade-out'), 160);
   body.classList.add('leaving');
-  const el = document.querySelector(targetSel) || body;
+  // Пытаемся слушать переход именно на контенте, который реально анимируется по opacity
+  const el =
+    document.querySelector('#app .catalog, #app .product, body.info-page main') ||
+    document.querySelector(targetSel) ||
+    body;
   return new Promise((resolve) => {
     let done = false;
     const onEnd = (e) => {
@@ -58,11 +62,25 @@ function fadeOut(targetSel = '#app') {
   });
 }
 
-function fadeIn() {
+function fadeIn(targetSel = '#app') {
   const body = document.body;
-  // page-fade.js сам настраивает --page-fade-in и снимает preload при загрузке,
-  // здесь достаточно убрать класс leaving, чтобы выполнить fade-in.
-  body.classList.remove('leaving');
+  // Гарантируем, что новый контент успел применить стиль состояния "leaving" (opacity:0),
+  // иначе браузер может склеить изменения и показать без анимации.
+  const el =
+    document.querySelector('#app .catalog, #app .product, body.info-page main') ||
+    document.querySelector(targetSel) ||
+    body;
+  try {
+    // Форсируем рефлоу для применения текущего стиля
+    // eslint-disable-next-line no-unused-expressions
+    el && el.offsetWidth;
+  } catch {}
+  // Снимаем класс в следующем кадре (двойной rAF для устойчивости)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      body.classList.remove('leaving');
+    });
+  });
 }
 
 async function renderHome({ replace = false } = {}) {
