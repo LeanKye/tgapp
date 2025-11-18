@@ -1076,6 +1076,12 @@ function initCheckoutPanel() {
   
   // Используем event delegation для максимальной надежности
   variantGroup.addEventListener('click', function(e) {
+    // Блокируем взаимодействие во время анимации открытия/закрытия
+    if (isAnimatingCheckout) {
+      try { e.preventDefault(); } catch {}
+      try { e.stopPropagation(); } catch {}
+      return;
+    }
     // Проверяем что кликнули по label или input внутри варианта
     const clickedLabel = e.target.closest('label[for^="variant-"]');
     const clickedInput = e.target.closest('input[name="variant"]');

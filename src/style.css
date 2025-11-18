@@ -293,6 +293,12 @@ body:has(.product)::before {
   display: none;
 }
 
+/* Блокируем взаимодействия с вариантами на время анимаций checkout */
+#variant-group.expanding,
+#variant-group.collapsing {
+  pointer-events: none;
+}
+
 .reset-Button {
   border: none;
   outline: none;
