@@ -464,8 +464,9 @@ function updatePeriods(product) {
   container.innerHTML = '';
   container.classList.add('period-buttons');
   
-  const isAdobe = String(product?.id) === 'adobe-creative-cloud';
-  const defaultPeriodId = isAdobe ? 'period-1' : (product.periods[0]?.id);
+  // Дефолт: если у товара есть период '1 мес' (id: period-1) — выбираем его, иначе первый по списку
+  const hasMonthly = (product.periods || []).some(p => p.id === 'period-1');
+  const defaultPeriodId = hasMonthly ? 'period-1' : (product.periods[0]?.id);
 
   product.periods.forEach((period, index) => {
     const input = document.createElement('input');
@@ -473,7 +474,7 @@ function updatePeriods(product) {
     input.name = 'period';
     input.id = period.id;
     input.value = period.id;
-    if ((index === 0 && !isAdobe) || (isAdobe && period.id === defaultPeriodId)) {
+    if (period.id === defaultPeriodId) {
       input.checked = true;
       input.setAttribute('checked', 'checked');
     }
@@ -1889,10 +1890,6 @@ export async function mountProduct(appContainer, params = {}) {
             const v = document.querySelector(`input[name="variant"]#${CSS.escape(lastCfg.variantId)}`);
             if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
           }
-          if (lastCfg.periodId) {
-            const p = document.querySelector(`input[name="period"]#${CSS.escape(lastCfg.periodId)}`);
-            if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
-          }
           if (lastCfg.editionId) {
             const e = document.querySelector(`input[name="edition"]#${CSS.escape(lastCfg.editionId)}`);
             if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); appliedAny = true; }
@@ -1914,10 +1911,6 @@ export async function mountProduct(appContainer, params = {}) {
           if (preItem.variantId) {
             const v = document.querySelector(`input[name="variant"]#${CSS.escape(preItem.variantId)}`);
             if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); }
-          }
-          if (preItem.periodId) {
-            const p = document.querySelector(`input[name="period"]#${CSS.escape(preItem.periodId)}`);
-            if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); }
           }
           if (preItem.editionId) {
             const e = document.querySelector(`input[name="edition"]#${CSS.escape(preItem.editionId)}`);

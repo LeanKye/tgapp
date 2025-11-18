@@ -16,7 +16,6 @@ function buildProductUrlWithConfig(productId) {
   const cfg = getLastConfigForProduct(productId);
   const params = new URLSearchParams({ product: String(productId) });
   if (cfg?.variantId) params.set('variant', cfg.variantId);
-  if (cfg?.periodId) params.set('period', cfg.periodId);
   if (cfg?.editionId) params.set('edition', cfg.editionId);
   return `product.html?${params.toString()}`;
 }
