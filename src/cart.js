@@ -309,7 +309,7 @@ function attachEvents() {
   let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=3,HOLD=300;
   const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); if(!t) return; const pt=(e.touches&&e.touches[0])||e; dSX=pt.clientX||0; dSY=pt.clientY||0; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; };
   const onPM=(e)=>{ if(!dST) return; const pt=(e.touches&&e.touches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE; if(moved){ window.__cartFastTapBlockClickUntil = performance.now() + 400; } };
-  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
+  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); /* Блокируем следующий нативный click, чтобы не было двойного срабатывания */ window.__cartFastTapBlockClickUntil = performance.now() + 350; } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
   document.body.addEventListener('pointerdown', onPD, { passive: true });
   document.body.addEventListener('pointermove', onPM, { passive: true });
   document.body.addEventListener('pointerup', onPU, { passive: true });
@@ -425,43 +425,36 @@ function attachEvents() {
     return Array.from(document.querySelectorAll('.cart-select:checked')).map(i => i.getAttribute('data-id'));
   }
 
-  function selectAll(state) {
-    document.querySelectorAll('.cart-select').forEach(cb => { cb.checked = !!state; });
-    if (selectAllCheckbox) selectAllCheckbox.checked = !!state;
+  function isAllChecked() {
+    const checkboxes = document.querySelectorAll('.cart-select');
+    return Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
   }
 
-  const onSelectAllBtn = () => {
-    const checkboxes = document.querySelectorAll('.cart-select');
-    const allChecked = Array.from(checkboxes).length > 0 && Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => { cb.checked = !allChecked; });
-    if (selectAllCheckbox) selectAllCheckbox.checked = !allChecked;
+  function applySelectAll(state) {
+    document.querySelectorAll('.cart-select').forEach(cb => { cb.checked = !!state; });
+    if (selectAllCheckbox) selectAllCheckbox.checked = !!state;
     // Сохраняем текущее состояние выбранных
     const selected = new Set();
     document.querySelectorAll('.cart-select:checked').forEach(cb => selected.add(cb.getAttribute('data-id')));
     writeSelected(selected);
+    // Обновляем сумму и счётчик
     const items = readCart();
     const { total, count } = calculateTotals(items);
     const countEl = document.getElementById('checkout-count');
     const totalEl = document.getElementById('checkout-total');
     if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
     if (totalEl) totalEl.innerHTML = formatPrice(total);
+  }
+
+  const onSelectAllBtn = () => {
+    const next = !isAllChecked();
+    applySelectAll(next);
   };
   selectAllBtn?.addEventListener('click', onSelectAllBtn);
   if (selectAllBtn) CART_CLEANUPS.push(() => { try { selectAllBtn.removeEventListener('click', onSelectAllBtn); } catch {} });
 
   const onSelectAllChange = (e) => {
-    const checkboxes = document.querySelectorAll('.cart-select');
-    checkboxes.forEach(cb => { cb.checked = !!e.target.checked; });
-    // Сохраняем текущее состояние выбранных
-    const selected = new Set();
-    document.querySelectorAll('.cart-select:checked').forEach(cb => selected.add(cb.getAttribute('data-id')));
-    writeSelected(selected);
-    const items = readCart();
-    const { total, count } = calculateTotals(items);
-    const countEl = document.getElementById('checkout-count');
-    const totalEl = document.getElementById('checkout-total');
-    if (countEl) countEl.textContent = `${count} ${count === 1 ? 'товар' : (count >=2 && count <=4 ? 'товара' : 'товаров')}`;
-    if (totalEl) totalEl.innerHTML = formatPrice(total);
+    applySelectAll(!!e.target.checked);
   };
   selectAllCheckbox?.addEventListener('change', onSelectAllChange);
   if (selectAllCheckbox) CART_CLEANUPS.push(() => { try { selectAllCheckbox.removeEventListener('change', onSelectAllChange); } catch {} });
