@@ -193,9 +193,8 @@ function renderProduct(product) {
   // Обновляем описание и системные требования
   updateTabs(product);
   
-  // Рендерим нижнюю кнопку / контролы корзины
-  // Без морфинга и без дополнительного проявления — сразу итоговое состояние
-  renderBuyOrControls(product, false);
+  // Не рендерим нижнюю кнопку/контролы здесь.
+  // Начальное состояние низа устанавливается в mountProduct, чтобы исключить «переключение».
 
   // Убеждаемся, что полосочка правильно позиционируется после полной загрузки
   setTimeout(() => {
@@ -1827,10 +1826,46 @@ export async function mountProduct(appContainer, params = {}) {
   renderProduct(product);
   document.body.classList.add('has-checkout-bar');
   if (product) {
+    // Подготовим стартовое состояние низа без видимого промежуточного состояния
+    const buyBtn = document.querySelector('.add-to-cart');
+    if (buyBtn) {
+      try { buyBtn.style.display = 'none'; } catch {}
+    }
+    // Если товар уже в корзине — выбираем соответствующие опции до инициализации панелей
+    const preItem = (() => {
+      try {
+        const items = JSON.parse(localStorage.getItem('hooli_cart') || '[]');
+        const prefix = String(product.id) + '|';
+        return items.find(i => String(i.id) === String(product.id) || String(i.id).startsWith(prefix));
+      } catch { return null; }
+    })();
+    if (preItem) {
+      // Проставляем выбранные радио, если есть сохранённые ids
+      try {
+        if (preItem.variantId) {
+          const v = document.querySelector(`input[name="variant"]#${CSS.escape(preItem.variantId)}`);
+          if (v && !v.checked) { v.checked = true; v.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+        if (preItem.periodId) {
+          const p = document.querySelector(`input[name="period"]#${CSS.escape(preItem.periodId)}`);
+          if (p && !p.checked) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+        if (preItem.editionId) {
+          const e = document.querySelector(`input[name="edition"]#${CSS.escape(preItem.editionId)}`);
+          if (e && !e.checked) { e.checked = true; e.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+      } catch {}
+    }
+    // Теперь инициализируем панели и применяем итоговое состояние низа
     setTimeout(() => {
       initCheckoutPanel();
       initPayment();
-      refreshBuyControls(product);
+      try { refreshBuyControls(product); } catch {}
+      // Показать кнопку только если контролы не созданы
+      const ctr = document.querySelector('.product-cart-controls');
+      if (!ctr && buyBtn) {
+        try { buyBtn.style.display = ''; } catch {}
+      }
       const moreBtn = document.getElementById('more-info-btn');
       if (moreBtn) {
         let ix=0,iy=0,it=0,isy=0,isx=0; const MOVEI=8,HOLDI=300;
