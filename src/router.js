@@ -304,7 +304,23 @@ function overrideAppNav() {
 function initRouter() {
   try { overrideAppNav(); } catch {}
   try { initPopstate(); } catch {}
-  // Первый рендер не трогаем — страница уже отрисована.
+  // Первый рендер: если открылись не на index.html — смонтируем соответствующий экран в SPA
+  try {
+    const { file, params, hash } = parsePath(location.pathname.split('/').pop() + location.search + location.hash);
+    if (file === 'category.html') {
+      navigate('category.html' + (params?.category ? `?category=${encodeURIComponent(params.category)}` : ''), { replace: true });
+    } else if (file === 'product.html') {
+      navigate('product.html' + (params?.product ? `?product=${encodeURIComponent(params.product)}` : ''), { replace: true });
+    } else if (file === 'cart.html') {
+      navigate('cart.html', { replace: true });
+    } else if (file === 'profile.html') {
+      navigate('profile.html', { replace: true });
+    } else if (file === 'info.html') {
+      navigate('info.html' + (hash ? `#${hash}` : ''), { replace: true });
+    } else {
+      // index.html отрисован сервером — оставляем как есть
+    }
+  } catch {}
 }
 
 if (document.readyState === 'loading') {

@@ -92,6 +92,11 @@ class TelegramWebApp {
   updateTelegramHeader() {
     if (!this.tg) return;
 
+    // Определяем текущую страницу динамически, чтобы корректно показывать кнопку Назад в SPA
+    try {
+      this.currentPage = this.detectCurrentPage();
+    } catch {}
+
     const hasMainButton = !!(this.tg.MainButton && typeof this.tg.MainButton.hide === 'function');
     const backBtn = this.tg.BackButton;
     const hasBackButton = !!(backBtn && typeof backBtn.show === 'function' && typeof backBtn.hide === 'function' && typeof backBtn.onClick === 'function' && typeof backBtn.offClick === 'function' && typeof this.tg.isVersionAtLeast === 'function' && this.tg.isVersionAtLeast('6.1'));
@@ -111,9 +116,18 @@ class TelegramWebApp {
       }
 
       this._backHandler = () => {
-        // Жесткий переход на домашнюю
-        const homeUrl = this.resolveHomeUrl();
-        window.location.replace(homeUrl);
+        try {
+          // SPA-назад: если есть история — идём назад, иначе на главную
+          if (window.history && window.history.length > 1) {
+            window.history.back();
+          } else if (window.AppNav && typeof window.AppNav.go === 'function') {
+            window.AppNav.go('index.html');
+          } else {
+            window.location.replace(this.resolveHomeUrl());
+          }
+        } catch {
+          window.location.replace(this.resolveHomeUrl());
+        }
       };
       if (hasBackButton) backBtn.onClick(this._backHandler);
     }

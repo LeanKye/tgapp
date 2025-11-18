@@ -194,7 +194,8 @@ function renderProduct(product) {
   updateTabs(product);
   
   // Рендерим нижнюю кнопку / контролы корзины
-  renderBuyOrControls(product);
+  // Без морфинга и без дополнительного проявления — сразу итоговое состояние
+  renderBuyOrControls(product, false);
 
   // Убеждаемся, что полосочка правильно позиционируется после полной загрузки
   setTimeout(() => {
@@ -750,27 +751,29 @@ function updateTabs(product) {
   // Обновляем позицию полосочки при изменении размера окна
   if (!window.__product_tabs_resize_attached) {
     window.__product_tabs_resize_attached = true;
-    window.addEventListener('resize', () => {
-    const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
-    updateTabIndicator(activeIndex);
-    });
+    window.__product_tabs_resize_handler = () => {
+      const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
+      updateTabIndicator(activeIndex);
+    };
+    window.addEventListener('resize', window.__product_tabs_resize_handler);
   }
   
   // Обновляем позицию полосочки при изменении ориентации устройства
   if (!window.__product_tabs_orient_attached) {
     window.__product_tabs_orient_attached = true;
-    window.addEventListener('orientationchange', () => {
+    window.__product_tabs_orient_handler = () => {
       setTimeout(() => {
         const activeIndex = parseInt(tabsContainer.getAttribute('data-active') || '0');
         updateTabIndicator(activeIndex);
       }, 100);
-    });
+    };
+    window.addEventListener('orientationchange', window.__product_tabs_orient_handler);
   }
   
   // Обновляем позицию скролла в кнопках при изменении размера окна
   if (!window.__product_buttons_resize_attached) {
     window.__product_buttons_resize_attached = true;
-    window.addEventListener('resize', () => {
+    window.__product_buttons_resize_handler = () => {
       const scrollableContainers = [
         document.querySelector('#variant-group'),
         document.querySelector('#period-group'),
@@ -787,13 +790,14 @@ function updateTabs(product) {
           }
         }
       });
-    });
+    };
+    window.addEventListener('resize', window.__product_buttons_resize_handler);
   }
   
   // Обновляем позицию скролла в кнопках при изменении ориентации устройства
   if (!window.__product_buttons_orient_attached) {
     window.__product_buttons_orient_attached = true;
-    window.addEventListener('orientationchange', () => {
+    window.__product_buttons_orient_handler = () => {
       setTimeout(() => {
         const scrollableContainers = [
           document.querySelector('#variant-group'),
@@ -812,7 +816,8 @@ function updateTabs(product) {
           }
         });
       }, 100);
-    });
+    };
+    window.addEventListener('orientationchange', window.__product_buttons_orient_handler);
   }
 }
 
@@ -1871,6 +1876,29 @@ export function unmountProduct() {
   } catch {}
   __product_cleanup.forEach((fn) => { try { fn(); } catch {} });
   __product_cleanup = [];
+  // Снимаем глобальные обработчики окна, если устанавливали
+  try {
+    if (window.__product_tabs_resize_attached) {
+      window.removeEventListener('resize', window.__product_tabs_resize_handler);
+      delete window.__product_tabs_resize_handler;
+      delete window.__product_tabs_resize_attached;
+    }
+    if (window.__product_tabs_orient_attached) {
+      window.removeEventListener('orientationchange', window.__product_tabs_orient_handler);
+      delete window.__product_tabs_orient_handler;
+      delete window.__product_tabs_orient_attached;
+    }
+    if (window.__product_buttons_resize_attached) {
+      window.removeEventListener('resize', window.__product_buttons_resize_handler);
+      delete window.__product_buttons_resize_handler;
+      delete window.__product_buttons_resize_attached;
+    }
+    if (window.__product_buttons_orient_attached) {
+      window.removeEventListener('orientationchange', window.__product_buttons_orient_handler);
+      delete window.__product_buttons_orient_handler;
+      delete window.__product_buttons_orient_attached;
+    }
+  } catch {}
   const app = document.querySelector('#app');
   if (app) app.innerHTML = '';
 }

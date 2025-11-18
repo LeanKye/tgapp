@@ -54,6 +54,17 @@ class CategoryPage {
     this.init();
   }
 
+  destroy() {
+    try { this.disableEdgeScrollLock(); } catch {}
+    try {
+      (this._docHandlers || []).forEach(({ type, handler, options }) => {
+        try { document.removeEventListener(type, handler, options); } catch {}
+      });
+    } catch {}
+    this._docHandlers = [];
+    this.isSearchActive = false;
+  }
+
   init() {
     // Если категорию не передали — читаем из URL (fallback)
     if (!this.currentCategory) {
@@ -813,13 +824,7 @@ export async function mountCategory(appContainer, params = {}) {
 export function unmountCategory() {
   if (currentInstance) {
     try {
-      // Снять edge-lock
-      currentInstance.disableEdgeScrollLock?.();
-      // Снять все document-события
-      (currentInstance._docHandlers || []).forEach(({ type, handler, options }) => {
-        try { document.removeEventListener(type, handler, options); } catch {}
-      });
-      currentInstance._docHandlers = [];
+      currentInstance.destroy?.();
     } catch {}
     currentInstance = null;
   }
