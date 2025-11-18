@@ -644,7 +644,7 @@ class ModalManager {
     };
     content.addEventListener('transitionend', onEnd);
     // Фоллбек, если transitionend не придёт (например, в старых WebView)
-    setTimeout(finish, 520);
+    setTimeout(finish, 760);
   }
 
   // Для совместимости: открытие/закрытие через CSS (если кто-то вызывает старые методы)
@@ -658,7 +658,7 @@ class ModalManager {
     // Возвращаем на ту же длительность/кривую, как и открытие/закрытие
     const contentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
-    const duration = 200; // Ускоренная анимация
+    const duration = 300; // Чуть медленнее для плавности
     const startTime = Date.now();
     const baseAlpha = 0.5;
 
@@ -704,9 +704,9 @@ class ModalManager {
     const contentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
     const startPercent = Math.max(0, Math.min(100, (currentDeltaY / contentHeight) * 100));
     // Длительность пропорциональна оставшемуся пути, чтобы оверлей не зависал
-    const endPercent = 105; // уводим чуть ниже экрана, чтобы не было хвоста
+    const endPercent = 110; // уводим чуть ниже экрана, чтобы не было хвоста
     const remaining = endPercent - startPercent;
-    const duration = Math.max(100, Math.round(200 * (remaining / 100))); // от 100мс до 200мс (ускоренная)
+    const duration = Math.max(160, Math.round(280 * (remaining / 100))); // 160–280мс, плавнее закрытие
     const startTime = Date.now();
     const baseAlpha = 0.5;
     const backdrop = modal.querySelector('.modal-backdrop');
