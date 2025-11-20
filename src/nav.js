@@ -240,6 +240,12 @@ function initNav() {
 
   const activateNav = (btn) => {
     const key = btn.dataset.key;
+    // Мгновенная подсветка активного пункта до начала навигации
+    try {
+      document.querySelectorAll('.bottom-nav .nav-item').forEach((el) => {
+        el.classList.toggle('active', el === btn);
+      });
+    } catch {}
     // Если уже на соответствующей странице — ничего не делаем
     const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
     const currentKey = file.includes('profile') ? 'profile'
