@@ -199,9 +199,6 @@ function renderCart() {
   if (totalEl) totalEl.innerHTML = formatPrice(total);
 }
 
-// Map для отслеживания блокировки по товарам (предотвращение двойных нажатий)
-const qtyButtonLocks = new Map();
-
 const CART_CLEANUPS = [];
 
 function attachEvents() {
@@ -262,10 +259,6 @@ function attachEvents() {
     }
     
     if (action === 'inc' || action === 'dec') {
-      // Предотвращаем двойные нажатия на конкретный товар (100ms достаточно для предотвращения двойного tap)
-      if (qtyButtonLocks.get(id)) return;
-      qtyButtonLocks.set(id, true);
-      
       // Обновляем количество в localStorage
       if (action === 'inc') updateQty(id, +1);
       if (action === 'dec') updateQty(id, -1);
@@ -273,10 +266,7 @@ function attachEvents() {
       // Получаем обновленное значение
       const items = readCart();
       const updatedItem = items.find(i => i.id === id);
-      if (!updatedItem) {
-        qtyButtonLocks.delete(id);
-        return;
-      }
+      if (!updatedItem) return;
       
       // Обновляем только текст количества с анимацией (без перерисовки всего элемента)
       const qtyTextEl = itemEl.querySelector('.qty-text');
@@ -295,11 +285,6 @@ function attachEvents() {
       if (totalEl) totalEl.innerHTML = formatPrice(total);
       
       window.dispatchEvent(new Event('cart:updated'));
-      
-      // Разблокируем через короткое время (100ms - достаточно чтобы избежать двойного срабатывания, но быстро разрешить новые нажатия)
-      setTimeout(() => {
-        qtyButtonLocks.delete(id);
-      }, 100);
     }
   };
   cartList?.addEventListener('click', onCartClick);
@@ -307,9 +292,11 @@ function attachEvents() {
 
   // Fast-tap: делегированный с защитой от скролла/удержания
   let dSX=0,dSY=0,dST=0,dScrollY=0,dScrollX=0; const MOVE=3,HOLD=300;
-  const onPD=(e)=>{ const t=e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); if(!t) return; const pt=(e.touches&&e.touches[0])||e; dSX=pt.clientX||0; dSY=pt.clientY||0; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; };
+  // Сужаем область fast-tap: НЕ трогаем счётчики количества, чтобы не ждать анимации
+  const FAST_TAP_SELECTOR = '#cart-list [data-action="remove"], #bulk-select-all-btn, #bulk-delete-btn';
+  const onPD=(e)=>{ const t=e.target.closest(FAST_TAP_SELECTOR); if(!t) return; const pt=(e.touches&&e.touches[0])||e; dSX=pt.clientX||0; dSY=pt.clientY||0; dST=performance.now(); dScrollY=window.scrollY; dScrollX=window.scrollX; };
   const onPM=(e)=>{ if(!dST) return; const pt=(e.touches&&e.touches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE; if(moved){ window.__cartFastTapBlockClickUntil = performance.now() + 400; } };
-  const onPU=(e)=>{ const actionBtn = e.target.closest('#cart-list [data-action], #bulk-select-all-btn, #bulk-delete-btn'); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); /* Блокируем следующий нативный click, чтобы не было двойного срабатывания */ window.__cartFastTapBlockClickUntil = performance.now() + 350; } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
+  const onPU=(e)=>{ const actionBtn = e.target.closest(FAST_TAP_SELECTOR); const pt=(e.changedTouches&&e.changedTouches[0])||e; const moved = Math.abs((pt.clientX||0)-dSX)>MOVE || Math.abs((pt.clientY||0)-dSY)>MOVE || Math.abs(window.scrollY-dScrollY)>0 || Math.abs(window.scrollX-dScrollX)>0; const dur=performance.now()-(dST||performance.now()); const hadDown = !!dST; dST=0; if(!hadDown || !actionBtn) { return; } if(moved || dur>HOLD){ window.__cartFastTapBlockClickUntil = performance.now() + 400; return; } if(actionBtn.__fastTapLock) return; actionBtn.__fastTapLock=true; try { const ev = new Event('click', { bubbles:true }); ev.__fastTapSynthetic = true; actionBtn.dispatchEvent(ev); /* Блокируем следующий нативный click, чтобы не было двойного срабатывания */ window.__cartFastTapBlockClickUntil = performance.now() + 350; } finally { setTimeout(()=>{ actionBtn.__fastTapLock=false; }, 250);} };
   document.body.addEventListener('pointerdown', onPD, { passive: true });
   document.body.addEventListener('pointermove', onPM, { passive: true });
   document.body.addEventListener('pointerup', onPU, { passive: true });
@@ -333,6 +320,10 @@ function attachEvents() {
 
   // Глобальный клик-блокер после свайпа/перемещения
   const clickBlocker = (e) => {
+    // Разрешаем клики по инкремент/декременту в корзине без задержек
+    if (e.target && e.target.closest && e.target.closest('#cart-list [data-action]')) {
+      return;
+    }
     // Не блокируем клики внутри модальных окон
     if (e.target && (e.target.closest('.modal-overlay') || e.target.closest('.checkout-modal-overlay'))) {
       return;
