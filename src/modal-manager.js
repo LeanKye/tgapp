@@ -433,55 +433,21 @@ class ModalManager {
     // Кнопка отмены
     const cancelBtn = modal.querySelector('#modal-cancel-delete');
     if (cancelBtn) {
-      let cDown=false, cStartInside=false;
-      const cPD=(e)=>{ 
-        cDown=true; 
-        const r=cancelBtn.getBoundingClientRect();
-        const x=e.clientX, y=e.clientY;
-        cStartInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+      const onCancelClick = () => {
+        this.closeModal('delete-confirm-modal');
+        if (this.onDeleteCancel) { this.onDeleteCancel(); this.onDeleteCancel = null; }
       };
-      const cPU=(e)=>{ 
-        if(!cDown) return; 
-        cDown=false; 
-        const r=cancelBtn.getBoundingClientRect();
-        const x=e.clientX, y=e.clientY;
-        const cEndInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
-        if (cStartInside && cEndInside) {
-          this.closeModal('delete-confirm-modal'); 
-          if (this.onDeleteCancel) { this.onDeleteCancel(); this.onDeleteCancel = null; }
-        }
-      };
-      const cPC=()=>{ cDown=false; };
-      cancelBtn.addEventListener('pointerdown', cPD, { passive: true });
-      cancelBtn.addEventListener('pointerup', cPU, { passive: true });
-      cancelBtn.addEventListener('pointercancel', cPC, { passive: true });
+      cancelBtn.addEventListener('click', onCancelClick);
     }
 
     // Кнопка подтверждения удаления
     const confirmBtn = modal.querySelector('#modal-confirm-delete');
     if (confirmBtn) {
-      let dDown=false, dStartInside=false;
-      const dPD=(e)=>{ 
-        dDown=true; 
-        const r=confirmBtn.getBoundingClientRect();
-        const x=e.clientX, y=e.clientY;
-        dStartInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
+      const onConfirmClick = () => {
+        this.closeModal('delete-confirm-modal');
+        if (this.onDeleteConfirm) { this.onDeleteConfirm(); this.onDeleteConfirm = null; }
       };
-      const dPU=(e)=>{ 
-        if(!dDown) return; 
-        dDown=false; 
-        const r=confirmBtn.getBoundingClientRect();
-        const x=e.clientX, y=e.clientY;
-        const dEndInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
-        if (dStartInside && dEndInside) {
-          this.closeModal('delete-confirm-modal'); 
-          if (this.onDeleteConfirm) { this.onDeleteConfirm(); this.onDeleteConfirm = null; }
-        }
-      };
-      const dPC=()=>{ dDown=false; };
-      confirmBtn.addEventListener('pointerdown', dPD, { passive: true });
-      confirmBtn.addEventListener('pointerup', dPU, { passive: true });
-      confirmBtn.addEventListener('pointercancel', dPC, { passive: true });
+      confirmBtn.addEventListener('click', onConfirmClick);
     }
   }
   

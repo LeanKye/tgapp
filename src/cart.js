@@ -333,6 +333,10 @@ function attachEvents() {
 
   // Глобальный клик-блокер после свайпа/перемещения
   const clickBlocker = (e) => {
+    // Не блокируем клики внутри модальных окон
+    if (e.target && (e.target.closest('.modal-overlay') || e.target.closest('.checkout-modal-overlay'))) {
+      return;
+    }
     if (e.__fastTapSynthetic) return;
     if (window.__cartFastTapBlockClickUntil && performance.now() < window.__cartFastTapBlockClickUntil) {
       e.stopImmediatePropagation();

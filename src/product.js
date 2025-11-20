@@ -957,6 +957,8 @@ function initCheckoutPanel() {
     isAnimatingCheckout = true;
     isExpanded = false;
     clearCheckoutTimers();
+    // Синхронно обновляем контролы количества под текущую конфигурацию
+    try { const p = getProductById(getUrlParameter('product')); if (p) refreshBuyControls(p); } catch {}
     
     // Обновляем выбранный вариант перед анимацией
     selectedVariant = getSelectedVariantText();
@@ -982,6 +984,8 @@ function initCheckoutPanel() {
     collapseTimer = setTimeout(() => {
       variantGroup.classList.remove('expanded', 'collapsing');
       isAnimatingCheckout = false;
+      // Обновляем контролы количества ещё раз на всякий случай после анимации
+      try { const p = getProductById(getUrlParameter('product')); if (p) refreshBuyControls(p); } catch {}
     }, COLLAPSE_DURATION_MS);
     
     // Обновляем текст заголовка
@@ -1024,6 +1028,8 @@ function initCheckoutPanel() {
     expandTimer = setTimeout(() => {
       variantGroup.classList.remove('expanding');
       isAnimatingCheckout = false;
+      // На конец анимации актуализируем контролы количества
+      try { const p = getProductById(getUrlParameter('product')); if (p) refreshBuyControls(p); } catch {}
     }, EXPAND_DURATION_MS);
     
     // Обновляем текст заголовка
@@ -1525,6 +1531,7 @@ function renderBuyOrControls(product, animate = false) {
   // Проверяем наличие именно текущей конфигурации
   const selectedOptions = getSelectedOptions();
   const cartItem = selectedOptions ? getCartItem(product, selectedOptions) : null;
+  const targetCartId = selectedOptions ? buildCartItemId(product, selectedOptions) : null;
   
   // Если нет товара в корзине - показываем кнопку "Добавить в корзину"
   if (!cartItem) {
@@ -1566,6 +1573,9 @@ function renderBuyOrControls(product, animate = false) {
     // Создаем контролы
     const controls = document.createElement('div');
     controls.className = 'product-cart-controls';
+    if (targetCartId) {
+      try { controls.dataset.cartId = String(targetCartId); } catch {}
+    }
   controls.innerHTML = `
       <div class="qty-box">
         <button class="reset-Button qty-btn" data-action="dec">−</button>
@@ -1618,7 +1628,10 @@ function renderBuyOrControls(product, animate = false) {
     // Добавляем обработчики для новых контролов
     attachCartControlHandlers(controls, product);
   } else {
-    // Обновляем количество в существующих контролах
+    // Обновляем id конфигурации и количество в существующих контролах
+    if (targetCartId) {
+      try { oldControls.dataset.cartId = String(targetCartId); } catch {}
+    }
     const qtyValue = oldControls.querySelector('.qty-value');
     if (qtyValue) {
       qtyValue.textContent = String(cartItem.qty || 1);
@@ -1709,7 +1722,14 @@ function refreshBuyControls(product) {
   try { if (options) saveLastConfigToSession(product.id, options); } catch {}
   if (exists) {
     // Обеспечиваем наличие контролов и morphed-состояние кнопки (не скрываем её)
-    if (!controls) renderBuyOrControls(product, false);
+    if (!controls) {
+      renderBuyOrControls(product, false);
+    } else {
+      // Обновляем cartId и количество в существующих контролах под текущую конфигурацию
+      try { controls.dataset.cartId = String(buildCartItemId(product, options)); } catch {}
+      const qtyValue = controls.querySelector('.qty-value');
+      if (qtyValue) qtyValue.textContent = String(exists.qty || 1);
+    }
     if (buyBtn) {
       buyBtn.classList.add('morphed');
       buyBtn.textContent = 'Перейти в корзину';
