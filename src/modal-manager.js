@@ -621,6 +621,9 @@ class ModalManager {
       backdrop.style.transition = '';
       backdrop.style.opacity = '';
     }
+    // Сразу снимаем блокировку скролла и отключаем перехват событий модалкой
+    try { modal.style.pointerEvents = 'none'; } catch {}
+    this.unlockScroll();
     let ended = false;
     const finish = () => {
       if (ended) return;
@@ -629,11 +632,12 @@ class ModalManager {
       modal.classList.remove('show');
       modal.classList.remove('closing');
       modal.style.visibility = '';
+      try { modal.style.pointerEvents = ''; } catch {}
       if (modal.id === 'checkout-modal') {
         this.currentPaymentData = null;
       }
       this.activeModal = null;
-      this.unlockScroll();
+      // Скролл уже разблокирован выше
     };
     const onEnd = (e) => {
       if (e.target !== content) return;
@@ -644,7 +648,7 @@ class ModalManager {
     };
     content.addEventListener('transitionend', onEnd);
     // Фоллбек, если transitionend не придёт (например, в старых WebView)
-    setTimeout(finish, 760);
+    setTimeout(finish, 520);
   }
 
   // Для совместимости: открытие/закрытие через CSS (если кто-то вызывает старые методы)
@@ -698,7 +702,9 @@ class ModalManager {
     modal.classList.add('closing');
     modal.classList.remove('dragging');
 
-    // Разблокируем скролл после завершения анимации
+    // Сразу разблокируем скролл и отключаем перехват событий модалкой
+    try { modal.style.pointerEvents = 'none'; } catch {}
+    this.unlockScroll();
     
     // Плавно анимируем закрытие из текущей позиции, используя проценты как в обычной анимации закрытия
     const contentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
@@ -735,6 +741,7 @@ class ModalManager {
         modal.style.visibility = '';
         content.style.transform = '';
         content.style.transition = '';
+        try { modal.style.pointerEvents = ''; } catch {}
         if (backdrop) {
           backdrop.style.transition = '';
           backdrop.style.opacity = '';
@@ -746,7 +753,7 @@ class ModalManager {
         }
         
         this.activeModal = null;
-        this.unlockScroll();
+        // Скролл уже разблокирован выше
       }
     };
 

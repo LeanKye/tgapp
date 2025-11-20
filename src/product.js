@@ -1437,6 +1437,24 @@ function readCart() {
 }
 function writeCart(items) { localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
 
+// Сохранение выбранных позиций корзины (для автовыбора чекбоксов)
+const SELECTED_KEY = 'hooli_cart_selected';
+function readSelectedIds() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SELECTED_KEY) || '[]');
+    if (Array.isArray(raw)) return new Set(raw.map(String));
+    return new Set();
+  } catch {
+    return new Set();
+  }
+}
+function writeSelectedIds(idsSet) {
+  try {
+    const arr = Array.from(idsSet || []);
+    localStorage.setItem(SELECTED_KEY, JSON.stringify(arr));
+  } catch {}
+}
+
 function buildCartItemId(product, selectedOptions) {
   const baseId = String(product.id);
   if (!selectedOptions) return baseId;
@@ -1458,6 +1476,12 @@ function setCartItem(product, qty, selectedOptions) {
   const idx = items.findIndex(i => i.id === id);
   if (qty <= 0) {
     if (idx !== -1) items.splice(idx, 1);
+    // Удаляем id из набора выбранных, если товар удалили
+    try {
+      const sel = readSelectedIds();
+      sel.delete(String(id));
+      writeSelectedIds(sel);
+    } catch {}
   } else {
     const payload = {
       id,
@@ -1483,6 +1507,12 @@ function setCartItem(product, qty, selectedOptions) {
       editionName: selectedOptions?.edition
     };
     if (idx === -1) items.push(payload); else items[idx] = { ...items[idx], ...payload };
+    // Гарантируем автовыбор добавленного/обновлённого товара в корзине
+    try {
+      const sel = readSelectedIds();
+      sel.add(String(id));
+      writeSelectedIds(sel);
+    } catch {}
   }
   writeCart(items);
   window.dispatchEvent(new Event('cart:updated'));

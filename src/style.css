@@ -2573,20 +2573,21 @@ body.has-bottom-nav .product-cart-controls {
 
 /* Стили для групп кнопок */
 .variant-group {
-  transform: scaleY(0);
-  transform-origin: top;
-  transition: transform 0.3s ease, opacity 0.3s ease;
+  /* Вместо scaleY используем max-height + opacity для исключения «мигания» текста */
+  max-height: 0;
   opacity: 0;
   overflow: hidden;
-  max-height: 0;
+  transition: max-height 420ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 260ms ease;
+  will-change: max-height, opacity;
+  contain: layout;
 }
 
 .variant-group.expanded {
-  transform: scaleY(1); /* Плавное раскрытие без ограничений высоты */
+  /* Кэп максимальной высоты достаточно большой для одной-двух строк кнопок */
+  max-height: 220px;
   opacity: 1;
   display: flex;
-  overflow: visible; /* Кнопки никогда не обрезаются */
-  max-height: none;
+  overflow: visible;
 }
 
 
