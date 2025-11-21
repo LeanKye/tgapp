@@ -24,6 +24,20 @@ function normalizePath(path) {
   return normalized || 'index.html';
 }
 
+// --- Навигационная память: последний просмотренный товар (как в nav.js) ---
+const LAST_PRODUCT_KEY = 'hooli_last_product';
+
+function normalizeEntry(path) {
+  const p = (path || '').replace(/^\//, '').toLowerCase();
+  return p || 'index.html';
+}
+
+function getCurrentEntry() {
+  const file = (location.pathname.split('/').pop() || 'index.html');
+  const qs = location.search || '';
+  return normalizeEntry(file + qs);
+}
+
 function isHome(path) {
   const file = normalizePath(path).split('?')[0];
   return file === '' || file === 'index.html';
@@ -98,6 +112,7 @@ function fadeIn(targetSel = '#app') {
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       body.classList.remove('leaving');
+      body.classList.remove('slide-from-product'); // сброс спец-анимации перелистывания
     });
   });
 }
@@ -136,10 +151,13 @@ async function renderCategory(params, { replace = false } = {}) {
 
 async function navigate(path, opts = {}) {
   const { file, params, hash } = parsePath(path);
+  const skipFade = !!opts.skipFade;
   // SPA-маршруты
   if (file === 'index.html') {
     const container = document.querySelector('#app');
-    await fadeOut('#app');
+    if (!skipFade) {
+      await fadeOut('#app');
+    }
     const mod = await import('./main.js');
     if (typeof currentCleanup === 'function') {
       try { currentCleanup(); } catch {}
@@ -162,6 +180,12 @@ async function navigate(path, opts = {}) {
     return;
   }
   if (file === 'product.html') {
+    // Запоминаем последний открытый товар (вместе с query)
+    try {
+      const entry = normalizeEntry(path);
+      sessionStorage.setItem(LAST_PRODUCT_KEY, entry);
+    } catch {}
+
     const container = document.querySelector('#app');
     await fadeOut('#app');
     const mod = await import('./product.js');
@@ -329,8 +353,84 @@ function overrideAppNav() {
   }
   const originalGo = window.AppNav.go;
   const originalGoHome = window.AppNav.goHomeSmart;
+
+  // Все переходы через SPA-роутер
   window.AppNav.go = (p) => navigate(p);
-  window.AppNav.goHomeSmart = () => navigate('index.html');
+
+  // Умная «Главная» в стиле маркетплейсов
+  window.AppNav.goHomeSmart = async () => {
+    const { file } = parsePath(
+      location.pathname.split('/').pop() + location.search + location.hash
+    );
+
+    // Уже на главной — ничего не делаем
+    if (file === 'index.html') {
+      return;
+    }
+
+    // Если мы на карточке товара — один тап ведёт прямо на главную
+    // c анимацией «перелистывания» и сбрасывает «последний товар»
+    if (file === 'product.html') {
+      const app = document.querySelector('#app');
+      // Если нет корневого контейнера — делаем обычный переход без спец-анимации
+      if (!app) {
+        try { sessionStorage.removeItem(LAST_PRODUCT_KEY); } catch {}
+        return navigate('index.html');
+      }
+
+      // Строим оверлей, в который кладём СНИМОК текущего содержимого #app
+      // (клон, а не живой DOM), чтобы все фоны/отступы и нижние элементы
+      // выглядели так же, как до начала перехода.
+      const overlay = document.createElement('div');
+      overlay.className = 'page-slide-overlay';
+      const inner = document.createElement('div');
+      inner.className = 'page-slide-overlay-inner';
+      try {
+        const snapshot = app.cloneNode(true);
+        inner.appendChild(snapshot);
+      } catch {
+        // Если клон не удался — не ломаем навигацию
+        try { sessionStorage.removeItem(LAST_PRODUCT_KEY); } catch {}
+        return navigate('index.html');
+      }
+      overlay.appendChild(inner);
+      document.body.appendChild(overlay);
+
+      // Очищаем «последний товар», чтобы второе нажатие вело уже на настоящую главную
+      try { sessionStorage.removeItem(LAST_PRODUCT_KEY); } catch {}
+
+      // Рендерим главную страницу за оверлеем без fade-анимаций
+      await navigate('index.html', { skipFade: true });
+
+      // После окончания анимации слайда убираем оверлей
+      const cleanup = () => {
+        try { overlay.remove(); } catch {}
+      };
+      try {
+        inner.addEventListener('animationend', () => {
+          cleanup();
+        }, { once: true });
+      } catch {
+        // Фолбэк, если что-то пошло не так с событиями
+        setTimeout(cleanup, 700);
+      }
+      // Дополнительный фолбэк по таймеру
+      setTimeout(cleanup, 800);
+      return;
+    }
+
+    // Если есть последний просмотренный товар — сначала ведём на него
+    let lastProduct = null;
+    try { lastProduct = sessionStorage.getItem(LAST_PRODUCT_KEY); } catch {}
+    const currentEntry = getCurrentEntry();
+
+    if (lastProduct && normalizeEntry(lastProduct) !== currentEntry) {
+      return navigate(lastProduct);
+    }
+
+    // Иначе просто на главную
+    return navigate('index.html');
+  };
   // Сохраним доступ к оригиналам на случай отладки
   window.AppNav.__go_original = originalGo;
   window.AppNav.__goHome_original = originalGoHome;
