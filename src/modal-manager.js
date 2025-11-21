@@ -595,8 +595,8 @@ class ModalManager {
       backdrop.style.opacity = '';
     }
     // Сразу снимаем блокировку скролла и отключаем перехват событий модалкой
-    try { modal.style.pointerEvents = 'none'; } catch {}
-    this.unlockScroll();
+    // ВАЖНО: не отключаем pointer-events и не разблокируем скролл до конца анимации,
+    // чтобы не было «прокалывания» клика на элементы под модалкой.
     let ended = false;
     const finish = () => {
       if (ended) return;
@@ -610,7 +610,8 @@ class ModalManager {
         this.currentPaymentData = null;
       }
       this.activeModal = null;
-      // Скролл уже разблокирован выше
+      // Теперь безопасно разблокировать скролл
+      this.unlockScroll();
     };
     const onEnd = (e) => {
       if (e.target !== content) return;
@@ -675,9 +676,8 @@ class ModalManager {
     modal.classList.add('closing');
     modal.classList.remove('dragging');
 
-    // Сразу разблокируем скролл и отключаем перехват событий модалкой
-    try { modal.style.pointerEvents = 'none'; } catch {}
-    this.unlockScroll();
+    // Не отключаем pointer-events и не разблокируем скролл до завершения анимации,
+    // чтобы не было «прокалывания» клика по элементам под модалкой.
     
     // Плавно анимируем закрытие из текущей позиции, используя проценты как в обычной анимации закрытия
     const contentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
@@ -726,7 +726,8 @@ class ModalManager {
         }
         
         this.activeModal = null;
-        // Скролл уже разблокирован выше
+        // Теперь безопасно разблокировать скролл
+        this.unlockScroll();
       }
     };
 
