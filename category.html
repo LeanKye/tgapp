@@ -45,10 +45,10 @@
       </div>
       
       <!-- Сообщение когда нет элементов -->
-      <div class="no-products" id="no-products" style="display: none;">
+      <div class="no-products is-hidden" id="no-products">
         <h3>В этой категории пока пусто</h3>
         <p>Но скоро что-то появится!</p>
-        <button class="back-to-main reset-Button" onclick="(function(){ if(window.AppNav){ AppNav.go('index.html'); } else { var b=window.location.pathname.replace(/[^/]*$/,''); window.location.href=b+'index.html'; } })()">
+        <button class="back-to-main reset-Button" id="category-back-to-main">
           Вернуться на главную
         </button>
       </div>

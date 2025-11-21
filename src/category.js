@@ -54,7 +54,7 @@ function categoryTemplate() {
       <div class="container">
         <div class="category-title" id="category-title">Категория</div>
         <div class="category-products-grid" id="category-products"></div>
-        <div class="no-products" id="no-products" style="display: none;">
+        <div class="no-products is-hidden" id="no-products">
           <h3>В этой категории пока пусто</h3>
           <p>Но скоро что-то появится!</p>
           <button class="back-to-main reset-Button" id="back-to-main-btn">Вернуться на главную</button>
@@ -624,7 +624,7 @@ class CategoryPage {
 
     dropdown.style.overflow = 'hidden';
     dropdown.style.height = `${startHeight}px`;
-    dropdown.style.transition = 'height 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    dropdown.style.transition = 'height 200ms var(--ease-emphasized)';
 
     requestAnimationFrame(() => {
       dropdown.style.height = `${targetHeight}px`;
@@ -775,14 +775,14 @@ class CategoryPage {
     if (products.length === 0) {
       // Показываем сообщение об отсутствии товаров
       if (noProductsElement) {
-        noProductsElement.style.display = 'block';
+        noProductsElement.classList.remove('is-hidden');
       }
       return;
     }
 
     // Скрываем сообщение об отсутствии товаров
     if (noProductsElement) {
-      noProductsElement.style.display = 'none';
+      noProductsElement.classList.add('is-hidden');
     }
 
     // Создаем карточки товаров

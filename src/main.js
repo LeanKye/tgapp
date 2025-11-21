@@ -443,7 +443,7 @@ class BannerSlider {
     
     // Возвращаем анимацию
     requestAnimationFrame(() => {
-      this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      this.slider.style.transition = 'transform 0.3s var(--ease-emphasized)';
     });
   }
 
@@ -460,7 +460,7 @@ class BannerSlider {
     const isWrap = (this.currentIndex === 1 && index === this.totalExtendedBanners - 1) ||
                    (this.currentIndex === this.totalExtendedBanners - 2 && index === 0);
     const duration = isWrap ? 450 : 300;
-    this.slider.style.transition = `transform ${duration}ms cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+    this.slider.style.transition = `transform ${duration}ms var(--ease-emphasized)`;
     this.updateSliderPosition(index);
   }
 
@@ -581,7 +581,7 @@ class BannerSlider {
             this.isDragging = false;
             this.pointerId = null;
             // Возвращаем анимацию, если отключали
-            this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            this.slider.style.transition = 'transform 0.3s var(--ease-emphasized)';
             // Восстанавливаем touch-action
             container.style.touchAction = originalTouchAction || 'pan-y';
             return;
@@ -638,7 +638,7 @@ class BannerSlider {
         this.isDragging = false;
         this.pointerId = null;
         this.dragDirection = null;
-        this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        this.slider.style.transition = 'transform 0.3s var(--ease-emphasized)';
         // Восстанавливаем touch-action
         container.style.touchAction = originalTouchAction || 'pan-y';
         return;
@@ -673,7 +673,7 @@ class BannerSlider {
       targetIndex = Math.max(0, Math.min(this.totalExtendedBanners - 1, targetIndex));
 
       // Возвращаем анимацию
-      this.slider.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+      this.slider.style.transition = 'transform 0.3s var(--ease-emphasized)';
 
       // Если остались на том же слайде — просто вернём в центр
       if (targetIndex === this.currentIndex) {
@@ -1335,7 +1335,7 @@ class SearchManager {
     const originalOverflow = dropdown.style.overflow;
     dropdown.style.overflow = 'hidden';
     dropdown.style.height = `${startHeight}px`;
-    dropdown.style.transition = 'height 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    dropdown.style.transition = 'height 200ms var(--ease-emphasized)';
 
     // Старт анимации в следующем кадре
     requestAnimationFrame(() => {
@@ -1711,7 +1711,7 @@ class PSPlusManager {
     this.slider.style.transform = `translateX(${translateXPx}px)`;
     
     // Добавляем небольшую анимацию отскока через CSS
-    this.slider.style.transition = 'transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+    this.slider.style.transition = 'transform 0.4s var(--ease-emphasized)';
   }
   
   renderProducts() {

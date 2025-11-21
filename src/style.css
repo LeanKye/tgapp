@@ -16,7 +16,18 @@
   --link-color: #8E94F2;
   --card-bg: #1E1E1E;
   --border-color: #333333;
+
+  /* Переменные для глобальных анимаций страниц */
+  --page-fade-in: 140ms;   /* дефолт, модифицируется JS */
+  --page-fade-out: 120ms;  /* короткий уход при навигации */
+
+  /* Общие кривые анимаций */
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --ease-modal: cubic-bezier(0.2, 0.8, 0.2, 1);
+
   --bottom-nav-height: 50px; /* высота нижней навигации (ещё меньше) */
+
   /* Корзина: адаптивные размеры (минимум → предпочтительно → максимум) */
   --cart-img-size: clamp(78px, 25vw, 96px);
   --cart-price-fs: clamp(16px, 4.8vw, 18px);
@@ -47,11 +58,6 @@ html, body {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-}
-
-:root {
-  --page-fade-in: 140ms;   /* дефолт, модифицируется JS */
-  --page-fade-out: 120ms;  /* короткий уход при навигации */
 }
 
 /* Плавное появление/исчезновение контента (не затрагивает нижнюю навигацию) */
@@ -451,16 +457,6 @@ body.has-bottom-nav .product {
   margin-top: 4px;
 }
 
-.tabs {
-  display: flex;
-  gap: 8px;
-}
-
-.tab {
-  color: #666666;
-  font-size: 14px;
-}
-
 .add-to-cart {
   position: fixed;
   bottom: calc(10px + env(safe-area-inset-bottom));
@@ -526,7 +522,7 @@ body:has(.product) .add-to-cart:active {
 
 /* Активная анимация морфинга */
 body.cart-morph-active .add-to-cart {
-  animation: morphToGreen 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: morphToGreen 0.4s var(--ease-emphasized) forwards;
   pointer-events: none;
   transition: none !important;
   will-change: transform, width, left, opacity, background-color;
@@ -561,7 +557,7 @@ body.cart-morph-active .add-to-cart.morphed {
 
 /* Обратная анимация при удалении из корзины */
 body.cart-morph-reverse .add-to-cart {
-  animation: morphToBlue 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: morphToBlue 0.4s var(--ease-emphasized) forwards;
   pointer-events: none;
   transition: none !important;
   /* Синхронизация обратного морфинга: сначала уезжают контролы, затем расширяется кнопка */
@@ -615,7 +611,7 @@ body.cart-morph-reverse .add-to-cart {
 
 /* Анимация появления контролов */
 .product-cart-controls.appearing {
-  animation: slideInFromRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: slideInFromRight 0.4s var(--ease-emphasized) forwards;
   /* Запускаем одновременно с морфингом кнопки */
   animation-delay: 0.1s;
   /* Исключаем мерцание до старта анимации */
@@ -642,7 +638,7 @@ body.cart-morph-reverse .add-to-cart {
 
 /* Обратная анимация скрытия контролов */
 body.cart-morph-reverse .product-cart-controls {
-  animation: slideOutToRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  animation: slideOutToRight 0.4s var(--ease-emphasized) forwards;
   pointer-events: none;
   transition: none !important;
   /* Начинаем сразу, чтобы освободить место под расширение кнопки */
@@ -1125,6 +1121,11 @@ body.cart-morph-reverse .product-cart-controls {
   }
 }
 
+/* Универсальный класс для скрытия элементов вместо inline style="display:none" */
+.is-hidden {
+  display: none !important;
+}
+
 /* Дополнительные стили для мобильных устройств */
 @media (hover: none) and (pointer: coarse) {
   .no-results {
@@ -1162,7 +1163,7 @@ body.cart-morph-reverse .product-cart-controls {
   z-index: 1000;
   transform: translateX(0);
   opacity: 1;
-  transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.25s ease;
+  transition: transform 0.25s var(--ease-emphasized), opacity 0.25s ease;
   border-radius: 16px 0 0 0;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
@@ -1187,7 +1188,7 @@ body.cart-morph-reverse .product-cart-controls {
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 999;
   opacity: 1;
-  transition: opacity 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: opacity 0.25s var(--ease-emphasized);
 }
 
 .menu-overlay.menu-closed {
@@ -1206,7 +1207,7 @@ body.cart-morph-reverse .product-cart-controls {
   z-index: 10001;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.3s var(--ease-standard);
 }
 
 /* Специальные стили для страницы категорий (хедер ниже без логотипа) */
@@ -1375,6 +1376,11 @@ body.info-page.has-bottom-nav main::after {
 .info-page .content strong {
     color: var(--text-color);
     font-weight: 600;
+}
+
+/* Обёртка для таблиц на инфо-странице вместо inline overflow-x */
+.info-table-wrapper {
+  overflow-x: auto;
 }
 
 /* Конец стилей для информационной страницы */
@@ -1960,7 +1966,7 @@ body.has-bottom-nav .product-cart-controls {
   left: var(--tab-indicator-left, 0);
   height: 2px;
   background-color: #29a5ff;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s var(--ease-standard);
   border-radius: 1px;
   width: var(--tab-indicator-width, 0);
 }
@@ -1996,7 +2002,7 @@ body.has-bottom-nav .product-cart-controls {
 }
 
 .tabs-content-inner {
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.25s var(--ease-standard), opacity 0.25s var(--ease-standard);
 }
 
 .tabs-content-inner.fade-out {
@@ -2053,6 +2059,14 @@ body.has-bottom-nav .product-cart-controls {
   padding-right: 16px;
   display: flex;
   align-items: center;
+}
+
+/* Заголовок страницы (категория/корзина/профиль) — выравниваем отступы и размер */
+.category-title--page {
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-top: calc(env(safe-area-inset-top) + 12px);
+  font-size: 24px;
 }
 
 /* Убираем двойные отступы для заголовков внутри catalog, так как контейнеры уже имеют отступы */
@@ -2309,7 +2323,7 @@ body.has-bottom-nav .product-cart-controls {
   display: flex;
   align-items: center;
   gap: 0px;
-  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.3s var(--ease-emphasized);
   will-change: transform;
   /* Предотвращаем мигание при переключениях */
   backface-visibility: hidden;
@@ -2577,7 +2591,7 @@ body.has-bottom-nav .product-cart-controls {
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height 420ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 260ms ease;
+  transition: max-height 420ms var(--ease-modal), opacity 260ms ease;
   will-change: max-height, opacity;
   contain: layout;
 }
@@ -3384,7 +3398,7 @@ body.has-bottom-nav .product-cart-controls {
   height: calc(100% - 6px);
   background-color: #29A5FF;
   border-radius: 9px;
-  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: transform 0.4s var(--ease-emphasized);
   z-index: 1;
   box-shadow: 0 2px 8px rgba(41, 165, 255, 0.3);
   /* will-change не требуется постоянно; браузер сам оптимизирует */
@@ -3481,7 +3495,7 @@ body.modal-open {
   inset: 0;
   background: rgba(0, 0, 0, 1);
   opacity: 0;
-  transition: opacity 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 420ms var(--ease-modal);
   pointer-events: none;
 }
 
@@ -3509,7 +3523,7 @@ body.modal-open {
   max-height: 70dvh; /* Динамическая высота viewport для мобильных */
   overflow-y: auto;
   transform: translateY(100%);
-  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 420ms var(--ease-modal);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   /* Обеспечиваем правильное позиционирование внизу экрана */
   margin-bottom: 0;
@@ -3547,7 +3561,7 @@ body.modal-open {
 }
 
 .modal-overlay.closing .modal-content {
-  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  transition: transform 420ms var(--ease-modal) !important;
   will-change: transform;
   transform: translateY(110%);
 }
@@ -3879,7 +3893,7 @@ body.modal-open {
   inset: 0;
   background: rgba(0, 0, 0, 1);
   opacity: 0;
-  transition: opacity 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: opacity 420ms var(--ease-modal);
   pointer-events: none;
 }
 
@@ -3910,7 +3924,7 @@ body.modal-open {
   max-height: 70dvh;
   overflow: hidden;
   transform: translateY(100%);
-  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 420ms var(--ease-modal);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
   margin: 0;
@@ -3943,7 +3957,7 @@ body.modal-open {
 }
 
 .checkout-modal-overlay.closing .checkout-modal {
-  transition: transform 420ms cubic-bezier(0.2, 0.8, 0.2, 1) !important;
+  transition: transform 420ms var(--ease-modal) !important;
   will-change: transform;
   transform: translateY(110%);
 }

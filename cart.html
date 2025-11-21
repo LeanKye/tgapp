@@ -14,7 +14,7 @@
 
 <body class="preload">
   <div class="catalog">
-    <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px); font-size: 24px;">Корзина</div>
+    <div class="category-title category-title--page">Корзина</div>
 
     <!-- Панель массовых действий -->
     <div class="cart-bulk">
@@ -34,7 +34,7 @@
 
     <!-- Сумма и количество теперь внутри кнопки оформления -->
 
-    <div class="no-products" id="cart-empty" style="display:none;">
+    <div class="no-products is-hidden" id="cart-empty">
       <h3>В вашей корзине пока пусто</h3>
       <p>Добавьте товары из каталога</p>
       <button class="back-to-main reset-Button" id="to-main-btn">Вернуться на главную</button>
@@ -42,7 +42,7 @@
 
 
   </div>
-  <div class="checkout-button-container cart-checkout" id="cart-checkout" style="display:none;">
+  <div class="checkout-button-container cart-checkout is-hidden" id="cart-checkout">
     <button class="checkout-button" id="proceed-checkout-btn">
       <span class="left" id="checkout-count">0 товаров</span>
       <span class="center">К оформлению</span>

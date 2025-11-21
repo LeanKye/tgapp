@@ -5,7 +5,7 @@ import ModalManager from './modal-manager.js'
 function cartTemplate() {
   return `
     <div class="catalog">
-      <div class="category-title" style="padding-left:16px; padding-right:16px; margin-top: calc(env(safe-area-inset-top) + 12px); font-size: 24px;">Корзина</div>
+      <div class="category-title category-title--page">Корзина</div>
       <div class="cart-bulk">
         <div class="bulk-spacer"></div>
         <div class="bulk-actions">
@@ -18,13 +18,13 @@ function cartTemplate() {
         </label>
       </div>
       <div id="cart-list"></div>
-      <div class="no-products" id="cart-empty" style="display:none;">
+      <div class="no-products is-hidden" id="cart-empty">
         <h3>В вашей корзине пока пусто</h3>
         <p>Добавьте товары из каталога</p>
         <button class="back-to-main reset-Button" id="to-main-btn">Вернуться на главную</button>
       </div>
     </div>
-    <div class="checkout-button-container cart-checkout" id="cart-checkout" style="display:none;">
+    <div class="checkout-button-container cart-checkout is-hidden" id="cart-checkout">
       <button class="checkout-button" id="proceed-checkout-btn">
         <span class="left" id="checkout-count">0 товаров</span>
         <span class="center">К оформлению</span>
@@ -160,8 +160,8 @@ function renderCart() {
   if (!items.length) {
     list.innerHTML = '';
     summary && (summary.style.display = 'none');
-    checkout.style.display = 'none';
-    empty.style.display = 'block';
+    checkout.classList.add('is-hidden');
+    empty.classList.remove('is-hidden');
     document.body.classList.remove('has-checkout-bar');
     const selectAllCheckbox = document.getElementById('bulk-select-all');
     if (selectAllCheckbox) selectAllCheckbox.checked = false;
@@ -170,9 +170,9 @@ function renderCart() {
     return;
   }
 
-  empty.style.display = 'none';
+  empty.classList.add('is-hidden');
   summary && (summary.style.display = '');
-  checkout.style.display = '';
+  checkout.classList.remove('is-hidden');
   document.body.classList.add('has-checkout-bar');
 
   list.innerHTML = items.map(createCartItemHTML).join('');

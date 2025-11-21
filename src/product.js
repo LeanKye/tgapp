@@ -863,7 +863,7 @@ function smoothUpdateTabContent(container, newContent) {
   const currentHeight = container.offsetHeight;
   container.style.height = currentHeight + 'px';
   container.style.overflow = 'hidden';
-  container.style.transition = 'height 0.25s cubic-bezier(0.4, 0, 0.2, 1)';
+  container.style.transition = 'height 0.25s var(--ease-standard)';
   
   // Создаем временный элемент для измерения новой высоты
   const tempDiv = document.createElement('div');
