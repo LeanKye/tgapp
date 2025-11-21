@@ -595,8 +595,12 @@ class ModalManager {
       backdrop.style.opacity = '';
     }
     // Сразу снимаем блокировку скролла и отключаем перехват событий модалкой
-    // ВАЖНО: не отключаем pointer-events и не разблокируем скролл до конца анимации,
-    // чтобы не было «прокалывания» клика на элементы под модалкой.
+    // Быстрое погашение первичного клика: даём оверлею перехватить его небольшое время,
+    // затем разрешаем скролл и клики по фону ещё до окончания анимации (ощущается быстрее).
+    setTimeout(() => {
+      try { modal.style.pointerEvents = 'none'; } catch {}
+      this.unlockScroll();
+    }, 140);
     let ended = false;
     const finish = () => {
       if (ended) return;
@@ -676,8 +680,12 @@ class ModalManager {
     modal.classList.add('closing');
     modal.classList.remove('dragging');
 
-    // Не отключаем pointer-events и не разблокируем скролл до завершения анимации,
-    // чтобы не было «прокалывания» клика по элементам под модалкой.
+    // Даем короткий «щит» от прокалывания, затем рано разрешаем скролл и клики по фону,
+    // чтобы взаимодействие восстанавливалось быстрее визуально.
+    setTimeout(() => {
+      try { modal.style.pointerEvents = 'none'; } catch {}
+      this.unlockScroll();
+    }, 140);
     
     // Плавно анимируем закрытие из текущей позиции, используя проценты как в обычной анимации закрытия
     const contentHeight = content.clientHeight || content.offsetHeight || Math.min(window.innerHeight * 0.7, window.innerHeight);
