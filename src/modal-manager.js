@@ -407,12 +407,16 @@ class ModalManager {
         let isDown=false;
         let startInside=false;
         const onPD=(e)=>{ 
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
           isDown=true; 
           const r=closeBtn.getBoundingClientRect();
           const x=e.clientX, y=e.clientY;
           startInside = x>=r.left && x<=r.right && y>=r.top && y<=r.bottom;
         };
         const onPU=(e)=>{ 
+          try { e.preventDefault(); } catch {}
+          try { e.stopPropagation(); } catch {}
           if(!isDown) return; 
           isDown=false; 
           const r=closeBtn.getBoundingClientRect();
@@ -421,9 +425,12 @@ class ModalManager {
           if (startInside && endInside) { this.closeModal(modalId); }
         };
         const onPC=()=>{ isDown=false; };
+        const onClickCapture=(e)=>{ try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} };
         closeBtn.addEventListener('pointerdown', onPD, { passive: true });
         closeBtn.addEventListener('pointerup', onPU, { passive: true });
         closeBtn.addEventListener('pointercancel', onPC, { passive: true });
+        // Гасим синтетический click, который может возникнуть после pointerup
+        closeBtn.addEventListener('click', onClickCapture, { capture: true });
       }
     }
   }
