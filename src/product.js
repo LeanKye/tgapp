@@ -172,6 +172,8 @@ function renderProduct(product) {
     labelDiv.addEventListener('pointermove', lpm, { passive: true });
     labelDiv.addEventListener('pointerup', lpu, { passive: true });
     labelDiv.addEventListener('touchend', lpu, { passive: true });
+    // Подавляем возможные дефолтные действия/всплытие клика (на всякий случай)
+    labelDiv.addEventListener('click', (e) => { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} }, { capture: true });
 
     labelsContainer.appendChild(labelDiv);
   });
@@ -2005,11 +2007,15 @@ export async function mountProduct(appContainer, params = {}) {
         moreBtn.addEventListener('pointermove', ipm, { passive: true });
         moreBtn.addEventListener('pointerup', ipu, { passive: true });
         moreBtn.addEventListener('touchend', ipu, { passive: true });
+        // Подавляем возможные дефолтные действия/всплытие клика (чтобы исключить любые сторонние скроллы/фокусы)
+        const ic = (e) => { try { e.preventDefault(); } catch {} try { e.stopPropagation(); } catch {} };
+        moreBtn.addEventListener('click', ic, { capture: true });
         __product_cleanup.push(() => {
           try { moreBtn.removeEventListener('pointerdown', ipd); } catch {}
           try { moreBtn.removeEventListener('pointermove', ipm); } catch {}
           try { moreBtn.removeEventListener('pointerup', ipu); } catch {}
           try { moreBtn.removeEventListener('touchend', ipu); } catch {}
+          try { moreBtn.removeEventListener('click', ic, { capture: true }); } catch {}
         });
       }
     }, 100);
