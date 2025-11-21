@@ -38,6 +38,25 @@ function parsePath(path) {
   return { file, params, hash };
 }
 
+function pushOrReplace(url, replace) {
+  try {
+    const t = new URL(url, location.origin);
+    const cur = location.pathname + location.search + location.hash;
+    const tar = t.pathname + t.search + t.hash;
+    if (replace || cur === tar) {
+      history.replaceState(null, '', url);
+      return false; // не увеличиваем глубину
+    } else {
+      history.pushState(null, '', url);
+      return true; // увеличили глубину
+    }
+  } catch {
+    // Фолбэк — безопаснее заменить
+    history.replaceState(null, '', url);
+    return false;
+  }
+}
+
 function fadeOut(targetSel = '#app') {
   const body = document.body;
   const dur = readMs(getComputedStyle(body).getPropertyValue('--page-fade-out'), 160);
@@ -90,11 +109,8 @@ async function renderHome({ replace = false } = {}) {
   // Для этапа 1 DOM не меняем: главная уже отрисована сервером и инициализирована main.js.
   // Обновим активность нижнего меню и заголовок.
   try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
-  if (replace) {
-    history.replaceState(null, '', getBasePath() + 'index.html');
-  } else {
-    history.pushState(null, '', getBasePath() + 'index.html');
-  }
+  const didPush = pushOrReplace(getBasePath() + 'index.html', !!replace);
+  if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
 }
 
 let currentCleanup = null;
@@ -112,8 +128,8 @@ async function renderCategory(params, { replace = false } = {}) {
   currentCleanup = mod.unmountCategory || mod.unmount || null;
   // Активность нижнего меню и заголовок/кнопки Telegram
   const url = getBasePath() + 'category.html' + (params?.category ? `?category=${encodeURIComponent(params.category)}` : '');
-  if (replace) history.replaceState(null, '', url);
-  else history.pushState(null, '', url);
+  const didPush = pushOrReplace(url, !!replace);
+  if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
   try { window.telegramWebApp?.updateTelegramHeader?.(); } catch {}
   try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
 }
@@ -132,8 +148,8 @@ async function navigate(path, opts = {}) {
     await mod.mountHome(container);
     currentCleanup = mod.unmountHome || mod.unmount || null;
     const url = getBasePath() + 'index.html';
-    if (opts.replace) history.replaceState(null, '', url);
-    else history.pushState(null, '', url);
+    const didPush = pushOrReplace(url, !!opts.replace);
+    if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
     try { window.telegramWebApp?.updateTelegramHeader?.(); } catch {}
     try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
     fadeIn();
@@ -156,8 +172,8 @@ async function navigate(path, opts = {}) {
     await mod.mountProduct(container, { product: params.product });
     currentCleanup = mod.unmountProduct || mod.unmount || null;
     const url = getBasePath() + 'product.html' + (params?.product ? `?product=${encodeURIComponent(params.product)}` : '');
-    if (opts.replace) history.replaceState(null, '', url);
-    else history.pushState(null, '', url);
+    const didPush = pushOrReplace(url, !!opts.replace);
+    if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
     try { window.telegramWebApp?.updateTelegramHeader?.(); } catch {}
     try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
     fadeIn();
@@ -174,8 +190,8 @@ async function navigate(path, opts = {}) {
     await mod.mountCart(container);
     currentCleanup = mod.unmountCart || mod.unmount || null;
     const url = getBasePath() + 'cart.html';
-    if (opts.replace) history.replaceState(null, '', url);
-    else history.pushState(null, '', url);
+    const didPush = pushOrReplace(url, !!opts.replace);
+    if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
     try { window.telegramWebApp?.updateTelegramHeader?.(); } catch {}
     try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
     fadeIn();
@@ -192,8 +208,8 @@ async function navigate(path, opts = {}) {
     await mod.mountProfile(container);
     currentCleanup = mod.unmountProfile || mod.unmount || null;
     const url = getBasePath() + 'profile.html';
-    if (opts.replace) history.replaceState(null, '', url);
-    else history.pushState(null, '', url);
+    const didPush = pushOrReplace(url, !!opts.replace);
+    if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
     try { window.telegramWebApp?.updateTelegramHeader?.(); } catch {}
     try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
     fadeIn();
@@ -210,8 +226,8 @@ async function navigate(path, opts = {}) {
     await mod.mountInfo(container, { hash });
     currentCleanup = mod.unmountInfo || mod.unmount || null;
     const url = getBasePath() + 'info.html' + (hash ? `#${hash}` : '');
-    if (opts.replace) history.replaceState(null, '', url);
-    else history.pushState(null, '', url);
+    const didPush = pushOrReplace(url, !!opts.replace);
+    if (didPush) window.__spaDepth = (window.__spaDepth || 0) + 1;
     try { window.telegramWebApp?.updateTelegramHeader?.(); } catch {}
     try { window.refreshBottomNavActive && window.refreshBottomNavActive(); } catch {}
     fadeIn();
@@ -224,6 +240,7 @@ async function navigate(path, opts = {}) {
 
 function initPopstate() {
   window.addEventListener('popstate', () => {
+    if ((window.__spaDepth || 0) > 0) window.__spaDepth -= 1;
     const { file, params, hash } = parsePath(location.pathname.split('/').pop() + location.search + location.hash);
     if (file === 'index.html') {
       fadeOut('#app').then(async () => {

@@ -115,10 +115,14 @@ class TelegramWebApp {
         try { backBtn.offClick(this._backHandler); } catch (_) {}
       }
 
+      if (typeof this._lastBackAt !== 'number') this._lastBackAt = 0;
       this._backHandler = () => {
+        const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+        if (now - this._lastBackAt < 300) return; // антидребезг ~300мс
+        this._lastBackAt = now;
         try {
-          // SPA-назад: если есть история — идём назад, иначе на главную
-          if (window.history && window.history.length > 1) {
+          // Опираемся на внутреннюю глубину SPA, а не на history.length WebView
+          if ((window.__spaDepth || 0) > 0) {
             window.history.back();
           } else if (window.AppNav && typeof window.AppNav.go === 'function') {
             window.AppNav.go('index.html');
