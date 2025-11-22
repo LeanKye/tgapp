@@ -1,6 +1,4 @@
- 
-
-// База данных товаров
+ // База данных товаров
 export const products = {
   'adobe-creative-cloud': {
     id: 'adobe-creative-cloud',
