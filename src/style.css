@@ -82,31 +82,6 @@ body.info-page.leaving main {
   transition: opacity var(--page-fade-out) ease;
 }
 
-/* Горизонтальное «перелистывание» при переходе с товара на главную */
-.page-slide-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 40;
-  pointer-events: none;
-}
-
-.page-slide-overlay-inner {
-  width: 100%;
-  height: 100%;
-  animation: page-slide-out 450ms var(--ease-emphasized, ease-out) forwards;
-}
-
-@keyframes page-slide-out {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    /* Чуть больше 100%, чтобы гарантированно уехать за правый край даже
-       при возможных субпиксельных расхождениях ширины контейнера */
-    transform: translateX(120%);
-  }
-}
-
 /* Позволяем выделение текста в инпутах */
 input, textarea {
   -webkit-user-select: text;
